@@ -1,5 +1,4 @@
 use std::env;
-use std::fmt::format;
 
 use anyhow::Result;
 use reqwest::{header, Client};
@@ -10,7 +9,7 @@ use crate::version::VERSION;
 const API_URL: &str = "https://api.github.com/";
 
 pub struct HttpClient {
-    client: Client,
+    pub client: Client,
 }
 
 impl HttpClient {
@@ -40,8 +39,7 @@ pub async fn latest_release(client: &Client) -> Result<LatestRelease> {
     Ok(result)
 }
 
-async fn download_latest() -> Result<()> {
-    let client = HttpClient::new().unwrap().client;
+pub async fn download_latest(client: &Client) -> Result<()> {
     let latest = latest_release(&client).await?;
 
     let system = env::consts::OS;
@@ -51,15 +49,15 @@ async fn download_latest() -> Result<()> {
     let target = &format!("v2ray-{}-32.zip", system)[..];
     let target = latest.assets.iter().find(|asset| asset.name == target);
     dbg!(&target);
+    dbg!(env::current_dir());
+    println!("{:?}", env::current_dir());
 
     Ok(())
 }
 
 #[cfg(test)]
 mod test {
-    use reqwest::Client;
-
-    use crate::utils::manager::{download_latest, latest_release, test, HttpClient};
+    use crate::utils::manager::{download_latest, latest_release, HttpClient};
 
     #[tokio::test]
     async fn test_latest_release() {
@@ -70,6 +68,7 @@ mod test {
 
     #[tokio::test]
     async fn test_download() {
-        download_latest().await.unwrap();
+        let client = HttpClient::new().unwrap().client;
+        download_latest(&client).await.unwrap();
     }
 }

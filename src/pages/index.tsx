@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { useTheme } from 'next-themes';
-import useMounted from '../hooks/use-mounted';
+import useMounted from 'hooks/use-mounted';
+import { invoke } from '@tauri-apps/api/tauri';
 
 function App() {
   const { mounted } = useMounted();
@@ -28,6 +29,15 @@ function App() {
           </>
         )}
       </button>
+
+      <div>
+        <button
+          className={clsx('rounded p-4')}
+          onClick={() => invoke('test', { filename: 'test.json' })}
+        >
+          Create file
+        </button>
+      </div>
     </>
   );
 }
