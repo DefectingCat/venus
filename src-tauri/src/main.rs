@@ -3,9 +3,8 @@
     windows_subsystem = "windows"
 )]
 
-use utils::manager;
-
 mod utils;
+mod version;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -14,7 +13,7 @@ fn greet(name: &str) -> String {
 }
 
 fn main() {
-    tauri::Builder::default()
+    let http_client = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
