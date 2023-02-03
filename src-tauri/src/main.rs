@@ -4,7 +4,6 @@
 )]
 
 use crate::utils::manager::{download_latest, HttpClient};
-use anyhow::Result;
 
 mod utils;
 mod version;
@@ -20,8 +19,12 @@ fn main() {
         .invoke_handler(tauri::generate_handler![test])
         .setup(|app| {
             tauri::async_runtime::spawn(async move {
-                let http_client = HttpClient::new().unwrap().client;
-                download_latest(&http_client).await.expect("Download file");
+                let http_client = HttpClient::new()
+                    .expect("error while create http client.")
+                    .client;
+                download_latest(&http_client)
+                    .await
+                    .expect("error while download file");
             });
             Ok(())
         })

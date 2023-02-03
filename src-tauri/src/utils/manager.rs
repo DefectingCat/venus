@@ -40,7 +40,7 @@ pub async fn latest_release(client: &Client) -> Result<LatestRelease> {
 }
 
 pub async fn download_latest(client: &Client) -> Result<()> {
-    let latest = latest_release(&client).await?;
+    let latest = latest_release(client).await?;
 
     let system = env::consts::OS;
     #[cfg(target_pointer_width = "64")]
@@ -48,9 +48,10 @@ pub async fn download_latest(client: &Client) -> Result<()> {
     #[cfg(target_pointer_width = "32")]
     let target = &format!("v2ray-{}-32.zip", system)[..];
     let target = latest.assets.iter().find(|asset| asset.name == target);
-    dbg!(&target);
+    // dbg!(&target);
+    // @TODO download binary file.
     dbg!(env::current_dir());
-    println!("{:?}", env::current_dir());
+    // println!("{:?}", env::current_dir());
 
     Ok(())
 }
