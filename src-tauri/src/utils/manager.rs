@@ -50,7 +50,7 @@ pub async fn download_latest(client: &Client) -> Result<()> {
     let target = latest.assets.iter().find(|asset| asset.name == target);
     // dbg!(&target);
     // @TODO download binary file.
-    dbg!(env::current_dir());
+    // dbg!(env::current_dir());
     // println!("{:?}", env::current_dir());
 
     Ok(())

@@ -3,20 +3,17 @@
     windows_subsystem = "windows"
 )]
 
-use crate::utils::manager::{download_latest, HttpClient};
+use commands::common::current_dir;
+use utils::manager::{download_latest, HttpClient};
 
+mod commands;
+mod config;
 mod utils;
 mod version;
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn test(filename: String) {
-    dbg!(filename);
-}
-
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![test])
+        .invoke_handler(tauri::generate_handler![current_dir])
         .setup(|app| {
             tauri::async_runtime::spawn(async move {
                 let http_client = HttpClient::new()
