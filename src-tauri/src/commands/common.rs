@@ -1,5 +1,4 @@
 use anyhow::{Error, Result};
-use serde::Serialize;
 use std::env;
 use std::path::PathBuf;
 

@@ -3131,8 +3131,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "v2rayR"
-version = "0.0.0"
+name = "v2ray-r"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "reqwest",

@@ -4,12 +4,13 @@
 )]
 
 use commands::common::current_dir;
+use config::VConfig;
 use utils::manager::{download_latest, HttpClient};
 
 mod commands;
 mod config;
+mod consts;
 mod utils;
-mod version;
 
 fn main() {
     tauri::Builder::default()
@@ -27,4 +28,8 @@ fn main() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn init() {
+    let config = VConfig::new();
 }

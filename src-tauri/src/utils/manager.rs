@@ -4,7 +4,6 @@ use anyhow::Result;
 use reqwest::{header, Client};
 
 use crate::utils::api::LatestRelease;
-use crate::version::VERSION;
 
 const API_URL: &str = "https://api.github.com/";
 
@@ -15,9 +14,11 @@ pub struct HttpClient {
 impl HttpClient {
     pub fn new() -> Result<Self> {
         let mut h = header::HeaderMap::new();
+
+        let version = env!("CARGO_PKG_VERSION");
         h.insert(
             header::USER_AGENT,
-            header::HeaderValue::from_str(&format!("V2rayR - {}", VERSION)[..])?,
+            header::HeaderValue::from_str(&format!("V2rayR - {}", version)[..])?,
         );
         Ok(Self {
             client: Client::builder().default_headers(h).build()?,
