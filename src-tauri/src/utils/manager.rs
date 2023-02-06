@@ -40,6 +40,7 @@ pub async fn latest_release(client: &Client) -> Result<LatestRelease> {
     Ok(result)
 }
 
+/// Download the latest v2ray binary file.
 pub async fn download_latest(client: &Client) -> Result<()> {
     let latest = latest_release(client).await?;
 
