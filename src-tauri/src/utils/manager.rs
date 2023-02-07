@@ -1,11 +1,9 @@
-use std::env;
-
+use crate::consts::{API_URL, CORE_FOLDER};
 use anyhow::Result;
 use reqwest::{header, Client};
+use std::env;
 
 use crate::utils::api::LatestRelease;
-
-const API_URL: &str = "https://api.github.com/";
 
 pub struct HttpClient {
     pub client: Client,
@@ -25,6 +23,9 @@ impl HttpClient {
         })
     }
 }
+
+/// Check v2ray-core version or exit.
+pub async fn check_version() {}
 
 /// Get the latest release from GitHub release.
 pub async fn latest_release(client: &Client) -> Result<LatestRelease> {
