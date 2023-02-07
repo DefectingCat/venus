@@ -1,7 +1,7 @@
 use crate::consts::{API_URL, CORE_FOLDER};
 use anyhow::Result;
 use reqwest::{header, Client};
-use std::env;
+use std::{env, fs};
 
 use crate::utils::api::LatestRelease;
 
@@ -24,8 +24,19 @@ impl HttpClient {
     }
 }
 
-/// Check v2ray-core version or exit.
-pub async fn check_version() {}
+/// Check v2ray-core version or exist.
+pub async fn check_version() -> Result<()> {
+    let paths = fs::read_dir(format!("./{}", CORE_FOLDER));
+    match paths {
+        Ok(path) => {
+            dbg!(&path);
+        }
+        Err(err) => {
+            dbg!(&err);
+        }
+    }
+    Ok(())
+}
 
 /// Get the latest release from GitHub release.
 pub async fn latest_release(client: &Client) -> Result<LatestRelease> {
@@ -61,7 +72,7 @@ pub async fn download_latest(client: &Client) -> Result<()> {
 
 #[cfg(test)]
 mod test {
-    use crate::utils::manager::{download_latest, latest_release, HttpClient};
+    use crate::utils::manager::{check_version, download_latest, latest_release, HttpClient};
 
     #[tokio::test]
     async fn test_latest_release() {
@@ -74,5 +85,10 @@ mod test {
     async fn test_download() {
         let client = HttpClient::new().unwrap().client;
         download_latest(&client).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_check() {
+        check_version().await.unwrap();
     }
 }

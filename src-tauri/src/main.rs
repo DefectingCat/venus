@@ -2,7 +2,6 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
-
 use commands::common::current_dir;
 use config::VConfig;
 use utils::manager::{download_latest, HttpClient};
