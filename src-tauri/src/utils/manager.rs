@@ -1,5 +1,6 @@
 use crate::consts::{API_URL, CORE_FOLDER};
 use anyhow::Result;
+use log::warn;
 use reqwest::{header, Client};
 use std::{env, fs};
 
@@ -28,11 +29,16 @@ impl HttpClient {
 pub async fn check_version() -> Result<()> {
     let paths = fs::read_dir(format!("./{}", CORE_FOLDER));
     match paths {
-        Ok(path) => {
-            dbg!(&path);
+        Ok(entry) => {
+            let bin_name = "v2ray";
+            entry.for_each(|file| {
+                dbg!(&file.unwrap().file_name());
+            });
         }
         Err(err) => {
-            dbg!(&err);
+            warn!("{}", err);
+            warn!("core not exist. string downloading");
+            fs::create_dir(CORE_FOLDER)?;
         }
     }
     Ok(())
