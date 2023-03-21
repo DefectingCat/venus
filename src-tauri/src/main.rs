@@ -15,6 +15,7 @@ mod config;
 mod consts;
 mod utils;
 
+
 fn main() {
     // Init config.
     let config = Arc::new(Mutex::new(VConfig::new()));
