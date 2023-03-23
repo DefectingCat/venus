@@ -48,6 +48,7 @@
         "providerShortName": null,
         "signingIdentity": null
       },
+      "externalBin": ["binaries/core/v2ray"],
       "resources": ["resources/*"],
       "shortDescription": "",
       "targets": "all",
@@ -55,8 +56,7 @@
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
         "timestampUrl": ""
-      },
-      "externalBin": ["binaries/core/v2ray"]
+      }
     },
     "security": {
       "csp": null
