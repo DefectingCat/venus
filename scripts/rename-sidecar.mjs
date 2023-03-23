@@ -1,3 +1,4 @@
+import { error } from 'console';
 import { execa } from 'execa';
 import fs from 'fs';
 
@@ -19,5 +20,5 @@ async function main() {
 }
 
 main().catch((e) => {
-  throw e;
+  error(e);
 });

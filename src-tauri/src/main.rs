@@ -9,9 +9,12 @@ use env_logger::Env;
 use log::info;
 use std::sync::{Arc, Mutex};
 
+use crate::core::VCore;
+
 mod commands;
 mod config;
 mod consts;
+mod core;
 mod utils;
 
 fn main() {
@@ -26,7 +29,11 @@ fn main() {
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![current_dir])
-        .setup(|app| Ok(()))
+        .setup(|app| {
+            info!("Start core");
+            let core = VCore::build().unwrap();
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

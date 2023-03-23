@@ -15,10 +15,12 @@
       "all": false,
       "shell": {
         "all": false,
-        "open": true
+        "open": true,
+        "sidecar": true,
+        "scope": [
+          { "name": "binaries/core/v2ray", "sidecar": true, "args": ["run"] }
+        ]
       },
-      "sidecar": true,
-      "scope": [{ "name": "binaries/core", "sidecar": true }],
       "fs": {
         "scope": ["$RESOURCE/*"]
       }
@@ -54,7 +56,7 @@
         "digestAlgorithm": "sha256",
         "timestampUrl": ""
       },
-      "externalBin": ["binaries/core"]
+      "externalBin": ["binaries/core/v2ray"]
     },
     "security": {
       "csp": null
