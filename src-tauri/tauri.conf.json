@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "v2rayR",
-    "version": "0.0.0"
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -60,10 +60,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "width": 1000,
+        "height": 700,
         "resizable": true,
-        "title": "v2rayR",
-        "width": 800
+        "title": "v2rayR"
       }
     ]
   }

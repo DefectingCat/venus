@@ -8,13 +8,11 @@ use config::VConfig;
 use env_logger::Env;
 use log::info;
 use std::sync::{Arc, Mutex};
-use utils::manager::{download_latest, HttpClient};
 
 mod commands;
 mod config;
 mod consts;
 mod utils;
-
 
 fn main() {
     // Init config.
@@ -28,17 +26,7 @@ fn main() {
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![current_dir])
-        .setup(|app| {
-            tauri::async_runtime::spawn(async move {
-                let http_client = HttpClient::new()
-                    .expect("error while create http client.")
-                    .client;
-                download_latest(&http_client)
-                    .await
-                    .expect("error while download file");
-            });
-            Ok(())
-        })
+        .setup(|app| Ok(()))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

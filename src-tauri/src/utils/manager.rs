@@ -72,7 +72,6 @@ pub async fn download_latest(client: &Client) -> Result<()> {
     // @TODO download binary file.
     // dbg!(env::current_dir());
     // println!("{:?}", env::current_dir());
-
     Ok(())
 }
 
