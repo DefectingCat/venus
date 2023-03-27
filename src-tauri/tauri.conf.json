@@ -51,10 +51,10 @@
       "externalBin": ["binaries/core/v2ray"],
       "resources": [
         "resources/*",
-        "binaries/core/config.json",
-        "binaries/core/geoip.dat",
-        "binaries/core/geoip-only-cn-private.dat",
-        "binaries/core/geosite.dat"
+        "config.json",
+        "geoip.dat",
+        "geoip-only-cn-private.dat",
+        "geosite.dat"
       ],
       "shortDescription": "",
       "targets": "all",

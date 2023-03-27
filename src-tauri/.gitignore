@@ -4,10 +4,9 @@
 
 # Binary
 /binaries/core/*
-!/binaries/core/config.json
-!/binaries/core/geoip-only-cn-private.dat
-!/binaries/core/geoip.dat
-!/binaries/core/geosite.dat
+/geoip-only-cn-private.dat
+/geoip.dat
+/geosite.dat
 
 # Resources
 /resources/**/*.dat

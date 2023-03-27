@@ -8,7 +8,7 @@ impl VCore {
     pub fn build() -> Result<Self> {
         // `new_sidecar()` expects just the filename, NOT the whole path like in JavaScript
         let (mut rx, mut child) = Command::new_sidecar("v2ray")
-            .expect("failed to create `v2ray` binary command").args(["run", "-c", "config.json"])
+            .expect("failed to create `v2ray` binary command").args(["run" ])
             .spawn()
             .expect("Failed to spawn sidecar");
 
