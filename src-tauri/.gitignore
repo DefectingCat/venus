@@ -4,9 +4,6 @@
 
 # Binary
 /binaries/core/*
-/geoip-only-cn-private.dat
-/geoip.dat
-/geosite.dat
 
 # Resources
 /resources/**/*.dat

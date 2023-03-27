@@ -49,13 +49,7 @@
         "signingIdentity": null
       },
       "externalBin": ["binaries/core/v2ray"],
-      "resources": [
-        "resources/*",
-        "config.json",
-        "geoip.dat",
-        "geoip-only-cn-private.dat",
-        "geosite.dat"
-      ],
+      "resources": ["resources/*"],
       "shortDescription": "",
       "targets": "all",
       "windows": {
