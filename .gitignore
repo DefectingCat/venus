@@ -24,8 +24,3 @@ dist-ssr
 *.sln
 *.sw?
 
-# Binary
-src-tauri/binaries/core/*
-
-# Resources
-src-tauri/resources/**/*.dat
