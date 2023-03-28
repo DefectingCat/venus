@@ -17,8 +17,8 @@ const NaviItem = ({ active, children, ...rest }: NaviItemProps) => {
         'px-4 py-2 cursor-pointer',
         'transition-all',
         'select-none',
-        active && 'bg-white',
-        active || 'hover:bg-gray-200',
+        active && 'bg-white dark:bg-black',
+        active || 'hover:bg-gray-200 dark:hover:bg-gray-700',
         className
       )}
       {...props}

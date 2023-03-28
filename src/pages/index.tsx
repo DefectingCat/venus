@@ -3,7 +3,6 @@ import { useTheme } from 'next-themes';
 import useMounted from 'hooks/use-mounted';
 import { invoke } from '@tauri-apps/api/tauri';
 import { useState } from 'react';
-import SideBar from 'components/side-bar';
 import MainLayout from 'layouts/main-layout';
 
 function App() {
