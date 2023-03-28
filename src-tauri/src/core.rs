@@ -1,7 +1,8 @@
 use std::env;
 
 use anyhow::Result;
-use tauri::{api::process::{Command, CommandEvent} };
+use log::info;
+use tauri::api::process::{Command, CommandEvent};
 
 #[derive(Debug)]
 pub struct VCore {}
@@ -18,9 +19,10 @@ impl VCore {
 
         tauri::async_runtime::spawn(async move {
             while let Some(event) = rx.recv().await {
-                dbg!(&event);
+                // dbg!(&event);
                 
                 if let CommandEvent::Stdout(line) = event {
+                    info!("{line}");
                     child.write("get v2ray message".as_bytes()).unwrap();
                 }
                 
