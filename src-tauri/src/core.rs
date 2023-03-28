@@ -20,7 +20,6 @@ impl VCore {
         tauri::async_runtime::spawn(async move {
             while let Some(event) = rx.recv().await {
                 // dbg!(&event);
-                
                 if let CommandEvent::Stdout(line) = event {
                     info!("{line}");
                     child.write("get v2ray message".as_bytes()).unwrap();
