@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import SideBar from 'components/side-bar';
 import { ReactNode } from 'react';
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
@@ -9,7 +10,11 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         'bg-bluish-gray dark:bg-rua-gray-900'
       )}
     >
-      {children}
+      {/* navi */}
+      <SideBar />
+
+      {/* body */}
+      <div className="p-5">{children}</div>
     </main>
   );
 };

@@ -26,7 +26,6 @@ function App() {
 
   return (
     <MainLayout>
-      <SideBar />
       <div>
         <div className="text-5xl">Hello world!</div>
         {mounted && (
