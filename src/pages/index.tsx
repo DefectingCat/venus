@@ -1,4 +1,4 @@
-import Button from 'components/button';
+import { Button } from 'antd';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 

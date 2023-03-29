@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.2.0",
+    "antd": "^5.3.3",
     "clsx": "^1.2.1",
     "execa": "^7.1.1",
     "next": "^13.2.4",
