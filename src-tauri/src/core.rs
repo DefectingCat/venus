@@ -22,11 +22,11 @@ impl VCore {
             while let Some(event) = rx.recv().await {
                 // dbg!(&event);
                 match event {
-                    CommandEvent::Stdout(line) => {
-                        // info!("{line}");
+                    CommandEvent::Stdout(line) | CommandEvent::Stderr(line) => {
+                        info!("{line}")
                     }
                     _ => {
-                        // error!("Core unknown error")
+                        error!("Core unknown error {event:?}")
                     }
                 }
             }
