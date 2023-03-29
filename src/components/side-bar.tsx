@@ -10,13 +10,13 @@ type SingleNavi = {
 const navi = [
   {
     id: 0,
-    name: 'General',
+    name: 'Proxies',
     path: '/',
   },
   {
     id: 1,
-    name: 'Proxies',
-    path: '/proxies',
+    name: 'Settings',
+    path: '/settings',
   },
 ];
 
