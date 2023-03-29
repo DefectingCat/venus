@@ -1,5 +1,6 @@
 import type { AppProps } from 'next/app';
 import 'styles/global.css';
+import 'modern-normalize';
 import { ThemeProvider } from 'next-themes';
 
 // This default export is required in a new `pages/_app.js` file.

@@ -17,10 +17,10 @@ const NaviItem = ({ active, children, ...rest }: NaviItemProps) => {
     <button
       className={clsx(
         'rounded-md flex',
-        'px-4 py-2 cursor-pointer',
+        'px-4 py-3 cursor-pointer',
         'transition-all',
-        'select-none',
-        active && 'bg-white dark:bg-black',
+        'select-none border-none',
+        active ? 'bg-white dark:bg-black' : 'bg-transparent',
         active || 'hover:bg-gray-200 dark:hover:bg-gray-700',
         className
       )}
