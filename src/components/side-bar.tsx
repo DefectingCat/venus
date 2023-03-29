@@ -1,22 +1,31 @@
 import clsx from 'clsx';
 import NaviItem from './navi-item';
-import { useState } from 'react';
+import { useRouter } from 'next/router';
 
+type SingleNavi = {
+  id: number;
+  name: string;
+  path: string;
+};
 const navi = [
   {
     id: 0,
     name: 'General',
-    path: '',
+    path: '/',
   },
   {
     id: 1,
     name: 'Proxies',
-    path: '',
+    path: '/proxies',
   },
 ];
 
 export default function SideBar() {
-  const [current, setCurrent] = useState(0);
+  const router = useRouter();
+
+  const handleRoute = (item: SingleNavi) => {
+    router.push(item.path);
+  };
 
   return (
     <nav
@@ -34,10 +43,10 @@ export default function SideBar() {
       <div className="my-4">
         {navi.map((n) => (
           <NaviItem
-            className="mb-2"
             key={n.id}
-            active={current === n.id}
-            onClick={() => setCurrent(n.id)}
+            onClick={() => handleRoute(n)}
+            className="mb-2 w-full"
+            active={router.pathname === n.path}
           >
             {n.name}
           </NaviItem>

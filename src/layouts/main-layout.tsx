@@ -14,7 +14,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       <SideBar />
 
       {/* body */}
-      <div className="p-5">{children}</div>
+      <div className="p-6">{children}</div>
     </main>
   );
 };

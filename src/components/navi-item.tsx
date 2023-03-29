@@ -2,7 +2,10 @@ import clsx from 'clsx';
 import { DetailedHTMLProps, HTMLAttributes, ReactNode } from 'react';
 
 interface NaviItemProps
-  extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
+  extends DetailedHTMLProps<
+    HTMLAttributes<HTMLButtonElement>,
+    HTMLButtonElement
+  > {
   active: boolean;
   children: ReactNode;
 }
@@ -11,7 +14,7 @@ const NaviItem = ({ active, children, ...rest }: NaviItemProps) => {
   const { className, ...props } = rest;
 
   return (
-    <div
+    <button
       className={clsx(
         'rounded-md flex',
         'px-4 py-2 cursor-pointer',
@@ -24,7 +27,7 @@ const NaviItem = ({ active, children, ...rest }: NaviItemProps) => {
       {...props}
     >
       {children}
-    </div>
+    </button>
   );
 };
 
