@@ -1,5 +1,5 @@
 import { useBoolean } from 'ahooks';
-import { Button, Modal } from 'antd';
+import { Button, Input, Modal } from 'antd';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 
@@ -22,13 +22,16 @@ function App() {
       </MainLayout>
 
       <Modal
-        title="Title"
+        title="Add subscription"
         open={showAddSubs}
         // onOk={handleOk}
         // confirmLoading={confirmLoading}
-        // onCancel={handleCancel}
+        onCancel={setShowAddSubs.setFalse}
       >
-        <p>test</p>
+        <div className="flex items-center my-8">
+          <div className="mr-2">URL</div>
+          <Input placeholder="Subscription url" />
+        </div>
       </Modal>
     </>
   );
