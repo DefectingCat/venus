@@ -1,9 +1,17 @@
+import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 
 function App() {
   return (
     <MainLayout>
-      <h1>Proxies</h1>
+      <div className="mt-1 mb-4">
+        <Title>Proxies</Title>
+      </div>
+
+      <div>
+        <Title.h2>Subscription</Title.h2>
+        <div></div>
+      </div>
     </MainLayout>
   );
 }
