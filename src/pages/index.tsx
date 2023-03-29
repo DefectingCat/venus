@@ -1,3 +1,4 @@
+import Button from 'components/button';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 
@@ -10,7 +11,9 @@ function App() {
 
       <div>
         <Title.h2>Subscription</Title.h2>
-        <div></div>
+        <div>
+          <Button>Add</Button>
+        </div>
       </div>
     </MainLayout>
   );
