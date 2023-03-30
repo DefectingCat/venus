@@ -1,7 +1,7 @@
 use std::env;
 
 use anyhow::Result;
-use log::{error, info};
+use log::{error, info, warn};
 use tauri::api::process::{Command, CommandEvent};
 
 #[derive(Debug)]
@@ -22,8 +22,11 @@ impl VCore {
             while let Some(event) = rx.recv().await {
                 // dbg!(&event);
                 match event {
-                    CommandEvent::Stdout(line) | CommandEvent::Stderr(line) => {
+                    CommandEvent::Stdout(line) => {
                         info!("{line}")
+                    }
+                    CommandEvent::Stderr(line) => {
+                        warn!("{line}")
                     }
                     _ => {
                         error!("Core unknown error {event:?}")
