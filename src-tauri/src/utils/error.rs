@@ -1,19 +1,24 @@
+use base64::DecodeError;
+use serde::{Serialize, Serializer};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum VError {
-    #[error("can not parse target")]
-    Parse(String),
+    #[error("Request error: {0}")]
+    RequestFaild(#[from] reqwest::Error),
 
-    #[error("page not found")]
-    // NotFound(#[from] io::Error),
-    NotFound,
-
-    #[error("unknown file type, found file {file:?}")]
-    UnknownFileType { file: String },
-
-    // #[error("invalid header (expected {expected:?}, found {found:?})")]
-    // InvalidHeader { expected: String, found: String },
-    #[error("unknown data store error")]
-    Unknown,
+    #[error("Decode error: {0}")]
+    DecodeError(#[from] DecodeError),
 }
+
+// https://github.com/tauri-apps/tauri/discussions/3913
+impl Serialize for VError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_ref())
+    }
+}
+
+pub type VResult<T, E = VError> = anyhow::Result<T, E>;

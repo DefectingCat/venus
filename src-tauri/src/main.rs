@@ -9,7 +9,7 @@ use env_logger::Env;
 use log::info;
 use std::sync::{Arc, Mutex};
 
-use crate::core::VCore;
+use crate::{commands::common::add_subscription, core::VCore};
 
 mod commands;
 mod config;
@@ -28,7 +28,7 @@ fn main() {
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![current_dir])
+        .invoke_handler(tauri::generate_handler![current_dir, add_subscription])
         .setup(|_app| {
             info!("Start core");
             let _core = VCore::build().unwrap();

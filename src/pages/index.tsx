@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api/tauri';
 import { Button, Input } from 'antd';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
@@ -13,6 +14,9 @@ function App() {
     const valid = URL_VALID.test(value);
     setStatus(!subscripition ? '' : valid ? '' : 'error');
     setSubscripiton(value);
+  };
+  const handlAdd = async () => {
+    await invoke('add_subscription', { url: subscripition });
   };
 
   return (
@@ -37,7 +41,9 @@ function App() {
                 />
               </div>
             </div>
-            <Button className="mr-2">Add</Button>
+            <Button onClick={handlAdd} className="mr-2">
+              Add
+            </Button>
             <Button>Update All</Button>
           </div>
         </div>
