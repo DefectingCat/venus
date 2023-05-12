@@ -1,13 +1,7 @@
-use crate::consts::CORE_FOLDER;
-
-pub struct VConfig {
-    pub log_level: String,
-}
+pub struct VConfig {}
 
 impl VConfig {
     pub fn new() -> Self {
-        Self {
-            log_level: "info".to_string(),
-        }
+        Self {}
     }
 }

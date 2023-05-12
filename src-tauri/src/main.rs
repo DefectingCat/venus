@@ -20,9 +20,9 @@ mod utils;
 fn main() {
     // Init config.
     let config = Arc::new(Mutex::new(VConfig::new()));
-    let level = &config.lock().expect("can not lock config.").log_level;
+    let level = &config.lock().expect("can not lock config.");
 
-    let env = Env::default().filter_or("RUA_LOG_LEVEL", level);
+    let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
     env_logger::init_from_env(env);
     info!("starting up.");
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));

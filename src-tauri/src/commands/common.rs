@@ -17,5 +17,6 @@ pub async fn add_subscription(url: String) -> VResult<()> {
 
     let subscripition = general_purpose::STANDARD.decode(result)?;
     let subscripition = String::from_utf8_lossy(&subscripition).to_string();
+    dbg!(&subscripition);
     Ok(())
 }
