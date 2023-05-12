@@ -1,10 +1,19 @@
-import { useBoolean } from 'ahooks';
-import { Button, Input, Modal } from 'antd';
+import { Button, Input } from 'antd';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
+import { ChangeEventHandler, useState } from 'react';
+import { URL_VALID } from 'utils/consts';
 
 function App() {
-  const [showAddSubs, setShowAddSubs] = useBoolean(false);
+  // Add subscripition
+  const [subscripition, setSubscripiton] = useState('');
+  const [status, setStatus] = useState<'' | 'error'>('');
+  const handleSub: ChangeEventHandler<HTMLInputElement> = (e) => {
+    const value = e.target.value.trim();
+    const valid = URL_VALID.test(value);
+    setStatus(!subscripition ? '' : valid ? '' : 'error');
+    setSubscripiton(value);
+  };
 
   return (
     <>
@@ -15,24 +24,24 @@ function App() {
 
         <div>
           <Title.h2>Subscription</Title.h2>
-          <div>
-            <Button onClick={setShowAddSubs.toggle}>Add</Button>
+          <div className="flex items-center">
+            <div className="flex items-center  mr-2">
+              <div className="mr-2">URL</div>
+              <div className="relative">
+                <Input
+                  value={subscripition}
+                  onChange={handleSub}
+                  allowClear
+                  placeholder="Subscription url"
+                  status={status}
+                />
+              </div>
+            </div>
+            <Button className="mr-2">Add</Button>
+            <Button>Update All</Button>
           </div>
         </div>
       </MainLayout>
-
-      <Modal
-        title="Add subscription"
-        open={showAddSubs}
-        // onOk={handleOk}
-        // confirmLoading={confirmLoading}
-        onCancel={setShowAddSubs.setFalse}
-      >
-        <div className="flex items-center my-8">
-          <div className="mr-2">URL</div>
-          <Input placeholder="Subscription url" />
-        </div>
-      </Modal>
     </>
   );
 }

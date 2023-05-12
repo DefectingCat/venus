@@ -29,9 +29,9 @@ fn main() {
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![current_dir])
-        .setup(|app| {
+        .setup(|_app| {
             info!("Start core");
-            let core = VCore::build().unwrap();
+            let _core = VCore::build().unwrap();
             Ok(())
         })
         .run(tauri::generate_context!())
