@@ -15,9 +15,17 @@ function App() {
     setStatus(!subscripition ? '' : valid ? '' : 'error');
     setSubscripiton(value);
   };
+  // Send request
+  const [loading, setLoading] = useState(false);
   const handlAdd = async () => {
-    const res = await invoke('add_subscription', { url: subscripition });
-    console.log(res);
+    try {
+      setLoading(true);
+      await invoke('add_subscription', { url: subscripition });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,6 +47,7 @@ function App() {
                   allowClear
                   placeholder="Subscription url"
                   status={status}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -46,6 +55,7 @@ function App() {
               disabled={!subscripition || status === 'error'}
               onClick={handlAdd}
               className="mr-2"
+              loading={loading}
             >
               Add
             </Button>
