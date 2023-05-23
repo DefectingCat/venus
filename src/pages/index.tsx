@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import { Button, Input } from 'antd';
+import { Button, Input, message } from 'antd';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import { ChangeEventHandler, useState } from 'react';
@@ -21,10 +21,14 @@ function App() {
     try {
       setLoading(true);
       await invoke('add_subscription', { url: subscripition });
+      message.success('Add subscripition success');
     } catch (err) {
       console.error(err);
+      message.success('Failed to add subscripition');
     } finally {
       setLoading(false);
+      setStatus('');
+      setSubscripiton('');
     }
   };
 
