@@ -24,7 +24,7 @@ function App() {
       message.success('Add subscripition success');
     } catch (err) {
       console.error(err);
-      message.success('Failed to add subscripition');
+      message.error(`Failed to add subscripition ${err?.toString()}`);
     } finally {
       setLoading(false);
       setStatus('');
