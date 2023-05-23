@@ -16,7 +16,8 @@ function App() {
     setSubscripiton(value);
   };
   const handlAdd = async () => {
-    await invoke('add_subscription', { url: subscripition });
+    const res = await invoke('add_subscription', { url: subscripition });
+    console.log(res);
   };
 
   return (
@@ -41,7 +42,11 @@ function App() {
                 />
               </div>
             </div>
-            <Button onClick={handlAdd} className="mr-2">
+            <Button
+              disabled={!subscripition || status === 'error'}
+              onClick={handlAdd}
+              className="mr-2"
+            >
               Add
             </Button>
             <Button>Update All</Button>
