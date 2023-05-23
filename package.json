@@ -9,7 +9,7 @@
     "pretty": "prettier --write \"./**/*.{js,jsx,ts,tsx,json,md,mdx,css}\" --ignore-unknown"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.2.0",
+    "@tauri-apps/api": "^1.3.0",
     "ahooks": "^3.7.6",
     "antd": "^5.3.3",
     "clsx": "^1.2.1",
@@ -22,7 +22,7 @@
     "react-icons": "^4.8.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.2.3",
+    "@tauri-apps/cli": "^1.3.1",
     "@types/node": "^18.15.5",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
