@@ -3,6 +3,7 @@ use base64::Engine;
 use std::env;
 use std::path::PathBuf;
 
+use crate::config::Node;
 use crate::utils::error::VResult;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -18,13 +19,15 @@ pub async fn add_subscription(url: String) -> VResult<()> {
     // Decode result to vmess://...
     let subscripition = general_purpose::STANDARD.decode(result)?;
     let subscripition = String::from_utf8_lossy(&subscripition).to_string();
+    // Serizlize outbound nodes to json
     let subscripition = subscripition
         .split('\n')
         .filter(|line| !line.is_empty())
         .map(|line| {
             let line = line.replace("vmess://", "");
             let line = general_purpose::STANDARD.decode(line)?;
-            Ok(String::from_utf8_lossy(&line).to_string())
+            let line = String::from_utf8_lossy(&line).to_string();
+            Ok(serde_json::from_str::<Node>(&line)?)
         })
         .collect::<VResult<Vec<_>>>()?;
     dbg!(&subscripition);

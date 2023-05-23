@@ -9,6 +9,9 @@ pub enum VError {
 
     #[error("Decode error: {0}")]
     DecodeError(#[from] DecodeError),
+
+    #[error("Serialize error: {0}")]
+    SerializeError(#[from] serde_json::Error),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913

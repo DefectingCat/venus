@@ -6,7 +6,9 @@ use serde_derive::Serialize;
 #[serde(rename_all = "camelCase")]
 pub struct Node {
     pub v: String,
+    // Node name
     pub ps: String,
+    // address
     pub add: String,
     pub port: String,
     pub id: String,
