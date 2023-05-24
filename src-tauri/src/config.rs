@@ -7,19 +7,21 @@ use tauri::AppHandle;
 
 use crate::utils::error::VResult;
 
-/// Outbound nodes
+/// Subscrition nodes
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Node {
     pub v: String,
     // Node name
     pub ps: String,
-    // address
+    // Address
     pub add: String,
     pub port: String,
     pub id: String,
+    // AlertID
     pub aid: String,
     pub net: String,
+    // Protocol type
     #[serde(rename = "type")]
     pub type_field: String,
     pub host: String,
@@ -29,7 +31,7 @@ pub struct Node {
     pub alpn: String,
 }
 
-/// Config roots
+/// Core config root
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CoreConfig {
@@ -80,6 +82,14 @@ pub struct Outbound {
     pub protocol: String,
     pub settings: Settings2,
     pub tag: String,
+    pub mux: Option<Mux>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Mux {
+    enabled: bool,
+    concurrency: u32,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -178,7 +188,8 @@ impl VConfig {
         Self { core: None }
     }
 
-    pub fn init_core(&mut self, handle: AppHandle) -> VResult<()> {
+    /// Reload core config file to VConfig
+    pub fn reload_core(&mut self, handle: AppHandle) -> VResult<()> {
         let resource_path = handle
             .path_resolver()
             .resolve_resource("resources/config.json")
@@ -189,4 +200,6 @@ impl VConfig {
         self.core = Some(core_config);
         Ok(())
     }
+
+    pub fn write_core(&mut self) {}
 }

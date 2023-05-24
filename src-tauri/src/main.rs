@@ -42,9 +42,9 @@ fn main() {
             info!("Start core");
             config_state
                 .lock()
-                .expect("can not lock")
-                .init_core(app.handle())
-                .expect("can not init");
+                .expect("can not lock config")
+                .reload_core(app.handle())
+                .expect("can not init core config");
             Ok(())
         })
         .run(tauri::generate_context!())

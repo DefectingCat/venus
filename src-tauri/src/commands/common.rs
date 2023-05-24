@@ -15,8 +15,10 @@ pub fn current_dir() -> Result<PathBuf, String> {
 }
 
 #[tauri::command]
-pub async fn add_subscription(url: String) -> VResult<()> {
+pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>>) -> VResult<()> {
     let result = reqwest::get(url).await?.text().await?;
+
+    let mut config = config.lock()?;
 
     // Decode result to vmess://...
     let subscripition = general_purpose::STANDARD.decode(result)?;
