@@ -23,7 +23,7 @@ mod utils;
 fn main() {
     // Init config.
     let config = Arc::new(Mutex::new(VConfig::new()));
-    // let mut config = Mutex::new(VConfig::new());
+    let core = VCore::build().unwrap();
 
     let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
     env_logger::init_from_env(env);
@@ -40,7 +40,6 @@ fn main() {
         ])
         .setup(move |app| {
             info!("Start core");
-            let _core = VCore::build().unwrap();
             config_state
                 .lock()
                 .expect("can not lock")

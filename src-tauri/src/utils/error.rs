@@ -2,6 +2,7 @@ use std::io;
 
 use base64::DecodeError;
 use serde::{Serialize, Serializer};
+use tauri::api;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -17,6 +18,9 @@ pub enum VError {
 
     #[error("IO error: {0}")]
     IoError(#[from] io::Error),
+
+    #[error("API error: {0}")]
+    ApiError(#[from] api::Error),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913
