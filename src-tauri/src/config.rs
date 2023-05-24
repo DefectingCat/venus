@@ -192,12 +192,27 @@ pub struct Other {}
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VConfig {
+    pub core_status: CoreStatus,
     pub core: Option<CoreConfig>,
+    pub nodes: Vec<Node>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum CoreStatus {
+    Started(String),
+    Restarting(String),
+    Stopped(String),
 }
 
 impl VConfig {
     pub fn new() -> Self {
-        Self { core: None }
+        use CoreStatus::*;
+
+        Self {
+            core_status: Stopped("Stopped".to_owned()),
+            core: None,
+            nodes: vec![],
+        }
     }
 
     /// Reload core config file to VConfig
@@ -213,5 +228,5 @@ impl VConfig {
         Ok(())
     }
 
-    pub fn write_core(&mut self) {}
+    // pub fn write_core(&mut self) {}
 }
