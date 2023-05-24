@@ -1,4 +1,5 @@
 use std::fs::File;
+use std::path::PathBuf;
 
 use log::debug;
 use serde_derive::Deserialize;
@@ -48,22 +49,26 @@ pub struct CoreConfig {
 #[serde(rename_all = "camelCase")]
 pub struct Log {
     pub loglevel: String,
+    pub access: Option<PathBuf>,
+    pub error: Option<PathBuf>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Inbound {
     pub port: i64,
+    // Listen address
     pub listen: String,
     pub tag: String,
     pub protocol: String,
-    pub settings: Settings,
+    pub settings: InboundSettings,
+    // Traffic sniffing
     pub sniffing: Sniffing,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Settings {
+pub struct InboundSettings {
     pub auth: String,
     pub udp: bool,
     pub ip: String,
@@ -80,9 +85,16 @@ pub struct Sniffing {
 #[serde(rename_all = "camelCase")]
 pub struct Outbound {
     pub protocol: String,
-    pub settings: Settings2,
+    pub settings: OutboundSettings,
     pub tag: String,
+    pub proxy_setting: Option<ProxySetting>,
     pub mux: Option<Mux>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProxySetting {
+    tag: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -94,7 +106,7 @@ pub struct Mux {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Settings2 {}
+pub struct OutboundSettings {}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
