@@ -1,5 +1,11 @@
+use std::fs::File;
+
+use log::debug;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use tauri::AppHandle;
+
+use crate::utils::error::VResult;
 
 /// Outbound nodes
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -161,10 +167,26 @@ pub struct System {
 #[serde(rename_all = "camelCase")]
 pub struct Other {}
 
-pub struct VConfig {}
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VConfig {
+    pub core: Option<CoreConfig>,
+}
 
 impl VConfig {
     pub fn new() -> Self {
-        Self {}
+        Self { core: None }
+    }
+
+    pub fn init_core(&mut self, handle: AppHandle) -> VResult<()> {
+        let resource_path = handle
+            .path_resolver()
+            .resolve_resource("resources/config.json")
+            .expect("can not found config file");
+        let core_file = File::open(resource_path)?;
+        debug!("{core_file:?}");
+        let core_config: CoreConfig = serde_json::from_reader(core_file)?;
+        self.core = Some(core_config);
+        Ok(())
     }
 }

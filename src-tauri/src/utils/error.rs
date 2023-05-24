@@ -1,3 +1,5 @@
+use std::io;
+
 use base64::DecodeError;
 use serde::{Serialize, Serializer};
 use thiserror::Error;
@@ -12,6 +14,9 @@ pub enum VError {
 
     #[error("Serialize error: {0}")]
     SerializeError(#[from] serde_json::Error),
+
+    #[error("IO error: {0}")]
+    IoError(#[from] io::Error),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913

@@ -63,7 +63,13 @@ function App() {
             >
               Add
             </Button>
-            <Button>Update All</Button>
+            <Button
+              onClick={async () => {
+                console.log(await invoke('get_config'));
+              }}
+            >
+              Update All
+            </Button>
           </div>
         </div>
       </MainLayout>
