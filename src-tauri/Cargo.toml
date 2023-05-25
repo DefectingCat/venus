@@ -25,6 +25,7 @@ env_logger = "0.10.0"
 thiserror = "1.0.40"
 base64 = "0.21.1"
 serde_derive = "1.0.163"
+toml = "0.4.6"
 
 [features]
 # by default Tauri runs in production mode

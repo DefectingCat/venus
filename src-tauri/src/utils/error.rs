@@ -13,7 +13,7 @@ pub enum VError {
     #[error("Base64 decode error: {0}")]
     DecodeError(#[from] DecodeError),
 
-    #[error("Serialize error: {0}")]
+    #[error("Serialize json error: {0}")]
     SerializeError(#[from] serde_json::Error),
 
     #[error("IO error: {0}")]
@@ -24,6 +24,9 @@ pub enum VError {
 
     #[error("Poison error: {0}")]
     PoisonError(String),
+
+    #[error("Serializer toml error: {0}")]
+    TomlError(#[from] toml::ser::Error),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913

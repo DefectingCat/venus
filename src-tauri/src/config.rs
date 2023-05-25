@@ -1,9 +1,9 @@
-use std::fs::File;
+use std::fs::OpenOptions;
 use std::path::PathBuf;
+use std::{fs::File, io::Write};
 
-use log::debug;
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use log::warn;
+use serde_derive::{Deserialize, Serialize};
 use tauri::AppHandle;
 
 use crate::utils::error::VResult;
@@ -192,8 +192,8 @@ pub struct Other {}
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Subscription {
-    name: String,
-    url: String,
+    pub name: String,
+    pub url: String,
 }
 
 // V2rayR config
@@ -204,13 +204,14 @@ pub struct RConfig {
     pub nodes: Vec<Node>,
 }
 
-// Core config and global stats
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VConfig {
     pub core_status: CoreStatus,
     pub core: Option<CoreConfig>,
     pub rua: RConfig,
+    pub core_path: PathBuf,
+    pub rua_path: PathBuf,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -220,6 +221,7 @@ pub enum CoreStatus {
     Stopped(String),
 }
 
+// Core config and global stats
 impl VConfig {
     pub fn new() -> Self {
         use CoreStatus::*;
@@ -233,21 +235,64 @@ impl VConfig {
             core_status: Stopped("Stopped".to_owned()),
             core: None,
             rua: r_config,
+            core_path: PathBuf::new(),
+            rua_path: PathBuf::new(),
         }
     }
 
-    /// Reload core config file to VConfig
-    pub fn reload_core(&mut self, handle: AppHandle) -> VResult<()> {
-        let resource_path = handle
-            .path_resolver()
+    pub fn init(&mut self, handle: &AppHandle) -> VResult<()> {
+        let resolver = handle.path_resolver();
+        let core_path = resolver
             .resolve_resource("resources/config.json")
             .expect("can not found config file");
-        let core_file = File::open(resource_path)?;
-        debug!("{core_file:?}");
+        let rua_path = resolver
+            .resolve_resource("resources/config.toml")
+            .expect("can not found rua config file");
+        self.core_path = core_path;
+        self.rua_path = rua_path;
+        Ok(())
+    }
+
+    /// Reload core and rua config from file
+    pub fn reload(&mut self) -> VResult<()> {
+        self.reload_core()?;
+        self.reload_rua()?;
+        Ok(())
+    }
+
+    pub fn reload_rua(&mut self) -> VResult<()> {
+        let config_file = File::open(&self.rua_path)?;
+        let rua_config: RConfig = serde_json::from_reader(config_file)?;
+        self.rua = rua_config;
+        Ok(())
+    }
+
+    /// Reload core config file to VConfig
+    pub fn reload_core(&mut self) -> VResult<()> {
+        let core_file = File::open(&self.core_path)?;
         let core_config: CoreConfig = serde_json::from_reader(core_file)?;
         self.core = Some(core_config);
         Ok(())
     }
 
-    // pub fn write_core(&mut self) {}
+    ///  Write core config to config file
+    pub fn write_core(&mut self) -> VResult<()> {
+        let config = if let Some(c) = &self.core {
+            // serde_json::to_string(&c)?
+            c
+        } else {
+            warn!("core config is empty");
+            return Ok(());
+        };
+        let core_file = OpenOptions::new().write(true).open(&self.core_path)?;
+        serde_json::to_writer(&core_file, config)?;
+        Ok(())
+    }
+
+    pub fn write_rua(&mut self) -> VResult<()> {
+        let mut rua_file = OpenOptions::new().write(true).open(&self.rua_path)?;
+        let rua_string = toml::to_string(&self.rua)?;
+        rua_file.write_all(rua_string.as_bytes())?;
+        Ok(())
+    }
 }

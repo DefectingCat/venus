@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tauri::State;
 
-use crate::config::{Node, VConfig};
+use crate::config::{Node, Subscription, VConfig};
 use crate::utils::error::VResult;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -16,7 +16,7 @@ pub fn current_dir() -> Result<PathBuf, String> {
 
 #[tauri::command]
 pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>>) -> VResult<()> {
-    let result = reqwest::get(url).await?.text().await?;
+    let result = reqwest::get(&url).await?.text().await?;
 
     let mut config = config.lock()?;
 
@@ -36,6 +36,12 @@ pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>
         .collect::<VResult<Vec<_>>>()?;
     dbg!(&subscripition);
     config.rua.nodes = subscripition;
+    config.rua.subscriptions.push(Subscription {
+        name: "test".to_owned(),
+        url,
+    });
+    dbg!(&config);
+    config.write_rua()?;
     Ok(())
 }
 
