@@ -8,7 +8,7 @@ use config::VConfig;
 use env_logger::Env;
 use log::{error, info};
 use std::sync::{Arc, Mutex};
-use tauri::RunEvent;
+use tauri::{Manager, RunEvent};
 
 use crate::{
     commands::common::{add_subscription, get_config},
@@ -53,6 +53,10 @@ fn main() {
                 .expect("can not lock config")
                 .init(&app.handle())
                 .expect("can not init core config");
+
+            app.listen_global("ready", |event| {
+                info!("Got front ready event");
+            });
 
             Ok(())
         })

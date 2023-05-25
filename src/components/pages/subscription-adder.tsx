@@ -54,7 +54,6 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
         disabled: !subscripition.url || status === 'error',
       }}
     >
-      test
       <div className="flex items-center mb-2 mr-2">
         <div className="w-14">Name: </div>
         <div className="relative">
