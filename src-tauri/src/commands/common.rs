@@ -26,7 +26,7 @@ pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>
     let subscripition = general_purpose::STANDARD.decode(result)?;
     let subscripition = String::from_utf8_lossy(&subscripition).to_string();
     // Serizlize outbound nodes to json
-    let subscripition = subscripition
+    let mut subscripition = subscripition
         .split('\n')
         .filter(|line| !line.is_empty())
         .map(|line| {
@@ -37,11 +37,26 @@ pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>
         })
         .collect::<VResult<Vec<_>>>()?;
     debug!("{subscripition:?}");
-    config.rua.nodes = subscripition;
-    config.rua.subscriptions.push(Subscription {
+
+    // Write subscription and nodes to config file
+    let nodes = config.rua.nodes.take();
+    if let Some(mut nodes) = nodes {
+        nodes.append(&mut subscripition);
+        config.rua.nodes = Some(nodes);
+    } else {
+        config.rua.nodes = Some(subscripition)
+    };
+    let sub = Subscription {
         name: "test".to_owned(),
         url,
-    });
+    };
+    let rua_subs = config.rua.subscriptions.take();
+    if let Some(mut subscriptions) = rua_subs {
+        subscriptions.push(sub);
+        config.rua.subscriptions = Some(subscriptions);
+    } else {
+        config.rua.subscriptions = Some(vec![sub])
+    }
     config.write_rua()?;
     Ok(())
 }
@@ -50,7 +65,6 @@ pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>
 pub fn get_rua_nodes(state: State<'_, ConfigState>) -> VResult<String> {
     let config = state.lock()?;
     let nodes = serde_json::to_string(&config.rua.nodes)?;
-    dbg!(&nodes);
     Ok(nodes)
 }
 

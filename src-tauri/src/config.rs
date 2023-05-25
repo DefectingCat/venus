@@ -202,8 +202,8 @@ pub struct Subscription {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RConfig {
-    pub subscriptions: Vec<Subscription>,
-    pub nodes: Vec<Node>,
+    pub subscriptions: Option<Vec<Subscription>>,
+    pub nodes: Option<Vec<Node>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -231,8 +231,8 @@ impl VConfig {
         use CoreStatus::*;
 
         let r_config = RConfig {
-            subscriptions: vec![],
-            nodes: vec![],
+            subscriptions: Some(vec![]),
+            nodes: Some(vec![]),
         };
 
         Self {
