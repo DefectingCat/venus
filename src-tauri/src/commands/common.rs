@@ -1,8 +1,10 @@
-use base64::engine::general_purpose;
-use base64::Engine;
 use std::env;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+
+use base64::engine::general_purpose;
+use base64::Engine;
+use log::debug;
 use tauri::State;
 
 use crate::config::{Node, Subscription, VConfig};
@@ -34,13 +36,12 @@ pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>
             Ok(serde_json::from_str::<Node>(&line)?)
         })
         .collect::<VResult<Vec<_>>>()?;
-    dbg!(&subscripition);
+    debug!("{subscripition:?}");
     config.rua.nodes = subscripition;
     config.rua.subscriptions.push(Subscription {
         name: "test".to_owned(),
         url,
     });
-    dbg!(&config);
     config.write_rua()?;
     Ok(())
 }
