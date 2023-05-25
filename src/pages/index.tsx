@@ -21,14 +21,6 @@ function App() {
         <div>
           <Title.h2>Subscription</Title.h2>
           <div className="flex items-center">
-            {/* <Button */}
-            {/*   disabled={!subscripition || status === 'error'} */}
-            {/*   onClick={handlAdd} */}
-            {/*   className="mr-2" */}
-            {/*   loading={loading} */}
-            {/* > */}
-            {/*   Add */}
-            {/* </Button> */}
             <Button className="mr-2" onClick={setOpen.setTrue}>
               Add
             </Button>
