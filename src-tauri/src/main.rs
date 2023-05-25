@@ -8,7 +8,7 @@ use config::VConfig;
 use env_logger::Env;
 use log::{error, info};
 use std::sync::{Arc, Mutex};
-use tauri::Manager;
+use tauri::{Manager, RunEvent};
 
 use crate::{
     commands::common::{add_subscription, get_config},
@@ -31,7 +31,7 @@ fn main() {
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 
     info!("Start core");
-    let core = match VCore::build(config.clone()) {
+    let mut core = match VCore::build(config.clone()) {
         Ok(core) => Some(core),
         Err(err) => {
             error!("Core start failed {err:?}");
@@ -56,6 +56,15 @@ fn main() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(move |_app_handle, event| match event {
+            RunEvent::Exit => {}
+            RunEvent::ExitRequested { api, .. } => {
+                if let Some(mut core) = core.take() {
+                    core.exit().expect("")
+                }
+            }
+            _ => {}
+        });
 }

@@ -19,7 +19,7 @@ pub struct VCore {
 fn start_core() -> VResult<CommandChild> {
     // `new_sidecar()` expects just the filename, NOT the whole path like in JavaScript
     let (mut rx, child) = Command::new_sidecar("v2ray")
-        .expect("failed to create `v2ray` binary command")
+        .expect("Failed to create `v2ray` binary command")
         .args(["run", "-c", "resources/config.json"])
         .spawn()
         .expect("Failed to spawn sidecar");
@@ -65,6 +65,14 @@ impl VCore {
         };
         let child = start_core()?;
         self.child = Some(child);
+        Ok(())
+    }
+
+    pub fn exit(&mut self) -> VResult<()> {
+        if let Some(child) = self.child.take() {
+            info!("Exiting core");
+            child.kill()?;
+        };
         Ok(())
     }
 }
