@@ -25,6 +25,12 @@ fn main() {
     // Init config.
     let config = Arc::new(Mutex::new(VConfig::new()));
 
+    let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
+    env_logger::init_from_env(env);
+    info!("starting up.");
+    info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
+
+    info!("Start core");
     let core = match VCore::build(config.clone()) {
         Ok(core) => Some(core),
         Err(err) => {
@@ -32,11 +38,6 @@ fn main() {
             None
         }
     };
-
-    let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
-    env_logger::init_from_env(env);
-    info!("starting up.");
-    info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 
     let config_state = config.clone();
     tauri::Builder::default()
@@ -47,7 +48,6 @@ fn main() {
             get_config
         ])
         .setup(move |app| {
-            info!("Start core");
             config
                 .lock()
                 .expect("can not lock config")
