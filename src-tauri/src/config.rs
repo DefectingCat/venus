@@ -8,7 +8,7 @@ use tauri::AppHandle;
 
 use crate::utils::error::VResult;
 
-/// Subscrition nodes
+/// Subscription nodes
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Node {
@@ -191,10 +191,26 @@ pub struct Other {}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct Subscription {
+    name: String,
+    url: String,
+}
+
+// V2rayR config
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RConfig {
+    pub subscriptions: Vec<Subscription>,
+    pub nodes: Vec<Node>,
+}
+
+// Core config and global stats
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct VConfig {
     pub core_status: CoreStatus,
     pub core: Option<CoreConfig>,
-    pub nodes: Vec<Node>,
+    pub rua: RConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -208,10 +224,15 @@ impl VConfig {
     pub fn new() -> Self {
         use CoreStatus::*;
 
+        let r_config = RConfig {
+            subscriptions: vec![],
+            nodes: vec![],
+        };
+
         Self {
             core_status: Stopped("Stopped".to_owned()),
             core: None,
-            nodes: vec![],
+            rua: r_config,
         }
     }
 

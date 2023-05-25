@@ -35,7 +35,7 @@ pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>
         })
         .collect::<VResult<Vec<_>>>()?;
     dbg!(&subscripition);
-    config.nodes = subscripition;
+    config.rua.nodes = subscripition;
     Ok(())
 }
 

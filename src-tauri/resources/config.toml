@@ -1,0 +1,18 @@
+[[subscriptions]]
+# name = ''
+# url = ''
+
+[[nodes]]
+# v = ''
+# ps = ''
+# add = ''
+# port = ''
+# id = ''
+# aid = ''
+# net = ''
+# type = ''
+# host = ''
+# path = ''
+# tls = ''
+# sni = ''
+# alpn = ''
