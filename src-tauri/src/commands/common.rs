@@ -7,7 +7,7 @@ use base64::Engine;
 use log::debug;
 use tauri::State;
 
-use crate::config::{Node, Subscription, VConfig};
+use crate::config::{ConfigState, Node, Subscription, VConfig};
 use crate::utils::error::VResult;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -47,7 +47,14 @@ pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>
 }
 
 #[tauri::command]
-pub fn get_config(state: State<'_, Arc<Mutex<VConfig>>>) -> VResult<String> {
+pub fn get_rua_nodes(state: State<'_, ConfigState>) -> VResult<String> {
+    let config = state.lock()?;
+    let nodes = serde_json::to_string(&config.rua.nodes)?;
+    Ok(nodes)
+}
+
+#[tauri::command]
+pub fn get_config(state: State<'_, ConfigState>) -> VResult<String> {
     let config = serde_json::to_string(state.inner())?;
     Ok(config)
 }

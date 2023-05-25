@@ -1,5 +1,6 @@
 use std::fs::OpenOptions;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use std::{fs::File, io::Write};
 
 use log::warn;
@@ -220,6 +221,8 @@ pub enum CoreStatus {
     Restarting(String),
     Stopped(String),
 }
+
+pub type ConfigState = Arc<Mutex<VConfig>>;
 
 // Core config and global stats
 impl VConfig {

@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex};
 use tauri::{Manager, RunEvent};
 
 use crate::{
-    commands::common::{add_subscription, get_config},
+    commands::common::{add_subscription, get_config, get_rua_nodes},
     core::VCore,
 };
 
@@ -45,16 +45,16 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             current_dir,
             add_subscription,
+            get_rua_nodes,
             get_config
         ])
         .setup(move |app| {
+            let mut config = config.lock().expect("can not lock config");
             config
-                .lock()
-                .expect("can not lock config")
                 .init(&app.handle())
                 .expect("can not init core config");
 
-            app.listen_global("ready", |event| {
+            app.listen_global("ready", |_e| {
                 info!("Got front ready event");
             });
 
