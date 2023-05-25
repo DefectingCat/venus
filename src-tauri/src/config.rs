@@ -240,6 +240,7 @@ impl VConfig {
         }
     }
 
+    /// Re-read config from file
     pub fn init(&mut self, handle: &AppHandle) -> VResult<()> {
         let resolver = handle.path_resolver();
         let core_path = resolver

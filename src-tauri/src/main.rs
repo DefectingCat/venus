@@ -8,7 +8,7 @@ use config::VConfig;
 use env_logger::Env;
 use log::{error, info};
 use std::sync::{Arc, Mutex};
-use tauri::{Manager, RunEvent};
+use tauri::RunEvent;
 
 use crate::{
     commands::common::{add_subscription, get_config},
@@ -61,6 +61,7 @@ fn main() {
         .run(move |_app_handle, event| match event {
             RunEvent::Exit => {}
             RunEvent::ExitRequested { api, .. } => {
+                let _api = api;
                 if let Some(mut core) = core.take() {
                     core.exit().expect("")
                 }
