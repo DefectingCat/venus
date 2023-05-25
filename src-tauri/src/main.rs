@@ -6,7 +6,7 @@
 use commands::common::current_dir;
 use config::VConfig;
 use env_logger::Env;
-use log::info;
+use log::{error, info};
 use std::sync::{Arc, Mutex};
 
 use crate::{
@@ -23,7 +23,10 @@ mod utils;
 fn main() {
     // Init config.
     let config = Arc::new(Mutex::new(VConfig::new()));
-    let core = VCore::build().unwrap();
+
+    if let Err(err) = VCore::build(config.clone()) {
+        error!("Core start failed {err:?}");
+    }
 
     let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
     env_logger::init_from_env(env);
@@ -32,7 +35,7 @@ fn main() {
 
     let config_state = config.clone();
     tauri::Builder::default()
-        .manage(config)
+        .manage(config_state)
         .invoke_handler(tauri::generate_handler![
             current_dir,
             add_subscription,
@@ -40,7 +43,7 @@ fn main() {
         ])
         .setup(move |app| {
             info!("Start core");
-            config_state
+            config
                 .lock()
                 .expect("can not lock config")
                 .reload_core(app.handle())
