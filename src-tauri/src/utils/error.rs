@@ -26,7 +26,10 @@ pub enum VError {
     PoisonError(String),
 
     #[error("Serializer toml error: {0}")]
-    TomlError(#[from] toml::ser::Error),
+    TomlSerError(#[from] toml::ser::Error),
+
+    #[error("Deserializer toml error: {0}")]
+    TomlDeError(#[from] toml::de::Error),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913

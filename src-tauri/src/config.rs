@@ -1,4 +1,5 @@
 use std::fs::OpenOptions;
+use std::io::Read;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::{fs::File, io::Write};
@@ -254,6 +255,7 @@ impl VConfig {
             .expect("can not found rua config file");
         self.core_path = core_path;
         self.rua_path = rua_path;
+        self.reload()?;
         Ok(())
     }
 
@@ -265,8 +267,10 @@ impl VConfig {
     }
 
     pub fn reload_rua(&mut self) -> VResult<()> {
-        let config_file = File::open(&self.rua_path)?;
-        let rua_config: RConfig = serde_json::from_reader(config_file)?;
+        let mut config_file = File::open(&self.rua_path)?;
+        let mut buffer = String::new();
+        config_file.read_to_string(&mut buffer)?;
+        let rua_config = toml::from_str::<RConfig>(&buffer)?;
         self.rua = rua_config;
         Ok(())
     }
@@ -282,7 +286,6 @@ impl VConfig {
     ///  Write core config to config file
     pub fn write_core(&mut self) -> VResult<()> {
         let config = if let Some(c) = &self.core {
-            // serde_json::to_string(&c)?
             c
         } else {
             warn!("core config is empty");

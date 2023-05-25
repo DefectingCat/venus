@@ -50,6 +50,7 @@ pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>
 pub fn get_rua_nodes(state: State<'_, ConfigState>) -> VResult<String> {
     let config = state.lock()?;
     let nodes = serde_json::to_string(&config.rua.nodes)?;
+    dbg!(&nodes);
     Ok(nodes)
 }
 

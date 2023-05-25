@@ -5,6 +5,8 @@ import 'modern-normalize';
 import { ThemeProvider } from 'next-themes';
 import ThemeSwitcher from 'components/theme-switcher';
 import { useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/tauri';
+import { message } from 'antd';
 
 // This default export is required in a new `pages/_app.js` file.
 export default function MyApp({ Component, pageProps }: AppProps) {
@@ -18,6 +20,13 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       );
 
       emit('ready');
+
+      try {
+        const nodes = await invoke('get_rua_nodes');
+        console.log(nodes);
+      } catch (err) {
+        message.error('Get nodes failed');
+      }
     })();
 
     return () => {

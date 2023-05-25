@@ -27,7 +27,7 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
   const handlAdd = async () => {
     try {
       setLoading.setTrue();
-      await invoke('add_subscription', { url: subscripition });
+      await invoke('add_subscription', { url: subscripition.url });
       message.success('Add subscripition success');
     } catch (err) {
       console.error(err);
