@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 
-interface Subscription {
+export interface Subscription {
   name: string;
   url: string;
 }
-interface Node {
+export interface Node {
   v: string;
   // Node name
   ps: string;

@@ -3,8 +3,11 @@ import { useBoolean } from 'ahooks';
 import { Input, Modal, message } from 'antd';
 import { ChangeEventHandler, useState } from 'react';
 import { URL_VALID } from 'utils/consts';
+import useStore, { Node } from 'store';
 
 const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
+  const { updateNodes, updateSubscription } = useStore();
+
   const [open, setOpen] = useBoolean(true);
   // Add subscripition
   const [subscripition, setSubscripiton] = useState({
@@ -29,6 +32,9 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
       setLoading.setTrue();
       await invoke('add_subscription', { url: subscripition.url });
       message.success('Add subscripition success');
+      const nodes = await invoke<Node[]>('get_rua_nodes');
+      updateNodes(nodes);
+      setOpen.setFalse();
     } catch (err) {
       console.error(err);
       message.error(`Failed to add subscripition ${err?.toString()}`);
