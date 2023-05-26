@@ -3,10 +3,10 @@ import { useBoolean } from 'ahooks';
 import { Input, Modal, message } from 'antd';
 import { ChangeEventHandler, useState } from 'react';
 import { URL_VALID } from 'utils/consts';
-import useStore, { Node } from 'store';
+import useBackend from 'hooks/use-backend';
 
 const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
-  const { updateNodes, updateSubscription } = useStore();
+  const { reloadNodes, reloadSubs } = useBackend();
 
   const [open, setOpen] = useBoolean(true);
   // Add subscripition
@@ -30,10 +30,13 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
   const handlAdd = async () => {
     try {
       setLoading.setTrue();
-      await invoke('add_subscription', { url: subscripition.url });
+      await invoke('add_subscription', {
+        ...subscripition,
+        name: subscripition.name || 'Unnamed',
+      });
       message.success('Add subscripition success');
-      const nodes = await invoke<Node[]>('get_rua_nodes');
-      updateNodes(nodes);
+      await reloadNodes();
+      await reloadSubs();
       setOpen.setFalse();
     } catch (err) {
       console.error(err);

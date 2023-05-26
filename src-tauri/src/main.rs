@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex};
 use tauri::{Manager, RunEvent};
 
 use crate::{
-    commands::common::{add_subscription, get_config, get_rua_nodes},
+    commands::common::{add_subscription, get_config, get_rua_nodes, get_subscriptions},
     core::VCore,
 };
 
@@ -46,6 +46,7 @@ fn main() {
             current_dir,
             add_subscription,
             get_rua_nodes,
+            get_subscriptions,
             get_config
         ])
         .setup(move |app| {

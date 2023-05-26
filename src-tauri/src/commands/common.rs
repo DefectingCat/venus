@@ -17,7 +17,11 @@ pub fn current_dir() -> Result<PathBuf, String> {
 }
 
 #[tauri::command]
-pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>>) -> VResult<()> {
+pub async fn add_subscription(
+    name: String,
+    url: String,
+    config: State<'_, Arc<Mutex<VConfig>>>,
+) -> VResult<()> {
     let result = reqwest::get(&url).await?.text().await?;
 
     let mut config = config.lock()?;
@@ -46,10 +50,7 @@ pub async fn add_subscription(url: String, config: State<'_, Arc<Mutex<VConfig>>
     } else {
         config.rua.nodes = Some(subscripition)
     };
-    let sub = Subscription {
-        name: "test".to_owned(),
-        url,
-    };
+    let sub = Subscription { name, url };
     let rua_subs = config.rua.subscriptions.take();
     if let Some(mut subscriptions) = rua_subs {
         subscriptions.push(sub);
@@ -66,6 +67,13 @@ pub fn get_rua_nodes(state: State<'_, ConfigState>) -> VResult<String> {
     let config = state.lock()?;
     let nodes = serde_json::to_string(&config.rua.nodes)?;
     Ok(nodes)
+}
+
+#[tauri::command]
+pub fn get_subscriptions(state: State<'_, ConfigState>) -> VResult<String> {
+    let config = state.lock()?;
+    let subs = serde_json::to_string(&config.rua.subscriptions)?;
+    Ok(subs)
 }
 
 #[tauri::command]

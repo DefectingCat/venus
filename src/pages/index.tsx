@@ -11,7 +11,7 @@ const SubscriptionAdder = dynamic(
 
 function App() {
   const [open, setOpen] = useBoolean(false);
-  const { nodes } = useStore();
+  const { nodes, subscription } = useStore();
 
   return (
     <>
@@ -27,6 +27,11 @@ function App() {
               Add
             </Button>
             <Button>Update All</Button>
+          </div>
+          <div>
+            {subscription.map((sub) => (
+              <div key={sub.url}>{sub.name}</div>
+            ))}
           </div>
           {/* <div> */}
           {/*   {nodes.map((node) => ( */}
