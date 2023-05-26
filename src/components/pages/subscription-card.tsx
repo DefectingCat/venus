@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import { ReactNode } from 'react';
 import { Subscription } from 'store';
 
 const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
@@ -13,7 +12,9 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
         'flex flex-col'
       )}
     >
-      <div className={clsx('mb-2 text-lg text-gray-800')}>{sub.name}</div>
+      <div className={clsx('mb-2 text-lg text-gray-800', 'dark:text-gray-400')}>
+        {sub.name}
+      </div>
       <div
         className={clsx(
           'text-ellipsis overflow-hidden break-keep',
