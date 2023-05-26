@@ -3,6 +3,7 @@ import { Button } from 'antd';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
+import useStore from 'store';
 
 const SubscriptionAdder = dynamic(
   () => import('components/pages/subscription-adder')
@@ -10,6 +11,7 @@ const SubscriptionAdder = dynamic(
 
 function App() {
   const [open, setOpen] = useBoolean(false);
+  const { nodes } = useStore();
 
   return (
     <>
@@ -26,6 +28,11 @@ function App() {
             </Button>
             <Button>Update All</Button>
           </div>
+          {/* <div> */}
+          {/*   {nodes.map((node) => ( */}
+          {/*     <div key={node.id}>{node.id}</div> */}
+          {/*   ))} */}
+          {/* </div> */}
         </div>
       </MainLayout>
 
