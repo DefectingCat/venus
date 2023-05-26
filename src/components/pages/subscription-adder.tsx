@@ -4,8 +4,10 @@ import { Input, Modal, message } from 'antd';
 import { ChangeEventHandler, useState } from 'react';
 import { URL_VALID } from 'utils/consts';
 import useBackend from 'hooks/use-backend';
+import useStore from 'store';
 
 const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
+  const { subscription: subs } = useStore();
   const { reloadNodes, reloadSubs } = useBackend();
 
   const [open, setOpen] = useBoolean(true);
@@ -30,6 +32,8 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
   const handlAdd = async () => {
     try {
       setLoading.setTrue();
+      const index = subs.findIndex((sub) => sub.url === subscripition.url);
+      if (~index) return message.warning('Subscription already added');
       await invoke('add_subscription', {
         ...subscripition,
         name: subscripition.name || 'Unnamed',
