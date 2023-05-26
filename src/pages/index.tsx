@@ -29,7 +29,7 @@ function App() {
       width: 100,
       render: (id) => (
         <Tooltip placement="topLeft" title={id}>
-          <div className="text-ellipsis overflow-hidden">{id}</div>
+          <div className="w-[100px] text-ellipsis overflow-hidden">{id}</div>
         </Tooltip>
       ),
     },
@@ -42,7 +42,7 @@ function App() {
       },
       render: (addr) => (
         <Tooltip placement="topLeft" title={addr}>
-          <div className="text-ellipsis overflow-hidden">{addr}</div>
+          <div className="w-[400px] text-ellipsis overflow-hidden">{addr}</div>
         </Tooltip>
       ),
     },
@@ -56,7 +56,7 @@ function App() {
       width: 100,
       render: (addr) => (
         <Tooltip placement="topLeft" title={addr}>
-          <div className="text-ellipsis overflow-hidden">{addr}</div>
+          <div className="w-[100px] text-ellipsis overflow-hidden">{addr}</div>
         </Tooltip>
       ),
     },
@@ -98,7 +98,13 @@ function App() {
 
         <div>
           <Title.h2>Nodes</Title.h2>
-          <Table className="flex-1" columns={colums} dataSource={nodes} />
+          <Table
+            pagination={{ pageSize: 100 }}
+            rowKey={(record) => record.add + record.ps}
+            className="flex-1"
+            columns={colums}
+            dataSource={nodes}
+          />
         </div>
       </MainLayout>
 
