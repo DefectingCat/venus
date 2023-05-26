@@ -1,6 +1,7 @@
 import { useBoolean } from 'ahooks';
-import type { ColumnsType } from 'antd/es/table';
 import { Button, Table, Tooltip } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
@@ -29,7 +30,14 @@ function App() {
       width: 100,
       render: (id) => (
         <Tooltip placement="topLeft" title={id}>
-          <div className="w-[100px] text-ellipsis overflow-hidden">{id}</div>
+          <div
+            style={{
+              width: 100 - 32,
+            }}
+            className={clsx('text-ellipsis', 'break-keep overflow-hidden')}
+          >
+            {id}
+          </div>
         </Tooltip>
       ),
     },
@@ -101,7 +109,6 @@ function App() {
           <Table
             pagination={{ pageSize: 100 }}
             rowKey={(record) => record.add + record.ps}
-            className="flex-1"
             columns={colums}
             dataSource={nodes}
           />
