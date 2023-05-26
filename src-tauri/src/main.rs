@@ -8,7 +8,7 @@ use config::VConfig;
 use env_logger::Env;
 use log::{error, info};
 use std::sync::{Arc, Mutex};
-use tauri::{Manager, RunEvent};
+use tauri::{Manager, RunEvent, WindowEvent};
 
 use crate::{
     commands::common::{add_subscription, get_config, get_rua_nodes, get_subscriptions},
@@ -63,13 +63,23 @@ fn main() {
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(move |_app_handle, event| match event {
-            RunEvent::Exit => {}
-            RunEvent::ExitRequested { api, .. } => {
-                let _api = api;
+        .run(move |app, event| match event {
+            RunEvent::Exit => {
                 if let Some(mut core) = core.take() {
                     core.exit().expect("")
                 }
+            }
+            RunEvent::ExitRequested { api, .. } => {
+                let _api = api;
+            }
+            RunEvent::WindowEvent {
+                label,
+                event: WindowEvent::CloseRequested { api, .. },
+                ..
+            } => {
+                let win = app.get_window(label.as_str()).expect("Cannot get window");
+                win.hide().expect("Cannot hide window");
+                api.prevent_close();
             }
             _ => {}
         });
