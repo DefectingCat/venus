@@ -91,7 +91,7 @@ function App() {
           </div>
           <div className="mt-4">
             {subscription.map((sub) => (
-              <SubscriptionCard key={sub.url}>{sub.name}</SubscriptionCard>
+              <SubscriptionCard key={sub.url} sub={sub} />
             ))}
           </div>
         </div>
