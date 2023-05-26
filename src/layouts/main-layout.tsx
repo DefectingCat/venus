@@ -14,7 +14,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       <SideBar />
 
       {/* body */}
-      <div className="p-8 flex-1">{children}</div>
+      <div className="p-8 flex-1 overflow-auto h-full">{children}</div>
     </main>
   );
 };

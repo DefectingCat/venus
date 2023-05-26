@@ -20,7 +20,7 @@ function App() {
   // nodes table
   const colums: ColumnsType<Node> = [
     {
-      title: 'Id',
+      title: 'ID',
       dataIndex: 'id',
       key: 'id',
       ellipsis: {
@@ -29,7 +29,7 @@ function App() {
       width: 100,
       render: (id) => (
         <Tooltip placement="topLeft" title={id}>
-          <div className="w-24 text-ellipsis overflow-hidden">{id}</div>
+          <div className="text-ellipsis overflow-hidden">{id}</div>
         </Tooltip>
       ),
     },
@@ -37,6 +37,14 @@ function App() {
       title: 'Name',
       dataIndex: 'ps',
       key: 'ps',
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (addr) => (
+        <Tooltip placement="topLeft" title={addr}>
+          <div className="text-ellipsis overflow-hidden">{addr}</div>
+        </Tooltip>
+      ),
     },
     {
       title: 'Address',
@@ -48,7 +56,7 @@ function App() {
       width: 100,
       render: (addr) => (
         <Tooltip placement="topLeft" title={addr}>
-          <div className="w-24 text-ellipsis overflow-hidden">{addr}</div>
+          <div className="text-ellipsis overflow-hidden">{addr}</div>
         </Tooltip>
       ),
     },
@@ -56,11 +64,13 @@ function App() {
       title: 'Port',
       dataIndex: 'port',
       key: 'port',
+      width: 80,
     },
     {
       title: 'Type',
       dataIndex: 'type',
       key: 'type',
+      width: 80,
     },
   ];
 
@@ -88,7 +98,7 @@ function App() {
 
         <div>
           <Title.h2>Nodes</Title.h2>
-          <Table columns={colums} dataSource={nodes} />
+          <Table className="flex-1" columns={colums} dataSource={nodes} />
         </div>
       </MainLayout>
 
