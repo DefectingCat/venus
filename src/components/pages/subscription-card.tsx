@@ -8,7 +8,7 @@ const SubscriptionCard = ({ children }: { children: ReactNode }) => {
         'rounded-lg bg-white shadow-gray-50',
         'p-4 cursor-pointer dark:bg-rua-gray-700',
         'hover:shadow-md transition-all',
-        'duration-300 select-none'
+        'duration-300 select-none max-w-[10rem]'
       )}
     >
       {children}

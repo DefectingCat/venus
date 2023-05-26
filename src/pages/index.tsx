@@ -1,9 +1,10 @@
 import { useBoolean } from 'ahooks';
-import { Button } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { Button, Table, Tooltip } from 'antd';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
-import useStore from 'store';
+import useStore, { Node } from 'store';
 
 const SubscriptionAdder = dynamic(
   () => import('components/pages/subscription-adder')
@@ -15,6 +16,53 @@ const SubscriptionCard = dynamic(
 function App() {
   const [open, setOpen] = useBoolean(false);
   const { nodes, subscription } = useStore();
+
+  // nodes table
+  const colums: ColumnsType<Node> = [
+    {
+      title: 'Id',
+      dataIndex: 'id',
+      key: 'id',
+      ellipsis: {
+        showTitle: false,
+      },
+      width: 100,
+      render: (id) => (
+        <Tooltip placement="topLeft" title={id}>
+          <div className="w-24 text-ellipsis overflow-hidden">{id}</div>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Name',
+      dataIndex: 'ps',
+      key: 'ps',
+    },
+    {
+      title: 'Address',
+      dataIndex: 'add',
+      key: 'add',
+      ellipsis: {
+        showTitle: false,
+      },
+      width: 100,
+      render: (addr) => (
+        <Tooltip placement="topLeft" title={addr}>
+          <div className="w-24 text-ellipsis overflow-hidden">{addr}</div>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Port',
+      dataIndex: 'port',
+      key: 'port',
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      key: 'type',
+    },
+  ];
 
   return (
     <>
@@ -36,11 +84,11 @@ function App() {
               <SubscriptionCard key={sub.url}>{sub.name}</SubscriptionCard>
             ))}
           </div>
-          {/* <div> */}
-          {/*   {nodes.map((node) => ( */}
-          {/*     <div key={node.id}>{node.id}</div> */}
-          {/*   ))} */}
-          {/* </div> */}
+        </div>
+
+        <div>
+          <Title.h2>Nodes</Title.h2>
+          <Table columns={colums} dataSource={nodes} />
         </div>
       </MainLayout>
 
