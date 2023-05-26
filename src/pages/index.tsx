@@ -8,6 +8,9 @@ import useStore from 'store';
 const SubscriptionAdder = dynamic(
   () => import('components/pages/subscription-adder')
 );
+const SubscriptionCard = dynamic(
+  () => import('components/pages/subscription-card')
+);
 
 function App() {
   const [open, setOpen] = useBoolean(false);
@@ -28,9 +31,9 @@ function App() {
             </Button>
             <Button>Update All</Button>
           </div>
-          <div>
+          <div className="mt-4">
             {subscription.map((sub) => (
-              <div key={sub.url}>{sub.name}</div>
+              <SubscriptionCard key={sub.url}>{sub.name}</SubscriptionCard>
             ))}
           </div>
           {/* <div> */}
