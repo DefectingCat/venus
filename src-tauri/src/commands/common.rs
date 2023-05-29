@@ -43,18 +43,14 @@ pub async fn add_subscription(
     debug!("{subscripition:?}");
 
     // Write subscription and nodes to config file
-    let nodes = config.rua.nodes.take();
-    if let Some(mut nodes) = nodes {
+    if let Some(nodes) = config.rua.nodes.as_mut() {
         nodes.append(&mut subscripition);
-        config.rua.nodes = Some(nodes);
     } else {
         config.rua.nodes = Some(subscripition)
     };
     let sub = Subscription { name, url };
-    let rua_subs = config.rua.subscriptions.take();
-    if let Some(mut subscriptions) = rua_subs {
+    if let Some(subscriptions) = config.rua.subscriptions.as_mut() {
         subscriptions.push(sub);
-        config.rua.subscriptions = Some(subscriptions);
     } else {
         config.rua.subscriptions = Some(vec![sub])
     }
