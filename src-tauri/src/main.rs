@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex};
 use tauri::{Manager, RunEvent, WindowEvent};
 
 use crate::{
-    commands::common::{add_subscription, get_config, get_rua_nodes, get_subscriptions},
+    commands::common::{add_subscription, get_rua_nodes, get_subscriptions},
     core::VCore,
 };
 
@@ -47,7 +47,6 @@ fn main() {
             add_subscription,
             get_rua_nodes,
             get_subscriptions,
-            get_config
         ])
         .setup(move |app| {
             let mut config = config.lock().expect("can not lock config");

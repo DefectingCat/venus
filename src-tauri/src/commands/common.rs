@@ -71,9 +71,3 @@ pub fn get_subscriptions(state: State<'_, ConfigState>) -> VResult<String> {
     let subs = serde_json::to_string(&config.rua.subscriptions)?;
     Ok(subs)
 }
-
-#[tauri::command]
-pub fn get_config(state: State<'_, ConfigState>) -> VResult<String> {
-    let config = serde_json::to_string(state.inner())?;
-    Ok(config)
-}

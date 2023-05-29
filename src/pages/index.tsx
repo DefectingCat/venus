@@ -50,7 +50,14 @@ function App() {
       },
       render: (addr) => (
         <Tooltip placement="topLeft" title={addr}>
-          <div className="w-[400px] text-ellipsis overflow-hidden">{addr}</div>
+          <div
+            style={{
+              width: 300 - 32,
+            }}
+            className="text-ellipsis overflow-hidden"
+          >
+            {addr}
+          </div>
         </Tooltip>
       ),
     },
@@ -64,7 +71,14 @@ function App() {
       width: 100,
       render: (addr) => (
         <Tooltip placement="topLeft" title={addr}>
-          <div className="w-[100px] text-ellipsis overflow-hidden">{addr}</div>
+          <div
+            style={{
+              width: 100 - 32,
+            }}
+            className="text-ellipsis overflow-hidden"
+          >
+            {addr}
+          </div>
         </Tooltip>
       ),
     },
