@@ -8,7 +8,9 @@ use config::VConfig;
 use env_logger::Env;
 use log::{error, info};
 use std::sync::{Arc, Mutex};
-use tauri::{Manager, RunEvent, WindowEvent};
+use tauri::{
+    CustomMenuItem, Manager, RunEvent, SystemTray, SystemTrayMenu, SystemTrayMenuItem, WindowEvent,
+};
 
 use crate::{
     commands::common::{add_subscription, get_rua_nodes, get_subscriptions},
@@ -22,6 +24,14 @@ mod core;
 mod utils;
 
 fn main() {
+    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+    let hide = CustomMenuItem::new("hide".to_string(), "Hide");
+    let tray_menu = SystemTrayMenu::new()
+        .add_item(quit)
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(hide);
+    let tray = SystemTray::new().with_menu(tray_menu);
+
     // Init config.
     let config = Arc::new(Mutex::new(VConfig::new()));
 
@@ -41,6 +51,7 @@ fn main() {
 
     let config_state = config.clone();
     tauri::Builder::default()
+        .system_tray(tray)
         .manage(config_state)
         .invoke_handler(tauri::generate_handler![
             current_dir,
@@ -83,3 +94,5 @@ fn main() {
             _ => {}
         });
 }
+
+// fn tray_config() {}
