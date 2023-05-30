@@ -65,7 +65,7 @@ fn main() {
                 let item_handle = app.tray_handle().get_item(&id);
                 match id.as_str() {
                     "quit" => {
-                        todo!()
+                        // app.exit(1);
                     }
                     "hide" => {
                         let main_window = app.get_window("main").expect("Can not get main window");
