@@ -33,6 +33,7 @@ pub struct Node {
     pub tls: String,
     pub sni: String,
     pub alpn: String,
+    // Add by manually
     pub subs: Option<String>,
     pub delay: Option<String>,
 }

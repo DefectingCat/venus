@@ -18,6 +18,7 @@ use crate::{
         common::{get_rua_nodes, get_subscriptions},
         subs::add_subscription,
     },
+    config::CoreStatus,
     core::VCore,
 };
 
@@ -46,7 +47,14 @@ fn main() {
 
     info!("Start core");
     let core = match VCore::build() {
-        Ok(core) => Arc::new(Mutex::new(Some(core))),
+        Ok(core) => {
+            let config = config.clone();
+            async_runtime::spawn(async move {
+                let mut config = config.lock().await;
+                config.core_status = CoreStatus::Started;
+            });
+            Arc::new(Mutex::new(Some(core)))
+        }
         Err(err) => {
             error!("Core start failed {err:?}");
             Arc::new(Mutex::new(None))
