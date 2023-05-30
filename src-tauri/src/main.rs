@@ -42,18 +42,19 @@ fn main() {
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 
     info!("Start core");
-    let mut core = match VCore::build(config.clone()) {
-        Ok(core) => Some(core),
+    let core = match VCore::build(config.clone()) {
+        Ok(core) => Arc::new(Mutex::new(Some(core))),
         Err(err) => {
             error!("Core start failed {err:?}");
-            None
+            Arc::new(Mutex::new(None))
         }
     };
 
     let config_state = config.clone();
+    let tray_core = core.clone();
     tauri::Builder::default()
         .system_tray(tray)
-        .on_system_tray_event(|app, event| match event {
+        .on_system_tray_event(move |app, event| match event {
             SystemTrayEvent::LeftClick { .. } => {}
             SystemTrayEvent::DoubleClick { .. } => {
                 let windows = app.windows();
@@ -65,7 +66,11 @@ fn main() {
                 let item_handle = app.tray_handle().get_item(&id);
                 match id.as_str() {
                     "quit" => {
-                        // app.exit(1);
+                        let mut core = tray_core.lock().expect("");
+                        if let Some(core) = core.as_mut() {
+                            core.exit().expect("")
+                        }
+                        app.exit(0);
                     }
                     "hide" => {
                         let main_window = app.get_window("main").expect("Can not get main window");
@@ -112,7 +117,8 @@ fn main() {
         .expect("error while running tauri application")
         .run(move |app, event| match event {
             RunEvent::Exit => {
-                if let Some(mut core) = core.take() {
+                let mut core = core.lock().expect("");
+                if let Some(core) = core.as_mut() {
                     core.exit().expect("")
                 }
             }

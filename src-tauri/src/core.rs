@@ -13,6 +13,7 @@ use crate::{config::CoreStatus::*, config::VConfig, utils::error::VResult};
 
 #[derive(Debug)]
 pub struct VCore {
+    // Slidecare process
     pub child: Option<CommandChild>,
 }
 
@@ -39,6 +40,7 @@ fn start_core() -> VResult<CommandChild> {
             }
         }
     });
+
     Ok(child)
 }
 
