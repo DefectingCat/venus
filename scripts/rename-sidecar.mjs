@@ -1,4 +1,3 @@
-import { error } from 'console';
 import { execa } from 'execa';
 import fs from 'fs';
 

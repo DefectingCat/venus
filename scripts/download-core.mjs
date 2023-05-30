@@ -1,4 +1,10 @@
 import { error, log } from 'console';
+import * as url from 'url';
+import fs from 'fs';
+import { mkdir } from 'fs/promises';
+import path from 'path';
+import { Readable } from 'stream';
+import { finished } from 'stream/promises';
 
 const platformMap = {
   darwin: 'macos',
@@ -6,6 +12,18 @@ const platformMap = {
 const archMap = {
   arm64: 'arm64-v8a',
 };
+
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+log(__filename, __dirname);
+
+async function downloadFile(url, filename = '.') {
+  const res = await fetch(url);
+  if (!fs.existsSync('downloads')) await mkdir('downloads');
+  const destination = path.resolve('./downloads', filename);
+  const fileStream = fs.createWriteStream(destination, { flags: 'wx' });
+  await finished(Readable.fromWeb(res.body).pipe(fileStream));
+}
 
 async function main() {
   const { arch, platform } = process;
@@ -25,6 +43,8 @@ async function main() {
     }, '');
     if (!url) throw new Error('Cannot find taget url');
     log('Start downloading: ', url);
+    await downloadFile(url, targetName);
+    log(`Download ${targetName} sucess`);
   } catch (err) {
     error(err);
   }
