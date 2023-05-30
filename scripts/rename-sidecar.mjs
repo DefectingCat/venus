@@ -7,7 +7,7 @@ if (process.platform === 'win32') {
   extension = '.exe';
 }
 
-async function main() {
+export async function main() {
   const rustInfo = (await execa('rustc', ['-vV'])).stdout;
   const targetTriple = /host: (\S+)/g.exec(rustInfo)[1];
   if (!targetTriple) {
@@ -19,6 +19,6 @@ async function main() {
   console.log(`Sucess rename binaries ${file} ${tripleFile}`);
 }
 
-main().catch((e) => {
-  error(e);
-});
+// main().catch((e) => {
+//   error(e);
+// });
