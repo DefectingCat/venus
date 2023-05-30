@@ -9,7 +9,8 @@ use env_logger::Env;
 use log::{error, info};
 use std::sync::{Arc, Mutex};
 use tauri::{
-    CustomMenuItem, Manager, RunEvent, SystemTray, SystemTrayMenu, SystemTrayMenuItem, WindowEvent,
+    CustomMenuItem, Manager, RunEvent, SystemTray, SystemTrayEvent, SystemTrayMenu,
+    SystemTrayMenuItem, WindowEvent,
 };
 
 use crate::{
@@ -27,9 +28,9 @@ fn main() {
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
     let hide = CustomMenuItem::new("hide".to_string(), "Hide");
     let tray_menu = SystemTrayMenu::new()
-        .add_item(quit)
+        .add_item(hide)
         .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(hide);
+        .add_item(quit);
     let tray = SystemTray::new().with_menu(tray_menu);
 
     // Init config.
@@ -52,6 +53,32 @@ fn main() {
     let config_state = config.clone();
     tauri::Builder::default()
         .system_tray(tray)
+        .on_system_tray_event(|app, event| match event {
+            SystemTrayEvent::LeftClick { .. } => {}
+            SystemTrayEvent::DoubleClick { .. } => {
+                let windows = app.windows();
+                for (_, window) in windows {
+                    window.show().unwrap()
+                }
+            }
+            SystemTrayEvent::MenuItemClick { tray_id, id, .. } => {
+                let item_handle = app.tray_handle().get_item(&id);
+                match id.as_str() {
+                    "quit" => {
+                        todo!()
+                    }
+                    "hide" => {
+                        let main_window = app.get_window("main").expect("Can not get main window");
+                        main_window.hide().expect("Can not hide main window");
+                        item_handle
+                            .set_title("Show")
+                            .expect("Can not set title to menu item");
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
+        })
         .manage(config_state)
         .invoke_handler(tauri::generate_handler![
             current_dir,
