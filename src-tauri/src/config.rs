@@ -1,12 +1,12 @@
 use std::fs::OpenOptions;
 use std::io::Read;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::{fs::File, io::Write};
 
 use log::warn;
 use serde_derive::{Deserialize, Serialize};
-use tauri::AppHandle;
+use tokio::sync::Mutex;
 
 use crate::utils::error::VResult;
 
@@ -33,6 +33,8 @@ pub struct Node {
     pub tls: String,
     pub sni: String,
     pub alpn: String,
+    pub subs: Option<String>,
+    pub delay: Option<String>,
 }
 
 /// Core config root
@@ -256,14 +258,7 @@ impl VConfig {
     }
 
     /// Re-read config from file
-    pub fn init(&mut self, handle: &AppHandle) -> VResult<()> {
-        let resolver = handle.path_resolver();
-        let core_path = resolver
-            .resolve_resource("resources/config.json")
-            .expect("can not found config file");
-        let rua_path = resolver
-            .resolve_resource("resources/config.toml")
-            .expect("can not found rua config file");
+    pub fn init(&mut self, core_path: PathBuf, rua_path: PathBuf) -> VResult<()> {
         self.core_path = core_path;
         self.rua_path = rua_path;
         self.reload()?;

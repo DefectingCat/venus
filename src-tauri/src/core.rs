@@ -1,7 +1,4 @@
-use std::{
-    env,
-    sync::{Arc, Mutex},
-};
+use std::env;
 
 use log::{error, info, warn};
 use tauri::{
@@ -9,7 +6,7 @@ use tauri::{
     async_runtime,
 };
 
-use crate::{config::CoreStatus::*, config::VConfig, utils::error::VResult};
+use crate::utils::error::VResult;
 
 #[derive(Debug)]
 pub struct VCore {
@@ -45,12 +42,10 @@ fn start_core() -> VResult<CommandChild> {
 }
 
 impl VCore {
-    pub fn build(config: Arc<Mutex<VConfig>>) -> VResult<Self> {
-        let mut config = config.lock()?;
+    pub fn build() -> VResult<Self> {
         // Set v2ray assert location with environment
         env::set_var("V2RAY_LOCATION_ASSET", "resources");
         let child = start_core()?;
-        config.core_status = Started;
 
         Ok(Self { child: Some(child) })
     }

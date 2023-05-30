@@ -70,35 +70,28 @@ function App() {
       dataIndex: 'port',
       key: 'port',
       width: 80,
+      ellipsis: true,
     },
     {
       title: 'Net Type',
       dataIndex: 'net',
       key: 'net',
       width: 80,
-      render: (type) => (
-        <Tooltip placement="topLeft" title={type}>
-          <div className="text-ellipsis overflow-hidden">{type}</div>
-        </Tooltip>
-      ),
+      ellipsis: true,
     },
     {
       title: 'TLS',
       dataIndex: 'tls',
       key: 'tls',
+      width: 80,
+      ellipsis: true,
+    },
+    {
+      title: 'Subscription',
+      dataIndex: 'subs',
+      key: 'subs',
       width: 100,
-      render: (tls) => (
-        <Tooltip placement="topLeft" title={tls}>
-          <div
-            style={{
-              width: 100 - 32,
-            }}
-            className="text-ellipsis overflow-hidden"
-          >
-            {tls}
-          </div>
-        </Tooltip>
-      ),
+      ellipsis: true,
     },
   ];
 

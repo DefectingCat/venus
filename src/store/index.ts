@@ -22,6 +22,8 @@ export interface Node {
   tls: string;
   sni: string;
   alpn: string;
+  // Subscription group
+  subs: string;
 }
 interface VConfig {
   subscription: Subscription[];

@@ -9,12 +9,15 @@ use env_logger::Env;
 use log::{error, info};
 use std::sync::{Arc, Mutex};
 use tauri::{
-    CustomMenuItem, Manager, RunEvent, SystemTray, SystemTrayEvent, SystemTrayMenu,
+    async_runtime, CustomMenuItem, Manager, RunEvent, SystemTray, SystemTrayEvent, SystemTrayMenu,
     SystemTrayMenuItem, WindowEvent,
 };
 
 use crate::{
-    commands::common::{add_subscription, get_rua_nodes, get_subscriptions},
+    commands::{
+        common::{get_rua_nodes, get_subscriptions},
+        subs::add_subscription,
+    },
     core::VCore,
 };
 
@@ -34,7 +37,7 @@ fn main() {
     let tray = SystemTray::new().with_menu(tray_menu);
 
     // Init config.
-    let config = Arc::new(Mutex::new(VConfig::new()));
+    let config = Arc::new(tauri::async_runtime::Mutex::new(VConfig::new()));
 
     let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
     env_logger::init_from_env(env);
@@ -42,7 +45,7 @@ fn main() {
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 
     info!("Start core");
-    let core = match VCore::build(config.clone()) {
+    let core = match VCore::build() {
         Ok(core) => Arc::new(Mutex::new(Some(core))),
         Err(err) => {
             error!("Core start failed {err:?}");
@@ -102,10 +105,19 @@ fn main() {
             get_subscriptions,
         ])
         .setup(move |app| {
-            let mut config = config.lock().expect("can not lock config");
-            config
-                .init(&app.handle())
-                .expect("can not init core config");
+            let resolver = app.handle().path_resolver();
+            let core_path = resolver
+                .resolve_resource("resources/config.json")
+                .expect("can not found config file");
+            let rua_path = resolver
+                .resolve_resource("resources/config.toml")
+                .expect("can not found rua config file");
+            async_runtime::spawn(async move {
+                let mut config = config.lock().await;
+                config
+                    .init(core_path, rua_path)
+                    .expect("can not init core config");
+            });
 
             app.listen_global("ready", |_e| {
                 info!("Got front ready event");
