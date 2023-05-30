@@ -218,9 +218,19 @@ pub struct VConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum CoreStatus {
-    Started(String),
-    Restarting(String),
-    Stopped(String),
+    Started,
+    Restarting,
+    Stopped,
+}
+
+impl CoreStatus {
+    fn as_str(&self) -> &'static str {
+        match self {
+            CoreStatus::Started => "Started",
+            CoreStatus::Restarting => "Restarting",
+            CoreStatus::Stopped => "Stopped",
+        }
+    }
 }
 
 pub type ConfigState = Arc<Mutex<VConfig>>;
@@ -236,7 +246,7 @@ impl VConfig {
         };
 
         Self {
-            core_status: Stopped("Stopped".to_owned()),
+            core_status: Stopped,
             core: None,
             rua: r_config,
             core_path: PathBuf::new(),

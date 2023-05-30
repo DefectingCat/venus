@@ -48,7 +48,7 @@ impl VCore {
         // Set v2ray assert location with environment
         env::set_var("V2RAY_LOCATION_ASSET", "resources");
         let child = start_core()?;
-        config.core_status = Started("Started".to_owned());
+        config.core_status = Started;
 
         Ok(Self { child: Some(child) })
     }
