@@ -23,6 +23,7 @@ pub struct Node {
     pub id: String,
     // AlertID
     pub aid: String,
+    // Protocol type
     pub net: String,
     // Protocol type
     #[serde(rename = "type")]

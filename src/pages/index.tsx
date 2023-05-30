@@ -17,6 +17,7 @@ const SubscriptionCard = dynamic(
 function App() {
   const [open, setOpen] = useBoolean(false);
   const { nodes, subscription } = useStore();
+  console.log(nodes);
 
   // nodes table
   const colums: ColumnsType<Node> = [
@@ -30,12 +31,7 @@ function App() {
       width: 100,
       render: (id) => (
         <Tooltip placement="topLeft" title={id}>
-          <div
-            style={{
-              width: 100 - 32,
-            }}
-            className={clsx('text-ellipsis', 'break-keep overflow-hidden')}
-          >
+          <div className={clsx('text-ellipsis', 'break-keep overflow-hidden')}>
             {id}
           </div>
         </Tooltip>
@@ -48,16 +44,10 @@ function App() {
       ellipsis: {
         showTitle: false,
       },
+      width: 300,
       render: (addr) => (
         <Tooltip placement="topLeft" title={addr}>
-          <div
-            style={{
-              width: 300 - 32,
-            }}
-            className="text-ellipsis overflow-hidden"
-          >
-            {addr}
-          </div>
+          <div className="text-ellipsis overflow-hidden">{addr}</div>
         </Tooltip>
       ),
     },
@@ -71,14 +61,7 @@ function App() {
       width: 100,
       render: (addr) => (
         <Tooltip placement="topLeft" title={addr}>
-          <div
-            style={{
-              width: 100 - 32,
-            }}
-            className="text-ellipsis overflow-hidden"
-          >
-            {addr}
-          </div>
+          <div className="text-ellipsis overflow-hidden">{addr}</div>
         </Tooltip>
       ),
     },
@@ -89,10 +72,33 @@ function App() {
       width: 80,
     },
     {
-      title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
+      title: 'Net Type',
+      dataIndex: 'net',
+      key: 'net',
       width: 80,
+      render: (type) => (
+        <Tooltip placement="topLeft" title={type}>
+          <div className="text-ellipsis overflow-hidden">{type}</div>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'TLS',
+      dataIndex: 'tls',
+      key: 'tls',
+      width: 100,
+      render: (tls) => (
+        <Tooltip placement="topLeft" title={tls}>
+          <div
+            style={{
+              width: 100 - 32,
+            }}
+            className="text-ellipsis overflow-hidden"
+          >
+            {tls}
+          </div>
+        </Tooltip>
+      ),
     },
   ];
 
@@ -125,6 +131,9 @@ function App() {
             rowKey={(record) => record.add + record.ps}
             columns={colums}
             dataSource={nodes}
+            scroll={{
+              x: 800,
+            }}
           />
         </div>
       </MainLayout>
