@@ -7,10 +7,14 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "v2rayR",
+    "productName": "V2rayR",
     "version": "0.0.1"
   },
   "tauri": {
+    "systemTray": {
+      "iconPath": "icon.png",
+      "iconAsTemplate": true
+    },
     "allowlist": {
       "all": false,
       "shell": {
