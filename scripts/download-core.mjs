@@ -1,9 +1,9 @@
 import { error, log } from 'console';
 import * as url from 'url';
 import fs from 'fs';
-import { mkdir } from 'fs/promises';
+import { mkdir, rm } from 'fs/promises';
 import path from 'path';
-import { Readable } from 'stream';
+import { Readable, Transform } from 'stream';
 import { finished } from 'stream/promises';
 
 const platformMap = {
@@ -19,10 +19,33 @@ log(__filename, __dirname);
 
 async function downloadFile(url, filename = '.') {
   const res = await fetch(url);
-  if (!fs.existsSync('downloads')) await mkdir('downloads');
+  const fileSize = res.headers.get('content-length');
+  log('File size: ', fileSize);
+
+  if (fs.existsSync('downloads')) {
+    await rm('downloads', { recursive: true, force: true });
+  }
+  await mkdir('downloads');
+
   const destination = path.resolve('./downloads', filename);
   const fileStream = fs.createWriteStream(destination, { flags: 'wx' });
-  await finished(Readable.fromWeb(res.body).pipe(fileStream));
+
+  let totalBytes = 0;
+  await finished(
+    Readable.fromWeb(res.body)
+      .pipe(
+        new Transform({
+          transform(chunk, _encoding, callback) {
+            totalBytes += chunk.length;
+            const precent = ((100 * totalBytes) / fileSize).toFixed(2);
+            log(precent);
+            this.push(chunk);
+            callback();
+          },
+        })
+      )
+      .pipe(fileStream)
+  );
 }
 
 async function main() {
