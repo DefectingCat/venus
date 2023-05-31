@@ -1,11 +1,13 @@
 import { error, log } from 'console';
-import * as url from 'url';
+import { execa } from 'execa';
 import fs from 'fs';
 import { mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { Readable, Transform } from 'stream';
 import { finished } from 'stream/promises';
 import kit from 'terminal-kit';
+import * as url from 'url';
+import { reanmeFile } from './rename-sidecar.mjs';
 
 const { terminal } = kit;
 
@@ -77,6 +79,38 @@ async function main() {
     log('Start downloading: ', url);
     await downloadFile(url, targetName);
     log(`Download ${targetName} sucess`);
+
+    log(`Start extract ${targetName}`);
+    log(
+      (await execa('unzip', [`downloads/${targetName}`, '-d', 'downloads/']))
+        .stdout
+    );
+    log('Start copy file');
+    log(
+      'Copy v2ary',
+      (await execa('cp', ['downloads/v2ray', 'src-tauri/binaries/core/']))
+        .stdout
+    );
+    log(
+      'Copy geoip-only-cn-private.dat',
+      (
+        await execa('cp', [
+          'downloads/geoip-only-cn-private.dat',
+          'src-tauri/resources/',
+        ])
+      ).stdout
+    );
+    log(
+      'Copy geosite.dat',
+      (await execa('cp', ['downloads/geosite.dat', 'src-tauri/resources/']))
+        .stdout
+    );
+    log(
+      'Copy geoip.dat',
+      (await execa('cp', ['downloads/geoip.dat', 'src-tauri/resources/']))
+        .stdout
+    );
+    await reanmeFile();
   } catch (err) {
     error(err);
   }

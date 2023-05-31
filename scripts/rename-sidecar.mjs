@@ -6,7 +6,7 @@ if (process.platform === 'win32') {
   extension = '.exe';
 }
 
-export async function main() {
+export async function reanmeFile() {
   const rustInfo = (await execa('rustc', ['-vV'])).stdout;
   const targetTriple = /host: (\S+)/g.exec(rustInfo)[1];
   if (!targetTriple) {
