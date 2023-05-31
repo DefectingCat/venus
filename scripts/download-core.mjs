@@ -18,6 +18,40 @@ const archMap = {
   arm64: 'arm64-v8a',
 };
 
+const darwinCommand = async (filename) => {
+  log(`Start extract ${filename}`);
+  log(
+    (await execa('unzip', [`downloads/${filename}`, '-d', 'downloads/'])).stdout
+  );
+  log('Start copy file');
+  log(
+    'Copy v2ary',
+    (await execa('cp', ['downloads/v2ray', 'src-tauri/binaries/core/'])).stdout
+  );
+  log(
+    'Copy geoip-only-cn-private.dat',
+    (
+      await execa('cp', [
+        'downloads/geoip-only-cn-private.dat',
+        'src-tauri/resources/',
+      ])
+    ).stdout
+  );
+  log(
+    'Copy geosite.dat',
+    (await execa('cp', ['downloads/geosite.dat', 'src-tauri/resources/']))
+      .stdout
+  );
+  log(
+    'Copy geoip.dat',
+    (await execa('cp', ['downloads/geoip.dat', 'src-tauri/resources/'])).stdout
+  );
+};
+const platformCommand = {
+  darwin: darwinCommand,
+  win32: '',
+};
+
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 log(__filename, __dirname);
@@ -80,36 +114,13 @@ async function main() {
     await downloadFile(url, targetName);
     log(`Download ${targetName} sucess`);
 
-    log(`Start extract ${targetName}`);
-    log(
-      (await execa('unzip', [`downloads/${targetName}`, '-d', 'downloads/']))
-        .stdout
-    );
-    log('Start copy file');
-    log(
-      'Copy v2ary',
-      (await execa('cp', ['downloads/v2ray', 'src-tauri/binaries/core/']))
-        .stdout
-    );
-    log(
-      'Copy geoip-only-cn-private.dat',
-      (
-        await execa('cp', [
-          'downloads/geoip-only-cn-private.dat',
-          'src-tauri/resources/',
-        ])
-      ).stdout
-    );
-    log(
-      'Copy geosite.dat',
-      (await execa('cp', ['downloads/geosite.dat', 'src-tauri/resources/']))
-        .stdout
-    );
-    log(
-      'Copy geoip.dat',
-      (await execa('cp', ['downloads/geoip.dat', 'src-tauri/resources/']))
-        .stdout
-    );
+    const command = platformCommand[process.platform];
+    if (!command) {
+      throw new Error(
+        `Cannot found target platform command ${process.platform}`
+      );
+    }
+    await command(targetName);
     await reanmeFile();
   } catch (err) {
     error(err);
