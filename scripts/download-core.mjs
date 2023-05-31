@@ -5,6 +5,9 @@ import { mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { Readable, Transform } from 'stream';
 import { finished } from 'stream/promises';
+import kit from 'terminal-kit';
+
+const { terminal } = kit;
 
 const platformMap = {
   darwin: 'macos',
@@ -30,6 +33,12 @@ async function downloadFile(url, filename = '.') {
   const destination = path.resolve('./downloads', filename);
   const fileStream = fs.createWriteStream(destination, { flags: 'wx' });
 
+  const progressBar = terminal.progressBar({
+    width: 80,
+    title: filename,
+    eta: true,
+    precent: true,
+  });
   let totalBytes = 0;
   await finished(
     Readable.fromWeb(res.body)
@@ -38,7 +47,7 @@ async function downloadFile(url, filename = '.') {
           transform(chunk, _encoding, callback) {
             totalBytes += chunk.length;
             const precent = ((100 * totalBytes) / fileSize).toFixed(2);
-            log(precent);
+            progressBar.update(Number(precent));
             this.push(chunk);
             callback();
           },
