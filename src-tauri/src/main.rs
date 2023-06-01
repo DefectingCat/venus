@@ -16,7 +16,7 @@ use tauri::{
 use crate::{
     commands::{
         common::{get_rua_nodes, get_subscriptions},
-        subs::add_subscription,
+        subs::{add_subscription, update_all_subs},
     },
     config::CoreStatus,
     core::VCore,
@@ -111,6 +111,7 @@ fn main() {
             add_subscription,
             get_rua_nodes,
             get_subscriptions,
+            update_all_subs,
         ])
         .setup(move |app| {
             let resolver = app.handle().path_resolver();

@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
 import { Button, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -118,6 +119,13 @@ function App() {
   // Select node
   const [selected, setSelected] = useState('');
 
+  // Update subscriptions
+  const handleUpdate = async () => {
+    try {
+      await invoke('update_all_subs');
+    } catch (err) {}
+  };
+
   return (
     <>
       <MainLayout>
@@ -131,7 +139,7 @@ function App() {
             <Button className="mr-2" onClick={setOpen.setTrue}>
               Add
             </Button>
-            <Button>Update All</Button>
+            <Button onClick={handleUpdate}>Update All</Button>
           </div>
           <div className="mt-4">
             {subscription.map((sub) => (

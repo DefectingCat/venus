@@ -7,14 +7,15 @@ use crate::{
     utils::error::VResult,
 };
 
+/// Send http request to download subscription info
 async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
     let result = reqwest::get(url).await?.text().await?;
 
     // Decode result to vmess://...
-    let subscripition = general_purpose::STANDARD.decode(result)?;
-    let subscripition = String::from_utf8_lossy(&subscripition).to_string();
+    let subscription = general_purpose::STANDARD.decode(result)?;
+    let subscription = String::from_utf8_lossy(&subscription).to_string();
     // Serizlize outbound nodes to json
-    let subscripition = subscripition
+    let subscription = subscription
         .split('\n')
         .filter(|line| !line.is_empty())
         .map(|line| {
@@ -28,8 +29,8 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
             Ok(line)
         })
         .collect::<VResult<Vec<_>>>()?;
-    debug!("{subscripition:?}");
-    Ok(subscripition)
+    debug!("{subscription:?}");
+    Ok(subscription)
 }
 
 #[tauri::command]
@@ -51,8 +52,18 @@ pub async fn add_subscription(
     if let Some(subscriptions) = config.rua.subscriptions.as_mut() {
         subscriptions.push(sub);
     } else {
+        dbg!(&sub, &config.rua.subscriptions);
         config.rua.subscriptions = Some(vec![sub])
     }
     config.write_rua()?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn update_all_subs(config: State<'_, ConfigState>) -> VResult<()> {
+    let config = config.lock().await;
+    dbg!(&config.rua.subscriptions);
+    let subs = config.rua.subscriptions.as_ref();
+    subs.iter().for_each(|sub| sub.iter().for_each(|s| {}));
     Ok(())
 }
