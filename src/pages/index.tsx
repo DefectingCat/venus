@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import useStore, { Node } from 'store';
+import styles from 'styles/index.module.scss';
 
 const SubscriptionAdder = dynamic(
   () => import('components/pages/subscription-adder')
@@ -22,24 +23,20 @@ const ResizableTitle = dynamic(
 function App() {
   const [open, setOpen] = useBoolean(false);
   const { nodes, subscription } = useStore();
-  console.log(nodes);
 
   // nodes table
   const [columns, setColumns] = useState<ColumnsType<Node>>([
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
       ellipsis: {
         showTitle: false,
       },
-      width: 100,
-      render: (id) => (
-        <Tooltip placement="topLeft" title={id}>
-          <div className={clsx('text-ellipsis', 'break-keep overflow-hidden')}>
-            {id}
-          </div>
-        </Tooltip>
+      key: 'id',
+      width: 80,
+      render: (_, _node, i) => (
+        <div className={clsx('text-ellipsis', 'break-keep overflow-hidden')}>
+          {i + 1}
+        </div>
       ),
     },
     {
@@ -110,7 +107,6 @@ function App() {
       };
       setColumns(newColumns);
     };
-
   const mergeColumns: ColumnsType<Node> = columns.map((col, index) => ({
     ...col,
     onHeaderCell: (column: ColumnsType<Node>[number]) => ({
@@ -118,6 +114,9 @@ function App() {
       onResize: handleResize(index) as React.ReactEventHandler<any>,
     }),
   }));
+
+  // Select node
+  const [selected, setSelected] = useState('');
 
   return (
     <>
@@ -144,6 +143,7 @@ function App() {
         <div>
           <Title.h2>Nodes</Title.h2>
           <Table
+            className={styles.table}
             components={{
               header: {
                 cell: ResizableTitle,
@@ -154,8 +154,18 @@ function App() {
             columns={mergeColumns}
             dataSource={nodes}
             scroll={{
-              x: 800,
+              x: '100%',
             }}
+            onRow={(record) => ({
+              onDoubleClick: () => {
+                setSelected(record.id);
+              },
+              className: clsx(
+                'cursor-pointer select-none',
+                record.id === selected ? 'bg-gray-300' : 'hover:bg-[#fafafa]',
+                'transition-all duration-300'
+              ),
+            })}
           />
         </div>
       </MainLayout>

@@ -23,6 +23,8 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
             let line = String::from_utf8_lossy(&line).to_string();
             let mut line = serde_json::from_str::<Node>(&line)?;
             line.subs = Some(name.to_string());
+            let id = md5::compute(format!("{}-{}-{}", line.ps, line.add, line.port));
+            line.id = format!("{:?}", id);
             Ok(line)
         })
         .collect::<VResult<Vec<_>>>()?;
