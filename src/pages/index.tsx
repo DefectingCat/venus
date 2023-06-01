@@ -5,6 +5,8 @@ import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
+import { useState } from 'react';
+import { ResizeCallbackData } from 'react-resizable';
 import useStore, { Node } from 'store';
 
 const SubscriptionAdder = dynamic(
@@ -13,6 +15,9 @@ const SubscriptionAdder = dynamic(
 const SubscriptionCard = dynamic(
   () => import('components/pages/subscription-card')
 );
+const ResizableTitle = dynamic(
+  () => import('components/pages/resizable-title')
+);
 
 function App() {
   const [open, setOpen] = useBoolean(false);
@@ -20,7 +25,7 @@ function App() {
   console.log(nodes);
 
   // nodes table
-  const colums: ColumnsType<Node> = [
+  const [columns, setColumns] = useState<ColumnsType<Node>>([
     {
       title: 'ID',
       dataIndex: 'id',
@@ -94,7 +99,25 @@ function App() {
       width: 100,
       ellipsis: true,
     },
-  ];
+  ]);
+  const handleResize: Function =
+    (index: number) =>
+    (_: React.SyntheticEvent<Element>, { size }: ResizeCallbackData) => {
+      const newColumns = [...columns];
+      newColumns[index] = {
+        ...newColumns[index],
+        width: size.width,
+      };
+      setColumns(newColumns);
+    };
+
+  const mergeColumns: ColumnsType<Node> = columns.map((col, index) => ({
+    ...col,
+    onHeaderCell: (column: ColumnsType<Node>[number]) => ({
+      width: column.width,
+      onResize: handleResize(index) as React.ReactEventHandler<any>,
+    }),
+  }));
 
   return (
     <>
@@ -121,9 +144,14 @@ function App() {
         <div>
           <Title.h2>Nodes</Title.h2>
           <Table
+            components={{
+              header: {
+                cell: ResizableTitle,
+              },
+            }}
             pagination={{ pageSize: 100 }}
             rowKey={(record) => record.add + record.ps}
-            columns={colums}
+            columns={mergeColumns}
             dataSource={nodes}
             scroll={{
               x: 800,
