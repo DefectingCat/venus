@@ -45,6 +45,7 @@ function App() {
         showTitle: false,
       },
       width: 300,
+      sorter: (a, b) => a.ps.localeCompare(b.ps),
       render: (addr) => (
         <Tooltip placement="topLeft" title={addr}>
           <div className="text-ellipsis overflow-hidden">{addr}</div>
