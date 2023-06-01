@@ -161,5 +161,3 @@ fn main() {
             _ => {}
         });
 }
-
-// fn tray_config() {}
