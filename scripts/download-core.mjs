@@ -11,13 +11,6 @@ import { reanmeFile } from './rename-sidecar.mjs';
 
 const { terminal } = kit;
 
-const platformMap = {
-  darwin: 'macos',
-};
-const archMap = {
-  arm64: 'arm64-v8a',
-};
-
 const darwinCommand = async (filename) => {
   log(`Start extract ${filename}`);
   log(
@@ -47,9 +40,28 @@ const darwinCommand = async (filename) => {
     (await execa('cp', ['downloads/geoip.dat', 'src-tauri/resources/'])).stdout
   );
 };
+const winCommand = async (filename) => {
+  log(`Start extract ${filename}`);
+  // powershell -command "Expand-Archive -Force ./v2ray-windows-64.zip ./v2ray"
+  log(
+    await execa('powershell', [
+      '-command',
+      `"Expand-Archive -Force downloads/${filename} downloads/"`,
+    ])
+  );
+};
+
+const platformMap = {
+  darwin: 'macos',
+  win32: 'windows',
+};
+const archMap = {
+  arm64: 'arm64-v8a',
+  x64: '64',
+};
 const platformCommand = {
   darwin: darwinCommand,
-  win32: '',
+  win32: winCommand,
 };
 
 const __filename = url.fileURLToPath(import.meta.url);
