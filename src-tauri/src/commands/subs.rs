@@ -1,5 +1,6 @@
 use base64::{engine::general_purpose, Engine};
 use log::debug;
+use reqwest::header::USER_AGENT;
 use tauri::State;
 
 use crate::{
@@ -9,7 +10,14 @@ use crate::{
 
 /// Send http request to download subscription info
 async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
-    let result = reqwest::get(url).await?.text().await?;
+    let client = reqwest::Client::new();
+    let result = client
+        .get(url)
+        .header(USER_AGENT, format!("V2rayR/{}", env!("CARGO_PKG_VERSION")))
+        .send()
+        .await?
+        .text()
+        .await?;
 
     // Decode result to vmess://...
     let subscription = general_purpose::STANDARD.decode(result)?;
