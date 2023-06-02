@@ -3,7 +3,6 @@
     windows_subsystem = "windows"
 )]
 
-use commands::common::current_dir;
 use config::VConfig;
 use env_logger::Env;
 use log::{error, info};
@@ -15,8 +14,8 @@ use tauri::{
 
 use crate::{
     commands::{
-        common::get_subscriptions,
-        subs::{add_subscription, update_all_subs},
+        common::get_rua_config,
+        subs::{add_subscription, get_subscriptions, update_all_subs},
     },
     config::CoreStatus,
     core::VCore,
@@ -51,7 +50,7 @@ fn main() {
             let config = config.clone();
             async_runtime::spawn(async move {
                 let mut config = config.lock().await;
-                config.core_status = CoreStatus::Started;
+                config.rua.core_status = CoreStatus::Started;
             });
             Arc::new(Mutex::new(Some(core)))
         }
@@ -107,10 +106,10 @@ fn main() {
         })
         .manage(config_state)
         .invoke_handler(tauri::generate_handler![
-            current_dir,
             add_subscription,
             get_subscriptions,
             update_all_subs,
+            get_rua_config,
         ])
         .setup(move |app| {
             let resolver = app.handle().path_resolver();

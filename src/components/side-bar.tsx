@@ -40,17 +40,22 @@ export default function SideBar() {
       <div className={clsx('flex')}>Logo</div>
 
       {/* navi */}
-      <div className="my-4">
-        {navi.map((n) => (
-          <NaviItem
-            key={n.id}
-            onClick={() => handleRoute(n)}
-            className="mb-2 w-full"
-            active={router.pathname === n.path}
-          >
-            {n.name}
-          </NaviItem>
-        ))}
+      <div className={clsx('flex flex-col justify-between', 'felx-1 h-full')}>
+        <div className="my-4">
+          {navi.map((n) => (
+            <NaviItem
+              key={n.id}
+              onClick={() => handleRoute(n)}
+              className="mb-2 w-full"
+              active={router.pathname === n.path}
+            >
+              {n.name}
+            </NaviItem>
+          ))}
+        </div>
+
+        {/* core status */}
+        <div>test</div>
       </div>
     </nav>
   );

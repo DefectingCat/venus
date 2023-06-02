@@ -207,13 +207,13 @@ pub struct Subscription {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RConfig {
+    pub core_status: CoreStatus,
     pub subscriptions: Option<Vec<Subscription>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VConfig {
-    pub core_status: CoreStatus,
     pub core: Option<CoreConfig>,
     pub rua: RConfig,
     pub core_path: PathBuf,
@@ -245,11 +245,11 @@ impl VConfig {
         use CoreStatus::*;
 
         let r_config = RConfig {
+            core_status: Stopped,
             subscriptions: Some(vec![]),
         };
 
         Self {
-            core_status: Stopped,
             core: None,
             rua: r_config,
             core_path: PathBuf::new(),
