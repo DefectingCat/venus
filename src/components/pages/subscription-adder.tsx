@@ -8,7 +8,7 @@ import useStore from 'store';
 
 const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
   const { subscription: subs } = useStore();
-  const { reloadNodes, reloadSubs } = useBackend();
+  const { reloadSubs } = useBackend();
 
   const [open, setOpen] = useBoolean(true);
   // Add subscripition
@@ -39,7 +39,6 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
         name: subscripition.name || 'Unnamed',
       });
       message.success('Add subscripition success');
-      await reloadNodes();
       await reloadSubs();
       setOpen.setFalse();
     } catch (err) {

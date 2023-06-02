@@ -15,7 +15,7 @@ use tauri::{
 
 use crate::{
     commands::{
-        common::{get_rua_nodes, get_subscriptions},
+        common::get_subscriptions,
         subs::{add_subscription, update_all_subs},
     },
     config::CoreStatus,
@@ -109,7 +109,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             current_dir,
             add_subscription,
-            get_rua_nodes,
             get_subscriptions,
             update_all_subs,
         ])

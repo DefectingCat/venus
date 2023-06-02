@@ -40,19 +40,17 @@ pub async fn add_subscription(
     config: State<'_, ConfigState>,
 ) -> VResult<()> {
     let mut config = config.lock().await;
-    let mut subscription = request_subs(&name, &url).await?;
+    let nodes = request_subs(&name, &url).await?;
 
     // Write subscription and nodes to config file
-    if let Some(nodes) = config.rua.nodes.as_mut() {
-        nodes.append(&mut subscription);
-    } else {
-        config.rua.nodes = Some(subscription)
+    let sub = Subscription {
+        name,
+        url,
+        nodes: Some(nodes),
     };
-    let sub = Subscription { name, url };
     if let Some(subscriptions) = config.rua.subscriptions.as_mut() {
         subscriptions.push(sub);
     } else {
-        dbg!(&sub, &config.rua.subscriptions);
         config.rua.subscriptions = Some(vec![sub])
     }
     config.write_rua()?;
@@ -61,9 +59,12 @@ pub async fn add_subscription(
 
 #[tauri::command]
 pub async fn update_all_subs(config: State<'_, ConfigState>) -> VResult<()> {
-    let config = config.lock().await;
-    dbg!(&config.rua.subscriptions);
-    let subs = config.rua.subscriptions.as_ref();
-    subs.iter().for_each(|sub| sub.iter().for_each(|s| {}));
+    let mut config = config.lock().await;
+    if let Some(subs) = config.rua.subscriptions.as_mut() {
+        for Subscription { name, url, nodes } in subs {
+            let new_nodes = request_subs(name, url).await?;
+            *nodes = Some(new_nodes);
+        }
+    };
     Ok(())
 }

@@ -13,13 +13,6 @@ pub fn current_dir() -> Result<PathBuf, String> {
 }
 
 #[tauri::command]
-pub async fn get_rua_nodes(state: State<'_, ConfigState>) -> VResult<String> {
-    let config = state.lock().await;
-    let nodes = serde_json::to_string(&config.rua.nodes)?;
-    Ok(nodes)
-}
-
-#[tauri::command]
 pub async fn get_subscriptions(state: State<'_, ConfigState>) -> VResult<String> {
     let config = state.lock().await;
     let subs = serde_json::to_string(&config.rua.subscriptions)?;

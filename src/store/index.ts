@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export interface Subscription {
   name: string;
   url: string;
+  nodes: Node[];
 }
 export interface Node {
   v: string;
@@ -27,22 +28,14 @@ export interface Node {
 }
 interface VConfig {
   subscription: Subscription[];
-  nodes: Node[];
   updateSubscription: (subscription: Subscription[]) => void;
-  updateNodes: (nodes: Node[]) => void;
 }
 
 const useStore = create<VConfig>()((set) => ({
   subscription: [],
-  nodes: [],
   updateSubscription: (subscription) => {
     set(() => ({
       subscription,
-    }));
-  },
-  updateNodes: (nodes) => {
-    set(() => ({
-      nodes,
     }));
   },
 }));

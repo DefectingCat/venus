@@ -200,6 +200,7 @@ pub struct Other {}
 pub struct Subscription {
     pub name: String,
     pub url: String,
+    pub nodes: Option<Vec<Node>>,
 }
 
 // V2rayR config
@@ -207,7 +208,6 @@ pub struct Subscription {
 #[serde(rename_all = "camelCase")]
 pub struct RConfig {
     pub subscriptions: Option<Vec<Subscription>>,
-    pub nodes: Option<Vec<Node>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -246,7 +246,6 @@ impl VConfig {
 
         let r_config = RConfig {
             subscriptions: Some(vec![]),
-            nodes: Some(vec![]),
         };
 
         Self {

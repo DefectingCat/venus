@@ -9,7 +9,7 @@ import useBackend from 'hooks/use-backend';
 
 // This default export is required in a new `pages/_app.js` file.
 export default function MyApp({ Component, pageProps }: AppProps) {
-  const { reloadNodes, reloadSubs } = useBackend();
+  const { reloadSubs } = useBackend();
 
   useEffect(() => {
     const listeners: UnlistenFn[] = [];
@@ -22,7 +22,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
       emit('ready');
 
-      reloadNodes();
       reloadSubs();
     })();
 

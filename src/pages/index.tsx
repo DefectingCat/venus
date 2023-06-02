@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
-import { Button, Table, Tooltip } from 'antd';
+import { Button, Table, Tooltip, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
@@ -23,7 +23,7 @@ const ResizableTitle = dynamic(
 
 function App() {
   const [open, setOpen] = useBoolean(false);
-  const { nodes, subscription } = useStore();
+  const { subscription } = useStore();
 
   // nodes table
   const [columns, setColumns] = useState<ColumnsType<Node>>([
@@ -120,10 +120,17 @@ function App() {
   const [selected, setSelected] = useState('');
 
   // Update subscriptions
+  const [loading, setLoading] = useBoolean(false);
   const handleUpdate = async () => {
     try {
+      setLoading.setTrue();
       await invoke('update_all_subs');
-    } catch (err) {}
+      message.success('Update sucess');
+    } catch (err) {
+      message.error(err.toString());
+    } finally {
+      setLoading.setFalse();
+    }
   };
 
   return (
@@ -139,7 +146,9 @@ function App() {
             <Button className="mr-2" onClick={setOpen.setTrue}>
               Add
             </Button>
-            <Button onClick={handleUpdate}>Update All</Button>
+            <Button onClick={handleUpdate} loading={loading}>
+              Update All
+            </Button>
           </div>
           <div className="mt-4">
             {subscription.map((sub) => (
@@ -160,7 +169,7 @@ function App() {
             pagination={{ pageSize: 100 }}
             rowKey={(record) => record.add + record.ps}
             columns={mergeColumns}
-            dataSource={nodes}
+            dataSource={subscription.flatMap((sub) => sub.nodes)}
             scroll={{
               x: '100%',
             }}
