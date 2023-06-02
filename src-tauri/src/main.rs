@@ -19,12 +19,14 @@ use crate::{
     },
     config::CoreStatus,
     core::VCore,
+    message::msg_build,
 };
 
 mod commands;
 mod config;
 mod consts;
 mod core;
+mod message;
 mod utils;
 
 fn main() {
@@ -36,8 +38,11 @@ fn main() {
         .add_item(quit);
     let tray = SystemTray::new().with_menu(tray_menu);
 
+    // Init message
+    let (tx, mut rx) = msg_build();
+    let tx = Arc::new(tx);
     // Init config.
-    let config = Arc::new(tauri::async_runtime::Mutex::new(VConfig::new()));
+    let config = Arc::new(async_runtime::Mutex::new(VConfig::new()));
 
     let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
     env_logger::init_from_env(env);
