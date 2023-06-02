@@ -11,12 +11,16 @@ import { reanmeFile } from './rename-sidecar.mjs';
 
 const { terminal } = kit;
 
-const darwinCommand = async (filename) => {
+const unixCommand = async (filename) => {
   log(`Start extract ${filename}`);
   log(
     (await execa('unzip', [`downloads/${filename}`, '-d', 'downloads/'])).stdout
   );
   log('Start copy file');
+
+  if (!fs.existsSync('src-tauri/binaries/core/')) {
+    await mkdir('src-tauri/binaries/core/', { recursive: true });
+  }
   log(
     'Copy v2ary',
     (await execa('cp', ['downloads/v2ray', 'src-tauri/binaries/core/'])).stdout
@@ -54,14 +58,16 @@ const winCommand = async (filename) => {
 const platformMap = {
   darwin: 'macos',
   win32: 'windows',
+  linux: 'linux',
 };
 const archMap = {
   arm64: 'arm64-v8a',
   x64: '64',
 };
 const platformCommand = {
-  darwin: darwinCommand,
+  darwin: unixCommand,
   win32: winCommand,
+  linux: unixCommand,
 };
 
 const __filename = url.fileURLToPath(import.meta.url);
