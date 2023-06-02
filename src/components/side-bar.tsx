@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import NaviItem from './navi-item';
 import { useRouter } from 'next/router';
+import useStore from 'store';
 
 type SingleNavi = {
   id: number;
@@ -22,6 +23,7 @@ const navi = [
 
 export default function SideBar() {
   const router = useRouter();
+  const { coreStatus } = useStore();
 
   const handleRoute = (item: SingleNavi) => {
     router.push(item.path);
@@ -55,7 +57,7 @@ export default function SideBar() {
         </div>
 
         {/* core status */}
-        <div>test</div>
+        <div>test{coreStatus}</div>
       </div>
     </nav>
   );
