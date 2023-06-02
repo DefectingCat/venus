@@ -146,7 +146,11 @@ function App() {
             <Button className="mr-2" onClick={setOpen.setTrue}>
               Add
             </Button>
-            <Button onClick={handleUpdate} loading={loading}>
+            <Button
+              onClick={handleUpdate}
+              loading={loading}
+              disabled={!subscription.length}
+            >
               Update All
             </Button>
           </div>
