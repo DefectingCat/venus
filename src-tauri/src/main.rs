@@ -39,6 +39,9 @@ fn main() {
     let tray = SystemTray::new().with_menu(tray_menu);
 
     // Init message
+    // Create a mpsc channel for config and other stuff,
+    // when other stuff change state and need to update config
+    // it will use tx send new state to config
     let (tx, mut rx) = msg_build();
     let tx = Arc::new(tx);
     // Init config.
@@ -139,6 +142,9 @@ fn main() {
 
             let msg_config = config.clone();
             let main_window = app.get_window("main").unwrap();
+            // The config will use receiver here
+            // when got a message, config will update and
+            // emit a event to notify frontend to update global state
             async_runtime::spawn(async move {
                 while let Some(msg) = rx.recv().await {
                     match msg {

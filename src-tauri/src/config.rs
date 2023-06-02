@@ -203,7 +203,7 @@ pub struct Subscription {
     pub nodes: Option<Vec<Node>>,
 }
 
-// V2rayR config
+/// V2rayR config and frontend global state
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RConfig {
@@ -211,6 +211,7 @@ pub struct RConfig {
     pub subscriptions: Option<Vec<Subscription>>,
 }
 
+/// All config field
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VConfig {
@@ -220,6 +221,7 @@ pub struct VConfig {
     pub rua_path: PathBuf,
 }
 
+/// The core current status
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum CoreStatus {
     Started,
@@ -227,19 +229,23 @@ pub enum CoreStatus {
     Stopped,
 }
 
-impl CoreStatus {
-    fn as_str(&self) -> &'static str {
-        match self {
-            CoreStatus::Started => "Started",
-            CoreStatus::Restarting => "Restarting",
-            CoreStatus::Stopped => "Stopped",
-        }
-    }
-}
+// impl CoreStatus {
+//     fn as_str(&self) -> &'static str {
+//         match self {
+//             CoreStatus::Started => "Started",
+//             CoreStatus::Restarting => "Restarting",
+//             CoreStatus::Stopped => "Stopped",
+//         }
+//     }
+// }
 
 pub type ConfigState = Arc<Mutex<VConfig>>;
 
-// Core config and global stats
+/// Core config and global stats
+/// The rua field is self state and
+/// frontend global state.
+/// When rua config changed, need to
+/// notify frontend to update global state.
 impl VConfig {
     pub fn new() -> Self {
         use CoreStatus::*;
