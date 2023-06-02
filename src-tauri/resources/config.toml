@@ -1,3 +1,5 @@
+core_status = 'Stopped'
+
 #[[subscriptions]]
 # name = ''
 # url = ''

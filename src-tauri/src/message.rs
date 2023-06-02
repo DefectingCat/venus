@@ -3,13 +3,15 @@ use tokio::sync::{
     mpsc::{Receiver, Sender},
 };
 
-pub enum ConfigMsgType {
-    CoreStatue,
+use crate::config::CoreStatus;
+
+#[derive(Debug)]
+pub enum ConfigMsg {
+    CoreStatue(CoreStatus),
 }
-pub struct ConfigMsg {
-    pub msg_typs: ConfigMsgType,
-    pub data: String,
-}
+// pub struct ConfigMsg {
+//     pub msg: ConfigMsgType,
+// }
 
 pub fn msg_build() -> (Sender<ConfigMsg>, Receiver<ConfigMsg>) {
     mpsc::channel::<ConfigMsg>(128)

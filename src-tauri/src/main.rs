@@ -19,7 +19,7 @@ use crate::{
     },
     config::CoreStatus,
     core::VCore,
-    message::msg_build,
+    message::{msg_build, ConfigMsg},
 };
 
 mod commands;
@@ -50,7 +50,7 @@ fn main() {
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 
     info!("Start core");
-    let core = match VCore::build() {
+    let core = match VCore::build(tx) {
         Ok(core) => {
             let config = config.clone();
             async_runtime::spawn(async move {
@@ -124,15 +124,33 @@ fn main() {
             let rua_path = resolver
                 .resolve_resource("resources/config.toml")
                 .expect("can not found rua config file");
+
+            let init_config = config.clone();
             async_runtime::spawn(async move {
-                let mut config = config.lock().await;
+                let mut config = init_config.lock().await;
                 config
                     .init(core_path, rua_path)
                     .expect("can not init core config");
             });
 
-            app.listen_global("ready", |_e| {
+            app.listen_global("ready", move |_e| {
                 info!("Got front ready event");
+            });
+
+            let msg_config = config.clone();
+            let main_window = app.get_window("main").unwrap();
+            async_runtime::spawn(async move {
+                while let Some(msg) = rx.recv().await {
+                    match msg {
+                        ConfigMsg::CoreStatue(status) => {
+                            let mut config = msg_config.lock().await;
+                            config.rua.core_status = status;
+                            main_window
+                                .emit("rua://update-rua-config", &config.rua)
+                                .unwrap();
+                        }
+                    }
+                }
             });
 
             Ok(())

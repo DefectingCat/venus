@@ -220,7 +220,7 @@ pub struct VConfig {
     pub rua_path: PathBuf,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum CoreStatus {
     Started,
     Restarting,

@@ -1,20 +1,23 @@
-use std::env;
+use std::{env, sync::Arc};
 
 use log::{error, info, warn};
 use tauri::{
     api::process::{Command, CommandChild, CommandEvent},
     async_runtime,
 };
+use tokio::sync::mpsc::Sender;
 
-use crate::utils::error::VResult;
+use crate::{config::CoreStatus, message::ConfigMsg, utils::error::VResult};
 
 #[derive(Debug)]
 pub struct VCore {
     // Slidecare process
     pub child: Option<CommandChild>,
+    // Message sender
+    pub tx: Arc<Sender<ConfigMsg>>,
 }
 
-fn start_core() -> VResult<CommandChild> {
+fn start_core(tx: Arc<Sender<ConfigMsg>>) -> VResult<CommandChild> {
     // `new_sidecar()` expects just the filename, NOT the whole path like in JavaScript
     let (mut rx, child) = Command::new_sidecar("v2ray")
         .expect("Failed to create `v2ray` binary command")
@@ -26,13 +29,16 @@ fn start_core() -> VResult<CommandChild> {
         while let Some(event) = rx.recv().await {
             match event {
                 CommandEvent::Stdout(line) => {
-                    info!("{line}")
+                    info!("{line}");
                 }
                 CommandEvent::Stderr(line) => {
-                    warn!("{line}")
+                    warn!("{line}");
                 }
                 _ => {
-                    error!("Core unknown error {event:?}")
+                    tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped))
+                        .await
+                        .expect("Cannot send config msg");
+                    error!("Core unknown error {event:?}");
                 }
             }
         }
@@ -42,12 +48,15 @@ fn start_core() -> VResult<CommandChild> {
 }
 
 impl VCore {
-    pub fn build() -> VResult<Self> {
+    pub fn build(tx: Arc<Sender<ConfigMsg>>) -> VResult<Self> {
         // Set v2ray assert location with environment
         env::set_var("V2RAY_LOCATION_ASSET", "resources");
-        let child = start_core()?;
+        let child = start_core(tx.clone())?;
 
-        Ok(Self { child: Some(child) })
+        Ok(Self {
+            child: Some(child),
+            tx,
+        })
     }
 
     /// Restart core and reload config
@@ -60,7 +69,7 @@ impl VCore {
             warn!("core process not exist");
             return Ok(());
         };
-        let child = start_core()?;
+        let child = start_core(self.tx.clone())?;
         self.child = Some(child);
         Ok(())
     }
