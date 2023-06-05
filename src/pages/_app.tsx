@@ -18,7 +18,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     (async () => {
       listeners.push(
         await listen<RConfig>('rua://update-rua-config', (e) => {
-          console.log(e);
           updateRconfig(e.payload);
         })
       );

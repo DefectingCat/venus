@@ -112,7 +112,26 @@ pub struct Mux {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OutboundSettings {}
+pub struct OutboundSettings {
+    vnext: Vec<Vmess>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Vmess {
+    address: String,
+    port: u32,
+    users: Vec<CoreUser>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CoreUser {
+    id: String,
+    alter_id: u32,
+    email: String,
+    security: String,
+}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

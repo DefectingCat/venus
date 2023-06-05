@@ -15,6 +15,7 @@ use tauri::{
 use crate::{
     commands::{
         common::get_rua_config,
+        core::select_node,
         subs::{add_subscription, get_subscriptions, update_all_subs},
     },
     config::CoreStatus,
@@ -53,7 +54,7 @@ fn main() {
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 
     info!("Start core");
-    let core = match VCore::build(tx) {
+    let core = match VCore::build(tx.clone()) {
         Ok(core) => {
             let config = config.clone();
             async_runtime::spawn(async move {
@@ -113,11 +114,13 @@ fn main() {
             _ => {}
         })
         .manage(config_state)
+        .manage(tx)
         .invoke_handler(tauri::generate_handler![
             add_subscription,
             get_subscriptions,
             update_all_subs,
             get_rua_config,
+            select_node
         ])
         .setup(move |app| {
             let resolver = app.handle().path_resolver();

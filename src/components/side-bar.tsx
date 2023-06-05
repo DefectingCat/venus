@@ -57,7 +57,7 @@ export default function SideBar() {
         </div>
 
         {/* core status */}
-        <div>test{coreStatus}</div>
+        <div>{coreStatus}</div>
       </div>
     </nav>
   );

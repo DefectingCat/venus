@@ -13,6 +13,8 @@ pub enum ConfigMsg {
 //     pub msg: ConfigMsgType,
 // }
 
+pub type MsgSender = Sender<ConfigMsg>;
+
 pub fn msg_build() -> (Sender<ConfigMsg>, Receiver<ConfigMsg>) {
     mpsc::channel::<ConfigMsg>(128)
 }

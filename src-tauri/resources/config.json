@@ -21,6 +21,13 @@
   ],
   "outbounds": [
     {
+      "protocol": "vmess",
+      "settings": {
+        "vnext": []
+      },
+      "tag": "proxy"
+    },
+    {
       "protocol": "freedom",
       "settings": {},
       "tag": "direct"
