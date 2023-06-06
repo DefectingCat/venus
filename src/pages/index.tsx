@@ -118,11 +118,16 @@ function App() {
 
   // Select node
   const [selected, setSelected] = useState('');
-  const handleSelect = useCallback(async (id: string) => {
-    setSelected(id);
+  const handleSelect = useCallback(async (node: Node) => {
+    setSelected(node.nodeId);
     try {
-      await invoke('select_node');
-    } catch (err) {}
+      await invoke('select_node', {
+        subName: node.subs,
+        nodeId: node.nodeId,
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
 
   // Update subscriptions
@@ -185,7 +190,7 @@ function App() {
             }}
             onRow={(record) => ({
               onDoubleClick: () => {
-                handleSelect(record.nodeId);
+                handleSelect(record);
               },
               className: clsx(
                 'cursor-pointer select-none',

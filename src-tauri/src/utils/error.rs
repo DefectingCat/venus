@@ -4,6 +4,9 @@ use base64::DecodeError;
 use serde::{Serialize, Serializer};
 use tauri::api;
 use thiserror::Error;
+use tokio::sync::mpsc;
+
+use crate::message::ConfigMsg;
 
 #[derive(Error, Debug)]
 pub enum VError {
@@ -30,6 +33,9 @@ pub enum VError {
 
     #[error("Deserializer toml error: {0}")]
     TomlDeError(#[from] toml::de::Error),
+
+    #[error("Send message failed: {0}")]
+    MsgSendError(#[from] mpsc::error::SendError<ConfigMsg>),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913

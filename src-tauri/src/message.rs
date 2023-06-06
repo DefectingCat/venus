@@ -10,6 +10,7 @@ use crate::config::CoreStatus;
 #[derive(Debug)]
 pub enum ConfigMsg {
     CoreStatue(CoreStatus),
+    RestartCore,
 }
 // pub struct ConfigMsg {
 //     pub msg: ConfigMsgType,

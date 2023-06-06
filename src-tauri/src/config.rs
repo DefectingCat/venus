@@ -101,37 +101,37 @@ pub struct Outbound {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProxySetting {
-    tag: String,
+    pub tag: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Mux {
-    enabled: bool,
-    concurrency: u32,
+    pub enabled: bool,
+    pub concurrency: u32,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OutboundSettings {
-    vnext: Vec<Vmess>,
+    pub vnext: Option<Vec<Vmess>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Vmess {
-    address: String,
-    port: u32,
-    users: Vec<CoreUser>,
+    pub address: String,
+    pub port: String,
+    pub users: Vec<CoreUser>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CoreUser {
-    id: String,
-    alter_id: u32,
-    email: String,
-    security: String,
+    pub id: String,
+    pub alter_id: String,
+    pub email: String,
+    pub security: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -225,7 +225,6 @@ pub struct Subscription {
 
 /// V2rayR config and frontend global state
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct RConfig {
     pub core_status: CoreStatus,
     pub subscriptions: Option<Vec<Subscription>>,

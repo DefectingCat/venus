@@ -71,6 +71,7 @@ fn main() {
 
     let config_state = config.clone();
     let tray_core = core.clone();
+    let msg_core = core.clone();
     tauri::Builder::default()
         .system_tray(tray)
         .on_system_tray_event(move |app, event| match event {
@@ -157,6 +158,12 @@ fn main() {
                             main_window
                                 .emit("rua://update-rua-config", &config.rua)
                                 .unwrap();
+                        }
+                        ConfigMsg::RestartCore => {
+                            let mut core = msg_core.lock().expect("Can not lock core");
+                            if let Some(core) = core.as_mut() {
+                                core.restart().expect("")
+                            }
                         }
                     }
                 }
