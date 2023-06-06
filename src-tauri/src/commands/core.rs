@@ -14,22 +14,18 @@ pub async fn select_node(
     tx: State<'_, MsgSender>,
 ) -> VResult<()> {
     let mut config = config.lock().await;
-    let node = if let Some(subs) = config.rua.subscriptions.as_ref() {
+
+    let node = config.rua.subscriptions.as_ref().and_then(|subs| {
         let sub = subs.iter().find(|sub| sub.name == sub_name);
-        if let Some(sub) = sub {
-            if let Some(nodes) = sub.nodes.as_ref() {
+        sub.and_then(|s| {
+            s.nodes.as_ref().and_then(|nodes| {
                 nodes
                     .iter()
                     .find(|node| node.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    } else {
-        None
-    };
+            })
+        })
+    });
+
     if let Some(node) = node.as_ref() {
         let vmess = Vmess {
             address: node.add.clone(),

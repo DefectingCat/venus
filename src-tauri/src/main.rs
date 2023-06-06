@@ -60,6 +60,7 @@ fn main() {
             async_runtime::spawn(async move {
                 let mut config = config.lock().await;
                 config.rua.core_status = CoreStatus::Started;
+                dbg!(&config.rua.core_status);
             });
             Arc::new(Mutex::new(Some(core)))
         }
@@ -160,10 +161,19 @@ fn main() {
                                 .unwrap();
                         }
                         ConfigMsg::RestartCore => {
+                            let mut config = msg_config.lock().await;
+                            config.rua.core_status = CoreStatus::Restarting;
+                            main_window
+                                .emit("rua://update-rua-config", &config.rua)
+                                .unwrap();
                             let mut core = msg_core.lock().expect("Can not lock core");
                             if let Some(core) = core.as_mut() {
-                                core.restart().expect("")
+                                core.restart().expect("");
                             }
+                            config.rua.core_status = CoreStatus::Started;
+                            main_window
+                                .emit("rua://update-rua-config", &config.rua)
+                                .unwrap();
                         }
                     }
                 }

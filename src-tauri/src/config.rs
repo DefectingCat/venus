@@ -301,7 +301,11 @@ impl VConfig {
         let mut config_file = File::open(&self.rua_path)?;
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
-        let rua_config = toml::from_str::<RConfig>(&buffer)?;
+        let mut rua_config = toml::from_str::<RConfig>(&buffer)?;
+        rua_config.core_status = self.rua.core_status;
+        if rua_config.subscriptions.is_none() {
+            rua_config.subscriptions = Some(vec![])
+        };
         self.rua = rua_config;
         Ok(())
     }

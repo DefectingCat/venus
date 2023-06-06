@@ -62,9 +62,7 @@ impl VCore {
     /// Restart core and reload config
     pub fn restart(&mut self) -> VResult<()> {
         if let Some(child) = self.child.take() {
-            if let Err(err) = child.kill() {
-                error!("{err}")
-            }
+            child.kill()?;
         } else {
             warn!("core process not exist");
             return Ok(());

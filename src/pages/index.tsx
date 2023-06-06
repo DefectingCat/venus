@@ -23,7 +23,7 @@ const ResizableTitle = dynamic(
 
 function App() {
   const [open, setOpen] = useBoolean(false);
-  const { subscription } = useStore();
+  const { subscriptions } = useStore();
 
   // nodes table
   const [columns, setColumns] = useState<ColumnsType<Node>>([
@@ -119,12 +119,12 @@ function App() {
   // Select node
   const [selected, setSelected] = useState('');
   const handleSelect = useCallback(async (node: Node) => {
-    setSelected(node.nodeId);
     try {
       await invoke('select_node', {
         subName: node.subs,
         nodeId: node.nodeId,
       });
+      setSelected(node.nodeId);
     } catch (err) {
       console.error(err);
     }
@@ -160,13 +160,13 @@ function App() {
             <Button
               onClick={handleUpdate}
               loading={loading}
-              disabled={!subscription.length}
+              disabled={!subscriptions.length}
             >
               Update All
             </Button>
           </div>
           <div className="mt-4">
-            {subscription.map((sub) => (
+            {subscriptions.map((sub) => (
               <SubscriptionCard key={sub.url} sub={sub} />
             ))}
           </div>
@@ -184,7 +184,7 @@ function App() {
             pagination={{ pageSize: 100 }}
             rowKey={(record) => record.add + record.ps}
             columns={mergeColumns}
-            dataSource={subscription.flatMap((sub) => sub.nodes)}
+            dataSource={subscriptions.flatMap((sub) => sub.nodes)}
             scroll={{
               x: '100%',
             }}

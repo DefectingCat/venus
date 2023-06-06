@@ -31,24 +31,27 @@ export interface Node {
 
 export interface RConfig {
   coreStatus: 'Started' | 'Restarting' | 'Stopped';
-  subscription: Subscription[];
+  core_status?: 'Started' | 'Restarting' | 'Stopped';
+  subscriptions: Subscription[] | null;
 }
 export interface VConfig extends RConfig {
-  updateSubscription: (subscription: Subscription[]) => void;
+  updateSubscription: (subscription: Subscription[] | null) => void;
   updateRconfig: (config: RConfig) => void;
 }
 
 const useStore = create<VConfig>()((set) => ({
   coreStatus: 'Stopped',
-  subscription: [],
-  updateSubscription: (subscription) => {
+  subscriptions: [],
+  updateSubscription: (subscriptions) => {
     set(() => ({
-      subscription,
+      subscriptions,
     }));
   },
   updateRconfig: (config) => {
+    const { core_status: coreStatus, ...rest } = config;
     set(() => ({
-      ...config,
+      coreStatus,
+      ...rest,
     }));
   },
 }));
