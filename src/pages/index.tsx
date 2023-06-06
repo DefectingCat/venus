@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import useStore, { Node } from 'store';
 import styles from 'styles/index.module.scss';
@@ -32,7 +32,7 @@ function App() {
       ellipsis: {
         showTitle: false,
       },
-      key: 'id',
+      key: 'nodeId',
       width: 80,
       render: (_, _node, i) => (
         <div className={clsx('text-ellipsis', 'break-keep overflow-hidden')}>
@@ -118,6 +118,12 @@ function App() {
 
   // Select node
   const [selected, setSelected] = useState('');
+  const handleSelect = useCallback(async (id: string) => {
+    setSelected(id);
+    try {
+      await invoke('select_node');
+    } catch (err) {}
+  }, []);
 
   // Update subscriptions
   const [loading, setLoading] = useBoolean(false);
@@ -179,11 +185,13 @@ function App() {
             }}
             onRow={(record) => ({
               onDoubleClick: () => {
-                setSelected(record.id);
+                handleSelect(record.nodeId);
               },
               className: clsx(
                 'cursor-pointer select-none',
-                record.id === selected ? 'bg-gray-300' : 'hover:bg-[#fafafa]',
+                record.nodeId === selected
+                  ? 'bg-gray-300'
+                  : 'hover:bg-[#fafafa]',
                 'transition-all duration-300'
               ),
             })}

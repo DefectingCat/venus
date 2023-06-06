@@ -25,6 +25,8 @@ export interface Node {
   alpn: string;
   // Subscription group
   subs: string;
+  delay: string;
+  nodeId: string;
 }
 
 export interface RConfig {

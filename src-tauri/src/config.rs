@@ -36,6 +36,7 @@ pub struct Node {
     // Add by manually
     pub subs: Option<String>,
     pub delay: Option<String>,
+    pub node_id: Option<String>,
 }
 
 /// Core config root
