@@ -25,7 +25,6 @@ use crate::{
 
 mod commands;
 mod config;
-mod consts;
 mod core;
 mod message;
 mod utils;

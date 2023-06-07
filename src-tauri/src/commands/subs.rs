@@ -1,5 +1,5 @@
 use base64::{engine::general_purpose, Engine};
-use log::debug;
+use log::{debug, info};
 use reqwest::header::USER_AGENT;
 use tauri::State;
 
@@ -74,12 +74,16 @@ pub async fn add_subscription(
 
 #[tauri::command]
 pub async fn update_all_subs(config: State<'_, ConfigState>) -> VResult<()> {
+    info!("Starting update all subscriptions");
     let mut config = config.lock().await;
     if let Some(subs) = config.rua.subscriptions.as_mut() {
         for Subscription { name, url, nodes } in subs {
             let new_nodes = request_subs(name, url).await?;
             *nodes = Some(new_nodes);
         }
+    } else {
+        info!("No subscription");
     };
+    info!("Update all subscriptions done");
     Ok(())
 }
