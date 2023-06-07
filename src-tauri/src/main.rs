@@ -6,7 +6,10 @@
 use config::VConfig;
 use env_logger::Env;
 use log::{error, info};
-use std::sync::{Arc, Mutex};
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc, Mutex,
+};
 use tauri::{async_runtime, Manager, RunEvent, SystemTrayEvent, WindowEvent};
 
 use crate::{
@@ -27,6 +30,10 @@ mod core;
 mod message;
 mod tray;
 mod utils;
+
+/// Determine the core is manual killed or it's got killed by not expected.
+/// if manual killed will be true, otherwise false.
+static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
 
 fn main() {
     let tray = new_tray();
@@ -52,12 +59,12 @@ fn main() {
             async_runtime::spawn(async move {
                 let mut config = config_core.lock().await;
                 config.rua.core_status = CoreStatus::Started;
-                dbg!(&config.rua.core_status);
             });
             Arc::new(Mutex::new(Some(core)))
         }
         Err(err) => {
             error!("Core start failed {err:?}");
+            CORE_SHUTDOWN.store(false, Ordering::Relaxed);
             async_runtime::spawn(async move {
                 let mut config = config_core.lock().await;
                 config.rua.core_status = CoreStatus::Stopped;
@@ -154,6 +161,7 @@ fn main() {
             RunEvent::Exit => {
                 let mut core = core.lock().expect("");
                 if let Some(core) = core.as_mut() {
+                    CORE_SHUTDOWN.store(true, Ordering::Relaxed);
                     core.exit().expect("")
                 }
             }

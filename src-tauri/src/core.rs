@@ -1,6 +1,6 @@
 use std::{
     env,
-    sync::{Arc, Mutex},
+    sync::{atomic::Ordering, Arc, Mutex},
 };
 
 use log::{error, info, warn};
@@ -10,7 +10,7 @@ use tauri::{
 };
 use tokio::sync::mpsc::Sender;
 
-use crate::{config::CoreStatus, message::ConfigMsg, utils::error::VResult};
+use crate::{config::CoreStatus, message::ConfigMsg, utils::error::VResult, CORE_SHUTDOWN};
 
 pub type AVCore = Arc<Mutex<Option<VCore>>>;
 
@@ -40,7 +40,14 @@ fn start_core(tx: Arc<Sender<ConfigMsg>>) -> VResult<CommandChild> {
                     warn!("{line}");
                 }
                 CommandEvent::Terminated(line) => {
-                    warn!("{line:?}");
+                    if CORE_SHUTDOWN.load(Ordering::Relaxed) {
+                        warn!("Kill core {line:?}");
+                    } else {
+                        error!("{line:?}");
+                        tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped))
+                            .await
+                            .expect("Cannot send config msg");
+                    }
                 }
                 _ => {
                     tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped))
@@ -70,6 +77,7 @@ impl VCore {
     /// Restart core and reload config
     pub fn restart(&mut self) -> VResult<()> {
         if let Some(child) = self.child.take() {
+            CORE_SHUTDOWN.store(true, Ordering::Relaxed);
             child.kill()?;
         } else {
             warn!("core process not exist");
