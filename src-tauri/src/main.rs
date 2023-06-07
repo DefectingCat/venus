@@ -46,11 +46,11 @@ fn main() {
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 
     info!("Start core");
+    let config_core = config.clone();
     let core = match VCore::build(tx.clone()) {
         Ok(core) => {
-            let config = config.clone();
             async_runtime::spawn(async move {
-                let mut config = config.lock().await;
+                let mut config = config_core.lock().await;
                 config.rua.core_status = CoreStatus::Started;
                 dbg!(&config.rua.core_status);
             });
@@ -58,6 +58,10 @@ fn main() {
         }
         Err(err) => {
             error!("Core start failed {err:?}");
+            async_runtime::spawn(async move {
+                let mut config = config_core.lock().await;
+                config.rua.core_status = CoreStatus::Stopped;
+            });
             Arc::new(Mutex::new(None))
         }
     };
