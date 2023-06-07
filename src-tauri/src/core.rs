@@ -1,4 +1,7 @@
-use std::{env, sync::Arc};
+use std::{
+    env,
+    sync::{Arc, Mutex},
+};
 
 use log::{error, info, warn};
 use tauri::{
@@ -8,6 +11,8 @@ use tauri::{
 use tokio::sync::mpsc::Sender;
 
 use crate::{config::CoreStatus, message::ConfigMsg, utils::error::VResult};
+
+pub type AVCore = Arc<Mutex<Option<VCore>>>;
 
 #[derive(Debug)]
 pub struct VCore {
@@ -33,6 +38,9 @@ fn start_core(tx: Arc<Sender<ConfigMsg>>) -> VResult<CommandChild> {
                 }
                 CommandEvent::Stderr(line) => {
                     warn!("{line}");
+                }
+                CommandEvent::Terminated(line) => {
+                    warn!("{line:?}");
                 }
                 _ => {
                     tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped))

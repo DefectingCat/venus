@@ -7,10 +7,7 @@ use config::VConfig;
 use env_logger::Env;
 use log::{error, info};
 use std::sync::{Arc, Mutex};
-use tauri::{
-    async_runtime, CustomMenuItem, Manager, RunEvent, SystemTray, SystemTrayEvent, SystemTrayMenu,
-    SystemTrayMenuItem, WindowEvent,
-};
+use tauri::{async_runtime, Manager, RunEvent, SystemTrayEvent, WindowEvent};
 
 use crate::{
     commands::{
@@ -21,22 +18,18 @@ use crate::{
     config::CoreStatus,
     core::VCore,
     message::{msg_build, ConfigMsg},
+    tray::{handle_tray_click, new_tray},
 };
 
 mod commands;
 mod config;
 mod core;
 mod message;
+mod tray;
 mod utils;
 
 fn main() {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let hide = CustomMenuItem::new("hide".to_string(), "Hide");
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(hide)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(quit);
-    let tray = SystemTray::new().with_menu(tray_menu);
+    let tray = new_tray();
 
     // Init message
     // Create a mpsc channel for config and other stuff,
@@ -82,36 +75,7 @@ fn main() {
                     window.show().unwrap()
                 }
             }
-            SystemTrayEvent::MenuItemClick { id, .. } => {
-                let item_handle = app.tray_handle().get_item(&id);
-                match id.as_str() {
-                    "quit" => {
-                        let mut core = tray_core.lock().expect("");
-                        if let Some(core) = core.as_mut() {
-                            core.exit().expect("")
-                        }
-                        app.exit(0);
-                    }
-                    "hide" => {
-                        let main_window = app.get_window("main").expect("Can not get main window");
-                        let main_visible = main_window
-                            .is_visible()
-                            .expect("Failed to detect window visible");
-                        if main_visible {
-                            main_window.hide().expect("Can not hide main window");
-                            item_handle
-                                .set_title("Show")
-                                .expect("Can not set title to menu item");
-                        } else {
-                            main_window.show().expect("Can not show main window");
-                            item_handle
-                                .set_title("Hide")
-                                .expect("Can not set title tray title");
-                        }
-                    }
-                    _ => {}
-                }
-            }
+            SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &tray_core),
             _ => {}
         })
         .manage(config_state)
