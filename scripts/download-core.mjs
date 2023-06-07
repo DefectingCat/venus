@@ -47,11 +47,58 @@ const unixCommand = async (filename) => {
 const winCommand = async (filename) => {
   log(`Start extract ${filename}`);
   // powershell -command "Expand-Archive -Force ./v2ray-windows-64.zip ./v2ray"
+  // log(
+  //   await execa('powershell', [
+  //     '-command',
+  //     `"Expand-Archive -Force downloads/${filename} downloads/"`,
+  //   ]).stdout
+  // );
   log(
-    await execa('powershell', [
-      '-command',
-      `"Expand-Archive -Force downloads/${filename} downloads/"`,
+    await execa('powershell -command Expand-Archive', [
+      `-Force -LiteralPath downloads/${filename}`,
+      `-DestinationPath downloads/`,
     ])
+  );
+  log('Start copy file');
+
+  if (!fs.existsSync('src-tauri/binaries/core/')) {
+    await mkdir('src-tauri/binaries/core/', { recursive: true });
+  }
+  log(
+    'Copy v2ary',
+    (
+      await execa('powershell -command cp', [
+        'downloads/v2ray.exe',
+        'src-tauri/binaries/core/',
+      ])
+    ).stdout
+  );
+  log(
+    'Copy geoip-only-cn-private.dat',
+    (
+      await execa('powershell -command cp', [
+        'downloads/geoip-only-cn-private.dat',
+        'src-tauri/resources/',
+      ])
+    ).stdout
+  );
+  log(
+    'Copy geosite.dat',
+    (
+      await execa('powershell -command cp', [
+        'downloads/geosite.dat',
+        'src-tauri/resources/',
+      ])
+    ).stdout
+  );
+  log(
+    'Copy geoip.dat',
+    (
+      await execa('powershell -command cp', [
+        'downloads/geoip.dat',
+        'src-tauri/resources/',
+      ])
+    ).stdout
   );
 };
 
