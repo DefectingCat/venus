@@ -1,13 +1,17 @@
 import { useBoolean, useMount } from 'ahooks';
-import { Select } from 'antd';
+import { Input, Select } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import { useTheme } from 'next-themes';
+import useStore from 'store';
 
 const Settings = () => {
+  // const {} = useStore
+
   const [mounted, setMounted] = useBoolean(false);
   useMount(setMounted.setTrue);
+
   const { theme, setTheme } = useTheme();
 
   return (
@@ -16,9 +20,9 @@ const Settings = () => {
         <Title>Settings</Title>
       </div>
 
-      <div>
-        <div className="flex items-center">
-          <div className="mr-3">Theme</div>
+      <div className="flex">
+        <div className={clsx('grid grid-cols-2', 'items-center gap-4')}>
+          <div>Theme</div>
           <Select
             className="w-24"
             value={mounted ? theme : 'system'}
@@ -29,6 +33,16 @@ const Settings = () => {
             ]}
             onChange={(value) => setTheme(value)}
           />
+        </div>
+      </div>
+
+      <div className="mt-1 mb-4">
+        <Title.h2>Core basic</Title.h2>
+      </div>
+      <div className="flex">
+        <div className={clsx('grid grid-cols-2', 'items-center gap-4')}>
+          <div>Local Socks port: </div>
+          <Input className="w-24" />
         </div>
       </div>
     </MainLayout>
