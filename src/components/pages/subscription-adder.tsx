@@ -7,7 +7,8 @@ import useBackend from 'hooks/use-backend';
 import useStore from 'store';
 
 const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
-  const { subscriptions: subs } = useStore();
+  const subscriptions = useStore((s) => s.subscriptions);
+  const subs = subscriptions;
   const { reloadSubs } = useBackend();
 
   const [open, setOpen] = useBoolean(true);

@@ -10,7 +10,7 @@ import useStore, { RConfig } from 'store';
 
 // This default export is required in a new `pages/_app.js` file.
 export default function MyApp({ Component, pageProps }: AppProps) {
-  const { updateRconfig } = useStore();
+  const updateRconfig = useStore((s) => s.updateRconfig);
   const { reloadRconfig } = useBackend();
 
   useEffect(() => {

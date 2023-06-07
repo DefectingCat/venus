@@ -63,7 +63,7 @@ pub struct Log {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Inbound {
-    pub port: i64,
+    pub port: u16,
     // Listen address
     pub listen: String,
     pub tag: String,

@@ -39,6 +39,13 @@ export interface VConfig extends RConfig {
   updateRconfig: (config: RConfig) => void;
 }
 
+export interface Inbound {
+  port: number;
+}
+export interface CoreConfig {
+  inbounds: Inbound[];
+}
+
 const useStore = create<VConfig>()((set) => ({
   coreStatus: 'Stopped',
   subscriptions: [],
