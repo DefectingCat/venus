@@ -19,9 +19,7 @@ pub fn handle_tray_click(app: &AppHandle, id: String, core: &AVCore) {
     match id.as_str() {
         "quit" => {
             let mut core = core.lock().expect("");
-            if let Some(core) = core.as_mut() {
-                core.exit().expect("")
-            }
+            core.exit().expect("");
             app.exit(0);
         }
         "hide" => {

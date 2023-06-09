@@ -55,31 +55,16 @@ fn main() {
     info!("starting up.");
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 
-    info!("Start core");
-    let config_core = config.clone();
-    let core = match VCore::build(tx.clone()) {
-        Ok(core) => {
-            async_runtime::spawn(async move {
-                let mut config = config_core.lock().await;
-                config.rua.core_status = CoreStatus::Started;
-            });
-            Arc::new(Mutex::new(Some(core)))
-        }
-        Err(err) => {
-            error!("Core start failed {err:?}");
-            CORE_SHUTDOWN.store(false, Ordering::Relaxed);
-            async_runtime::spawn(async move {
-                let mut config = config_core.lock().await;
-                config.rua.core_status = CoreStatus::Stopped;
-            });
-            Arc::new(Mutex::new(None))
-        }
-    };
+    let core = Arc::new(Mutex::new(VCore::build(tx.clone())));
 
+    // Used to start core
+    let config_core = config.clone();
     // Used to manage config as command states
     let config_state = config.clone();
     // Used to system tray to kill core process
     let tray_core = core.clone();
+    // Used to init core asset path
+    let init_core = core.clone();
     // Receive message for core
     let msg_core = core.clone();
     // App handler
@@ -87,11 +72,15 @@ fn main() {
         let resolver = app.handle().path_resolver();
         let core_path = resolver
             .resolve_resource("resources/config.json")
-            .expect("can not found config file");
+            .expect("Cannot resolve core config path");
         let rua_path = resolver
             .resolve_resource("resources/config.toml")
-            .expect("can not found rua config file");
+            .expect("Cannot resolve rua config path");
+        let core_assets = resolver
+            .resolve_resource("resources/")
+            .expect("Cannot resolve resources folder");
 
+        // Init config and core
         let init_config = config.clone();
         async_runtime::spawn(async move {
             let mut config = init_config.lock().await;
@@ -99,6 +88,25 @@ fn main() {
                 .init(core_path, rua_path)
                 .expect("can not init core config");
         });
+        let mut core = init_core.lock().expect("Can not lock core");
+        info!("Start core");
+        match core.init(core_assets) {
+            Ok(_) => {
+                async_runtime::spawn(async move {
+                    let mut config = config_core.lock().await;
+                    config.rua.core_status = CoreStatus::Started;
+                    info!("Core started")
+                });
+            }
+            Err(err) => {
+                error!("Core start failed {err:?}");
+                CORE_SHUTDOWN.store(false, Ordering::Relaxed);
+                async_runtime::spawn(async move {
+                    let mut config = config_core.lock().await;
+                    config.rua.core_status = CoreStatus::Stopped;
+                });
+            }
+        }
 
         app.listen_global("ready", move |_e| {
             info!("Got front ready event");
@@ -126,18 +134,16 @@ fn main() {
                             .emit("rua://update-rua-config", &config.rua)
                             .unwrap();
                         let mut core = msg_core.lock().expect("Can not lock core");
-                        if let Some(core) = core.as_mut() {
-                            core.restart().expect("");
-                            match core.restart() {
-                                Ok(_) => {
-                                    config.rua.core_status = CoreStatus::Started;
-                                    main_window
-                                        .emit("rua://update-rua-config", &config.rua)
-                                        .unwrap();
-                                }
-                                Err(err) => {
-                                    error!("Core restart failed {err}");
-                                }
+                        core.restart().expect("");
+                        match core.restart() {
+                            Ok(_) => {
+                                config.rua.core_status = CoreStatus::Started;
+                                main_window
+                                    .emit("rua://update-rua-config", &config.rua)
+                                    .unwrap();
+                            }
+                            Err(err) => {
+                                error!("Core restart failed {err}");
                             }
                         }
                     }
@@ -151,10 +157,8 @@ fn main() {
     let runner = move |app: &AppHandle, event: RunEvent| match event {
         RunEvent::Exit => {
             let mut core = core.lock().expect("");
-            if let Some(core) = core.as_mut() {
-                CORE_SHUTDOWN.store(true, Ordering::Relaxed);
-                core.exit().expect("Kill core failed")
-            }
+            CORE_SHUTDOWN.store(true, Ordering::Relaxed);
+            core.exit().expect("Kill core failed")
         }
         RunEvent::ExitRequested { api, .. } => {
             let _api = api;

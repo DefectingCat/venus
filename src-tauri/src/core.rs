@@ -1,5 +1,6 @@
 use std::{
     env,
+    path::PathBuf,
     sync::{atomic::Ordering, Arc, Mutex},
 };
 
@@ -12,7 +13,7 @@ use tokio::sync::mpsc::Sender;
 
 use crate::{config::CoreStatus, message::ConfigMsg, utils::error::VResult, CORE_SHUTDOWN};
 
-pub type AVCore = Arc<Mutex<Option<VCore>>>;
+pub type AVCore = Arc<Mutex<VCore>>;
 
 #[derive(Debug)]
 pub struct VCore {
@@ -20,13 +21,15 @@ pub struct VCore {
     pub child: Option<CommandChild>,
     // Message sender
     pub tx: Arc<Sender<ConfigMsg>>,
+    // Core resource path
+    asset_path: String,
 }
 
-fn start_core(tx: Arc<Sender<ConfigMsg>>) -> VResult<CommandChild> {
+fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &str) -> VResult<CommandChild> {
     // `new_sidecar()` expects just the filename, NOT the whole path like in JavaScript
     let (mut rx, child) = Command::new_sidecar("v2ray")
         .expect("Failed to create `v2ray` binary command")
-        .args(["run", "-c", "resources/config.json"])
+        .args(["run", "-c", &format!("{path}/config.json")])
         .spawn()
         .expect("Failed to spawn sidecar");
 
@@ -63,15 +66,28 @@ fn start_core(tx: Arc<Sender<ConfigMsg>>) -> VResult<CommandChild> {
 }
 
 impl VCore {
-    pub fn build(tx: Arc<Sender<ConfigMsg>>) -> VResult<Self> {
-        // Set v2ray assert location with environment
-        env::set_var("V2RAY_LOCATION_ASSET", "resources");
-        let child = start_core(tx.clone())?;
-
-        Ok(Self {
-            child: Some(child),
+    pub fn build(tx: Arc<Sender<ConfigMsg>>) -> Self {
+        Self {
+            child: None,
             tx,
-        })
+            asset_path: String::new(),
+        }
+    }
+
+    /// Init core add assets path and start core
+    pub fn init(&mut self, asset_path: PathBuf) -> VResult<()> {
+        let path = asset_path.to_str().map_or_else(
+            || {
+                error!("Core asset path is invaild");
+                ""
+            },
+            |p| p,
+        );
+        // Set v2ray assert location with environment
+        env::set_var("V2RAY_LOCATION_ASSET", path);
+        self.child = Some(start_core(self.tx.clone(), path)?);
+        self.asset_path = path.into();
+        Ok(())
     }
 
     /// Restart core and reload config
@@ -83,7 +99,7 @@ impl VCore {
             warn!("core process not exist");
             return Ok(());
         };
-        let child = start_core(self.tx.clone())?;
+        let child = start_core(self.tx.clone(), &self.asset_path)?;
         self.child = Some(child);
         Ok(())
     }
