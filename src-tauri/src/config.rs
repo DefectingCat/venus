@@ -302,10 +302,9 @@ impl VConfig {
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
         let mut rua_config = toml::from_str::<RConfig>(&buffer)?;
+        // Do not read core status from config file
         rua_config.core_status = self.rua.core_status;
-        if rua_config.subscriptions.is_none() {
-            rua_config.subscriptions = Some(vec![])
-        };
+        rua_config.subscriptions = rua_config.subscriptions.or(Some(vec![]));
         self.rua = rua_config;
         Ok(())
     }

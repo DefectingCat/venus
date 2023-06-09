@@ -6,11 +6,14 @@
 use config::VConfig;
 use env_logger::Env;
 use log::{error, info};
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc, Mutex,
+use std::{
+    error::Error,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
 };
-use tauri::{async_runtime, Manager, RunEvent, SystemTrayEvent, WindowEvent};
+use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, WindowEvent};
 
 use crate::{
     commands::{
@@ -73,9 +76,105 @@ fn main() {
         }
     };
 
+    // Used to manage config as command states
     let config_state = config.clone();
+    // Used to system tray to kill core process
     let tray_core = core.clone();
+    // Receive message for core
     let msg_core = core.clone();
+    // App handler
+    let handle_app = move |app: &mut App| -> Result<(), Box<dyn Error>> {
+        let resolver = app.handle().path_resolver();
+        let core_path = resolver
+            .resolve_resource("resources/config.json")
+            .expect("can not found config file");
+        let rua_path = resolver
+            .resolve_resource("resources/config.toml")
+            .expect("can not found rua config file");
+
+        let init_config = config.clone();
+        async_runtime::spawn(async move {
+            let mut config = init_config.lock().await;
+            config
+                .init(core_path, rua_path)
+                .expect("can not init core config");
+        });
+
+        app.listen_global("ready", move |_e| {
+            info!("Got front ready event");
+        });
+
+        let msg_config = config.clone();
+        let main_window = app.get_window("main").unwrap();
+        // The config will use receiver here
+        // when got a message, config will update and
+        // emit a event to notify frontend to update global state
+        async_runtime::spawn(async move {
+            while let Some(msg) = rx.recv().await {
+                match msg {
+                    ConfigMsg::CoreStatue(status) => {
+                        let mut config = msg_config.lock().await;
+                        config.rua.core_status = status;
+                        main_window
+                            .emit("rua://update-rua-config", &config.rua)
+                            .unwrap();
+                    }
+                    ConfigMsg::RestartCore => {
+                        let mut config = msg_config.lock().await;
+                        config.rua.core_status = CoreStatus::Restarting;
+                        main_window
+                            .emit("rua://update-rua-config", &config.rua)
+                            .unwrap();
+                        let mut core = msg_core.lock().expect("Can not lock core");
+                        if let Some(core) = core.as_mut() {
+                            core.restart().expect("");
+                            match core.restart() {
+                                Ok(_) => {
+                                    config.rua.core_status = CoreStatus::Started;
+                                    main_window
+                                        .emit("rua://update-rua-config", &config.rua)
+                                        .unwrap();
+                                }
+                                Err(err) => {
+                                    error!("Core restart failed {err}");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        Ok(())
+    };
+
+    // Runner handler
+    let runner = move |app: &AppHandle, event: RunEvent| match event {
+        RunEvent::Exit => {
+            let mut core = core.lock().expect("");
+            if let Some(core) = core.as_mut() {
+                CORE_SHUTDOWN.store(true, Ordering::Relaxed);
+                core.exit().expect("Kill core failed")
+            }
+        }
+        RunEvent::ExitRequested { api, .. } => {
+            let _api = api;
+        }
+        RunEvent::WindowEvent {
+            label,
+            event: WindowEvent::CloseRequested { api, .. },
+            ..
+        } => {
+            let win = app.get_window(label.as_str()).expect("Cannot get window");
+            win.hide().expect("Cannot hide window");
+            api.prevent_close();
+            let tray_handle = app.tray_handle().get_item("hide");
+            tray_handle
+                .set_title("Show")
+                .expect("Can not set tray title");
+        }
+        _ => {}
+    };
+
     tauri::Builder::default()
         .system_tray(tray)
         .on_system_tray_event(move |app, event| match event {
@@ -98,89 +197,8 @@ fn main() {
             get_rua_config,
             select_node
         ])
-        .setup(move |app| {
-            let resolver = app.handle().path_resolver();
-            let core_path = resolver
-                .resolve_resource("resources/config.json")
-                .expect("can not found config file");
-            let rua_path = resolver
-                .resolve_resource("resources/config.toml")
-                .expect("can not found rua config file");
-
-            let init_config = config.clone();
-            async_runtime::spawn(async move {
-                let mut config = init_config.lock().await;
-                config
-                    .init(core_path, rua_path)
-                    .expect("can not init core config");
-            });
-
-            app.listen_global("ready", move |_e| {
-                info!("Got front ready event");
-            });
-
-            let msg_config = config.clone();
-            let main_window = app.get_window("main").unwrap();
-            // The config will use receiver here
-            // when got a message, config will update and
-            // emit a event to notify frontend to update global state
-            async_runtime::spawn(async move {
-                while let Some(msg) = rx.recv().await {
-                    match msg {
-                        ConfigMsg::CoreStatue(status) => {
-                            let mut config = msg_config.lock().await;
-                            config.rua.core_status = status;
-                            main_window
-                                .emit("rua://update-rua-config", &config.rua)
-                                .unwrap();
-                        }
-                        ConfigMsg::RestartCore => {
-                            let mut config = msg_config.lock().await;
-                            config.rua.core_status = CoreStatus::Restarting;
-                            main_window
-                                .emit("rua://update-rua-config", &config.rua)
-                                .unwrap();
-                            let mut core = msg_core.lock().expect("Can not lock core");
-                            if let Some(core) = core.as_mut() {
-                                core.restart().expect("");
-                            }
-                            config.rua.core_status = CoreStatus::Started;
-                            main_window
-                                .emit("rua://update-rua-config", &config.rua)
-                                .unwrap();
-                        }
-                    }
-                }
-            });
-
-            Ok(())
-        })
+        .setup(handle_app)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(move |app, event| match event {
-            RunEvent::Exit => {
-                let mut core = core.lock().expect("");
-                if let Some(core) = core.as_mut() {
-                    CORE_SHUTDOWN.store(true, Ordering::Relaxed);
-                    core.exit().expect("")
-                }
-            }
-            RunEvent::ExitRequested { api, .. } => {
-                let _api = api;
-            }
-            RunEvent::WindowEvent {
-                label,
-                event: WindowEvent::CloseRequested { api, .. },
-                ..
-            } => {
-                let win = app.get_window(label.as_str()).expect("Cannot get window");
-                win.hide().expect("Cannot hide window");
-                api.prevent_close();
-                let tray_handle = app.tray_handle().get_item("hide");
-                tray_handle
-                    .set_title("Show")
-                    .expect("Can not set tray title");
-            }
-            _ => {}
-        });
+        .run(runner);
 }
