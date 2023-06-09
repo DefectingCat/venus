@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply dark:text-gray-300;
+  }
+}
+
 .react-resizable {
   position: relative;
   background-clip: padding-box;
