@@ -11,7 +11,12 @@ use tauri::{
 };
 use tokio::sync::mpsc::Sender;
 
-use crate::{config::CoreStatus, message::ConfigMsg, utils::error::VResult, CORE_SHUTDOWN};
+use crate::{
+    config::CoreStatus,
+    message::ConfigMsg,
+    utils::error::{VError, VResult},
+    CORE_SHUTDOWN,
+};
 
 pub type AVCore = Arc<Mutex<VCore>>;
 
@@ -75,14 +80,11 @@ impl VCore {
     }
 
     /// Init core add assets path and start core
-    pub fn init(&mut self, asset_path: PathBuf) -> VResult<()> {
-        let path = asset_path.to_str().map_or_else(
-            || {
-                error!("Core asset path is invaild");
-                ""
-            },
-            |p| p,
-        );
+    pub fn init(&mut self, asset_path: Option<PathBuf>) -> VResult<()> {
+        let asset_path = asset_path.ok_or(VError::ResourceError("resource path is empty"))?;
+        let path = asset_path
+            .to_str()
+            .ok_or(VError::ResourceError("resource path is empty"))?;
         // Set v2ray assert location with environment
         env::set_var("V2RAY_LOCATION_ASSET", path);
         self.child = Some(start_core(self.tx.clone(), path)?);

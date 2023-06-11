@@ -4,11 +4,10 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::{fs::File, io::Write};
 
-use log::warn;
 use serde_derive::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
-use crate::utils::error::VResult;
+use crate::utils::error::{VError, VResult};
 
 /// Subscription nodes
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -235,8 +234,8 @@ pub struct RConfig {
 #[serde(rename_all = "camelCase")]
 pub struct VConfig {
     pub core: Option<CoreConfig>,
-    pub rua: RConfig,
     pub core_path: PathBuf,
+    pub rua: RConfig,
     pub rua_path: PathBuf,
 }
 
@@ -277,13 +276,18 @@ impl VConfig {
         Self {
             core: None,
             rua: r_config,
-            core_path: PathBuf::new(),
             rua_path: PathBuf::new(),
+            core_path: PathBuf::new(),
         }
     }
 
     /// Re-read config from file
-    pub fn init(&mut self, core_path: PathBuf, rua_path: PathBuf) -> VResult<()> {
+    pub fn init(&mut self, resource_path: Option<PathBuf>) -> VResult<()> {
+        let resource_path = resource_path.ok_or(VError::ResourceError("resource path is empty"))?;
+        let mut rua_path = resource_path.clone();
+        PathBuf::push(&mut rua_path, "config.toml");
+        let mut core_path = resource_path;
+        PathBuf::push(&mut core_path, "config.json");
         self.core_path = core_path;
         self.rua_path = rua_path;
         self.reload()?;
@@ -319,14 +323,12 @@ impl VConfig {
 
     ///  Write core config to config file
     pub fn write_core(&mut self) -> VResult<()> {
-        let config = if let Some(c) = &self.core {
-            c
-        } else {
-            warn!("core config is empty");
-            return Ok(());
-        };
+        let config = self
+            .core
+            .as_ref()
+            .ok_or(VError::EmptyError("core config is empty"));
         let core_file = OpenOptions::new().write(true).open(&self.core_path)?;
-        serde_json::to_writer(&core_file, config)?;
+        serde_json::to_writer(&core_file, &config)?;
         Ok(())
     }
 

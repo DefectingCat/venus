@@ -40,6 +40,12 @@ pub enum VError {
     /// Tauri App error
     #[error("Tauri runtime error: {0}")]
     RunTimeError(#[from] tauri::Error),
+    /// Resource path resolve error
+    #[error("Resolve resource failed: {0}")]
+    ResourceError(&'static str),
+    /// Target is None
+    #[error("Target is empty: {0}")]
+    EmptyError(&'static str),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913

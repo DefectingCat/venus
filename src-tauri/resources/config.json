@@ -6,7 +6,7 @@
     {
       "port": 10808,
       "listen": "127.0.0.1",
-      "tag": "socks-inbound",
+      "tag": "socks",
       "protocol": "socks",
       "settings": {
         "auth": "noauth",

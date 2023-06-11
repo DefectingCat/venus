@@ -69,28 +69,25 @@ fn main() {
     let msg_core = core.clone();
     // App handler
     let handle_app = move |app: &mut App| -> Result<(), Box<dyn Error>> {
-        let resolver = app.handle().path_resolver();
-        let core_path = resolver
-            .resolve_resource("resources/config.json")
-            .expect("Cannot resolve core config path");
-        let rua_path = resolver
-            .resolve_resource("resources/config.toml")
-            .expect("Cannot resolve rua config path");
-        let core_assets = resolver
-            .resolve_resource("resources/")
-            .expect("Cannot resolve resources folder");
+        let resources_path = app.handle().path_resolver().resolve_resource("resources/");
 
         // Init config and core
         let init_config = config.clone();
         async_runtime::spawn(async move {
             let mut config = init_config.lock().await;
-            config
-                .init(core_path, rua_path)
-                .expect("can not init core config");
+            match config.init(resources_path) {
+                Ok(_) => {
+                    info!("Config init sucess");
+                }
+                Err(err) => {
+                    error!("Config init failed {err}");
+                }
+            }
         });
         let mut core = init_core.lock().expect("Can not lock core");
         info!("Start core");
-        match core.init(core_assets) {
+        let resources_path = app.handle().path_resolver().resolve_resource("resources/");
+        match core.init(resources_path) {
             Ok(_) => {
                 async_runtime::spawn(async move {
                     let mut config = config_core.lock().await;
