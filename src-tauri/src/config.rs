@@ -326,7 +326,7 @@ impl VConfig {
         let config = self
             .core
             .as_ref()
-            .ok_or(VError::EmptyError("core config is empty"));
+            .ok_or(VError::EmptyError("core config is empty"))?;
         let core_file = OpenOptions::new().write(true).open(&self.core_path)?;
         serde_json::to_writer(&core_file, &config)?;
         Ok(())
