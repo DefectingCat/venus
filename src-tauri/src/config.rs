@@ -1,13 +1,26 @@
+use std::fmt::Display;
 use std::fs::OpenOptions;
 use std::io::Read;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Arc;
 use std::{fs::File, io::Write};
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{de, Deserialize, Deserializer};
+use serde_derive::Serialize;
 use tokio::sync::Mutex;
 
 use crate::utils::error::{VError, VResult};
+
+fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+where
+    T: FromStr,
+    T::Err: Display,
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    T::from_str(&s).map_err(de::Error::custom)
+}
 
 /// Subscription nodes
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -18,10 +31,12 @@ pub struct Node {
     pub ps: String,
     // Address
     pub add: String,
-    pub port: String,
+    #[serde(deserialize_with = "from_str")]
+    pub port: u16,
     pub id: String,
     // AlertID
-    pub aid: String,
+    #[serde(deserialize_with = "from_str")]
+    pub aid: u16,
     // Protocol type
     pub net: String,
     // Protocol type
@@ -120,7 +135,7 @@ pub struct OutboundSettings {
 #[serde(rename_all = "camelCase")]
 pub struct Vmess {
     pub address: String,
-    pub port: String,
+    pub port: u16,
     pub users: Vec<CoreUser>,
 }
 
@@ -128,7 +143,7 @@ pub struct Vmess {
 #[serde(rename_all = "camelCase")]
 pub struct CoreUser {
     pub id: String,
-    pub alter_id: String,
+    pub alter_id: u16,
     pub email: String,
     pub security: String,
 }
@@ -328,6 +343,7 @@ impl VConfig {
             .as_ref()
             .ok_or(VError::EmptyError("core config is empty"))?;
         let core_file = OpenOptions::new().write(true).open(&self.core_path)?;
+        core_file.set_len(0)?;
         serde_json::to_writer(&core_file, &config)?;
         Ok(())
     }

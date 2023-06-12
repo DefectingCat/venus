@@ -49,7 +49,7 @@ fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &str) -> VResult<CommandChild> {
                 }
                 CommandEvent::Terminated(line) => {
                     if CORE_SHUTDOWN.load(Ordering::Relaxed) {
-                        warn!("Kill core {line:?}");
+                        info!("Kill core sucessed");
                     } else {
                         error!("{line:?}");
                         tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped))

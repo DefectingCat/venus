@@ -3,7 +3,7 @@ use tauri::State;
 use crate::{
     config::{ConfigState, CoreUser, Outbound, OutboundSettings, Vmess},
     message::MsgSender,
-    utils::error::VResult,
+    utils::error::{VError, VResult},
 };
 
 #[tauri::command]
@@ -26,35 +26,37 @@ pub async fn select_node(
         })
     });
 
-    if let Some(node) = node.as_ref() {
-        let vmess = Vmess {
-            address: node.add.clone(),
-            port: node.port.clone(),
-            users: vec![CoreUser {
-                id: node.id.clone(),
-                alter_id: node.aid.clone(),
-                email: "rua@rua.rua".to_string(),
-                security: "auto".to_string(),
-            }],
-        };
-        let proxy = Outbound {
-            tag: "proxy".to_string(),
-            protocol: "vmess".to_string(),
-            settings: OutboundSettings {
-                vnext: Some(vec![vmess]),
-            },
-            proxy_setting: None,
-            mux: None,
-        };
-        let mut outbounds = vec![proxy];
+    let node = node.ok_or(VError::EmptyError("node is empty"))?;
 
-        if let Some(mut core) = config.core.as_mut() {
-            outbounds.append(&mut core.outbounds);
-            core.outbounds = outbounds;
-            config.write_core()?;
-            tx.send(crate::message::ConfigMsg::RestartCore).await?;
-        };
-    }
+    let vmess = Vmess {
+        address: node.add.clone(),
+        port: node.port,
+        users: vec![CoreUser {
+            id: node.id.clone(),
+            alter_id: node.aid,
+            email: "rua@rua.rua".to_string(),
+            security: "auto".to_string(),
+        }],
+    };
+    let proxy = Outbound {
+        tag: "proxy".to_string(),
+        protocol: "vmess".to_string(),
+        settings: OutboundSettings {
+            vnext: Some(vec![vmess]),
+        },
+        proxy_setting: None,
+        mux: None,
+    };
+    let mut outbounds = vec![proxy];
+
+    let core = config
+        .core
+        .as_mut()
+        .ok_or(VError::EmptyError("core config is empty"))?;
+    outbounds.append(&mut core.outbounds);
+    core.outbounds = outbounds;
+    config.write_core()?;
+    tx.send(crate::message::ConfigMsg::RestartCore).await?;
 
     Ok(())
 }
