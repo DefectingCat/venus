@@ -1,5 +1,5 @@
 use std::fmt::Display;
-use std::fs::OpenOptions;
+use std::fs::{self, OpenOptions};
 use std::io::Read;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -253,7 +253,6 @@ pub struct VConfig {
     pub core_path: PathBuf,
     pub rua: RConfig,
     pub rua_path: PathBuf,
-    pub user_path: PathBuf,
 }
 
 /// The core current status
@@ -290,6 +289,22 @@ impl VConfig {
             subscriptions: Some(vec![]),
         };
 
+        Self {
+            core: None,
+            rua: r_config,
+            rua_path: PathBuf::new(),
+            core_path: PathBuf::new(),
+        }
+    }
+
+    /// Re-read config from file
+    pub fn init(&mut self, resource_path: Option<PathBuf>) -> VResult<()> {
+        let resource_path = resource_path.ok_or(VError::ResourceError("resource path is empty"))?;
+        let mut rua_default = resource_path.clone();
+        rua_default.push("config.toml");
+        let mut core_default = resource_path;
+        core_default.push("config.json");
+
         let home = match home::home_dir() {
             Some(path) => {
                 let mut path = path;
@@ -301,23 +316,14 @@ impl VConfig {
                 PathBuf::from("/usr/local/v2ray-r")
             }
         };
+        let mut core_path = PathBuf::from(&home);
+        core_path.push("config.json");
+        let mut rua_path = PathBuf::from(&home);
+        rua_path.push("config.toml");
 
-        Self {
-            core: None,
-            rua: r_config,
-            rua_path: PathBuf::new(),
-            core_path: PathBuf::new(),
-            user_path: home,
-        }
-    }
+        detect_and_create(&core_path, core_default)?;
+        detect_and_create(&rua_path, rua_default)?;
 
-    /// Re-read config from file
-    pub fn init(&mut self, resource_path: Option<PathBuf>) -> VResult<()> {
-        let resource_path = resource_path.ok_or(VError::ResourceError("resource path is empty"))?;
-        let mut rua_path = resource_path.clone();
-        PathBuf::push(&mut rua_path, "config.toml");
-        let mut core_path = resource_path;
-        PathBuf::push(&mut core_path, "config.json");
         self.core_path = core_path;
         self.rua_path = rua_path;
         self.reload()?;
@@ -369,4 +375,18 @@ impl VConfig {
         rua_file.write_all(rua_string.as_bytes())?;
         Ok(())
     }
+}
+
+/// Detect target config path exists
+/// If not exists, create all parent folders
+/// and copy default config file to target path.
+fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> VResult<()> {
+    if !target_path.exists() {
+        let parent = target_path
+            .parent()
+            .ok_or(VError::EmptyError("Core path parent is empty"))?;
+        fs::create_dir_all(parent)?;
+        fs::copy(default_path, target_path)?;
+    }
+    Ok(())
 }
