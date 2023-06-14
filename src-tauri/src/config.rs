@@ -262,15 +262,15 @@ pub enum CoreStatus {
     Stopped,
 }
 
-// impl CoreStatus {
-//     fn as_str(&self) -> &'static str {
-//         match self {
-//             CoreStatus::Started => "Started",
-//             CoreStatus::Restarting => "Restarting",
-//             CoreStatus::Stopped => "Stopped",
-//         }
-//     }
-// }
+impl CoreStatus {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            CoreStatus::Started => "Started",
+            CoreStatus::Restarting => "Restarting",
+            CoreStatus::Stopped => "Stopped",
+        }
+    }
+}
 
 pub type ConfigState = Arc<Mutex<VConfig>>;
 

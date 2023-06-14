@@ -13,7 +13,11 @@ use std::{
         Arc, Mutex,
     },
 };
-use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, WindowEvent};
+use tauri::{
+    async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, Window, WindowEvent,
+};
+use tokio::sync::{self, mpsc::Receiver};
+use utils::error::{VError, VResult};
 
 use crate::{
     commands::{
@@ -45,7 +49,7 @@ fn main() {
     // Create a mpsc channel for config and other stuff,
     // when other stuff change state and need to update config
     // it will use tx send new state to config
-    let (tx, mut rx) = msg_build();
+    let (tx, rx) = msg_build();
     let tx = Arc::new(tx);
     // Init config.
     let config = Arc::new(async_runtime::Mutex::new(VConfig::new()));
@@ -110,38 +114,12 @@ fn main() {
         // The config will use receiver here
         // when got a message, config will update and
         // emit a event to notify frontend to update global state
-        async_runtime::spawn(async move {
-            while let Some(msg) = rx.recv().await {
-                match msg {
-                    ConfigMsg::CoreStatue(status) => {
-                        let mut config = msg_config.lock().await;
-                        config.rua.core_status = status;
-                        main_window
-                            .emit("rua://update-rua-config", &config.rua)
-                            .unwrap();
-                    }
-                    ConfigMsg::RestartCore => {
-                        let mut config = msg_config.lock().await;
-                        config.rua.core_status = CoreStatus::Restarting;
-                        main_window
-                            .emit("rua://update-rua-config", &config.rua)
-                            .unwrap();
-                        let mut core = msg_core.lock().expect("Can not lock core");
-                        match core.restart() {
-                            Ok(_) => {
-                                config.rua.core_status = CoreStatus::Started;
-                                main_window
-                                    .emit("rua://update-rua-config", &config.rua)
-                                    .unwrap();
-                            }
-                            Err(err) => {
-                                error!("Core restart failed {err}");
-                            }
-                        }
-                    }
-                }
+        match message_handler(main_window, rx, msg_config, msg_core) {
+            Ok(_) => {}
+            Err(err) => {
+                error!("Handle message failed: {err}")
             }
-        });
+        }
         Ok(())
     };
 
@@ -199,4 +177,43 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(runner);
+}
+
+fn message_handler(
+    main_window: Window,
+    mut rx: Receiver<ConfigMsg>,
+    msg_config: Arc<sync::Mutex<VConfig>>,
+    msg_core: Arc<Mutex<VCore>>,
+) -> VResult<()> {
+    let handler = async move {
+        while let Some(msg) = rx.recv().await {
+            match msg {
+                ConfigMsg::CoreStatue(status) => {
+                    info!("Update core status {}", status.as_str());
+                    let mut config = msg_config.lock().await;
+                    config.rua.core_status = status;
+                    main_window.emit("rua://update-rua-config", &config.rua)?;
+                }
+                ConfigMsg::RestartCore => {
+                    info!("Restarting core");
+                    let mut config = msg_config.lock().await;
+                    config.rua.core_status = CoreStatus::Restarting;
+                    main_window.emit("rua://update-rua-config", &config.rua)?;
+                    let mut core = msg_core.lock()?;
+                    match core.restart() {
+                        Ok(_) => {
+                            config.rua.core_status = CoreStatus::Started;
+                            main_window.emit("rua://update-rua-config", &config.rua)?;
+                        }
+                        Err(err) => {
+                            error!("Core restart failed {err}");
+                        }
+                    }
+                }
+            }
+        }
+        Ok::<(), VError>(())
+    };
+    async_runtime::spawn(handler);
+    Ok(())
 }
