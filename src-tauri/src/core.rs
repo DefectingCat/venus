@@ -32,9 +32,11 @@ pub struct VCore {
 
 fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &str) -> VResult<CommandChild> {
     // `new_sidecar()` expects just the filename, NOT the whole path like in JavaScript
+    let mut config_path = PathBuf::from(path);
+    config_path.push("config.json");
     let (mut rx, child) = Command::new_sidecar("v2ray")
         .expect("Failed to create `v2ray` binary command")
-        .args(["run", "-c", &format!("{path}/config.json")])
+        .args(["run", "-c", &config_path.to_string_lossy()])
         .spawn()
         .expect("Failed to spawn sidecar");
 

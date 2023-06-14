@@ -131,7 +131,6 @@ fn main() {
                             .emit("rua://update-rua-config", &config.rua)
                             .unwrap();
                         let mut core = msg_core.lock().expect("Can not lock core");
-                        core.restart().expect("");
                         match core.restart() {
                             Ok(_) => {
                                 config.rua.core_status = CoreStatus::Started;
