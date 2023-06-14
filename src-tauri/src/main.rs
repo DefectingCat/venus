@@ -57,22 +57,14 @@ fn main() {
 
     let core = Arc::new(Mutex::new(VCore::build(tx.clone())));
 
-    // Used to start core
-    let config_core = config.clone();
-    // Used to manage config as command states
-    let config_state = config.clone();
-    // Used to system tray to kill core process
-    let tray_core = core.clone();
-    // Used to init core asset path
-    let init_core = core.clone();
-    // Receive message for core
-    let msg_core = core.clone();
+    let core_app = core.clone();
+    let config_app = config.clone();
     // App handler
     let handle_app = move |app: &mut App| -> Result<(), Box<dyn Error>> {
         let resources_path = app.handle().path_resolver().resolve_resource("resources/");
 
         // Init config and core
-        let init_config = config.clone();
+        let init_config = config_app.clone();
         async_runtime::spawn(async move {
             let mut config = init_config.lock().await;
             match config.init(resources_path) {
@@ -84,9 +76,11 @@ fn main() {
                 }
             }
         });
-        let mut core = init_core.lock().expect("Can not lock core");
+        let mut core = core_app.lock().expect("Can not lock core");
         info!("Start core");
         let resources_path = app.handle().path_resolver().resolve_resource("resources/");
+        // Used to start core
+        let config_core = config_app.clone();
         match core.init(resources_path) {
             Ok(_) => {
                 async_runtime::spawn(async move {
@@ -109,7 +103,9 @@ fn main() {
             info!("Got front ready event");
         });
 
-        let msg_config = config.clone();
+        let msg_config = config_app.clone();
+        // Receive message for core
+        let msg_core = core_app.clone();
         let main_window = app.get_window("main").unwrap();
         // The config will use receiver here
         // when got a message, config will update and
@@ -149,10 +145,12 @@ fn main() {
         Ok(())
     };
 
+    // Used to runner to manage core process
+    let core_runner = core.clone();
     // Runner handler
     let runner = move |app: &AppHandle, event: RunEvent| match event {
         RunEvent::Exit => {
-            let mut core = core.lock().expect("");
+            let mut core = core_runner.lock().expect("");
             CORE_SHUTDOWN.store(true, Ordering::Relaxed);
             core.exit().expect("Kill core failed")
         }
@@ -185,10 +183,10 @@ fn main() {
                     window.show().unwrap()
                 }
             }
-            SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &tray_core),
+            SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core),
             _ => {}
         })
-        .manage(config_state)
+        .manage(config)
         .manage(tx)
         .invoke_handler(tauri::generate_handler![
             add_subscription,
