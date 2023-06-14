@@ -27,6 +27,7 @@ base64 = "0.21.1"
 serde_derive = "1.0.163"
 toml = "0.4.6"
 md5 = "0.7.0"
+home = "0.5.5"
 
 [features]
 # by default Tauri runs in production mode

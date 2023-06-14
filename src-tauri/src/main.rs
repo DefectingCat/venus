@@ -45,6 +45,9 @@ static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
 fn main() {
     let tray = new_tray();
 
+    let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
+    env_logger::init_from_env(env);
+
     // Init message
     // Create a mpsc channel for config and other stuff,
     // when other stuff change state and need to update config
@@ -54,8 +57,6 @@ fn main() {
     // Init config.
     let config = Arc::new(async_runtime::Mutex::new(VConfig::new()));
 
-    let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
-    env_logger::init_from_env(env);
     info!("starting up.");
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
 

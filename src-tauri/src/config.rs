@@ -6,6 +6,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::{fs::File, io::Write};
 
+use log::error;
 use serde::{de, Deserialize, Deserializer};
 use serde_derive::Serialize;
 use tokio::sync::Mutex;
@@ -252,6 +253,7 @@ pub struct VConfig {
     pub core_path: PathBuf,
     pub rua: RConfig,
     pub rua_path: PathBuf,
+    pub user_path: PathBuf,
 }
 
 /// The core current status
@@ -288,11 +290,24 @@ impl VConfig {
             subscriptions: Some(vec![]),
         };
 
+        let home = match home::home_dir() {
+            Some(path) => {
+                let mut path = path;
+                path.push(".config/v2ray-r");
+                path
+            }
+            None => {
+                error!("Cannot detect user home folder, use /usr/local instead");
+                PathBuf::from("/usr/local/v2ray-r")
+            }
+        };
+
         Self {
             core: None,
             rua: r_config,
             rua_path: PathBuf::new(),
             core_path: PathBuf::new(),
+            user_path: home,
         }
     }
 
