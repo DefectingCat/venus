@@ -29,7 +29,121 @@ export interface Node {
   nodeId: string;
 }
 
-export interface CoreConfig {}
+export interface CoreConfig {
+  log: Log;
+  inbounds: Inbound[];
+  outbounds: Outbound[];
+  routing: Routing;
+  dns: DNS;
+  policy: Policy;
+  other: Other;
+}
+
+export interface DNS {
+  hosts: Hosts;
+  servers: ServerElement[];
+}
+
+export interface Hosts {
+  'domain:v2fly.org': string;
+  'domain:github.io': string;
+  'domain:wikipedia.org': string;
+  'domain:shadowsocks.org': string;
+}
+
+export type ServerElement = ServerClass | string;
+
+export interface ServerClass {
+  address: string;
+  port: number;
+  domains: string[];
+}
+
+export interface Inbound {
+  port: number;
+  listen: string;
+  tag: string;
+  protocol: string;
+  settings: InboundSettings;
+  sniffing: Sniffing;
+}
+
+export interface InboundSettings {
+  auth: string;
+  udp: boolean;
+  ip: string;
+}
+
+export interface Sniffing {
+  enabled: boolean;
+  destOverride: string[];
+}
+
+export interface Log {
+  loglevel: string;
+  access: null;
+  error: null;
+}
+
+export interface Other {}
+
+export interface Outbound {
+  protocol: string;
+  settings: OutboundSettings;
+  tag: string;
+  proxySetting: null;
+  mux: null;
+}
+
+export interface OutboundSettings {
+  vnext: Vnext[] | null;
+}
+
+export interface Vnext {
+  address: string;
+  port: number;
+  users: User[];
+}
+
+export interface User {
+  id: string;
+  alterId: number;
+  email: string;
+  security: string;
+}
+
+export interface Policy {
+  levels: Levels;
+  system: System;
+}
+
+export interface Levels {
+  '0': The0;
+}
+
+export interface The0 {
+  uplinkOnly: number;
+  downlinkOnly: number;
+}
+
+export interface System {
+  statsInboundUplink: boolean;
+  statsInboundDownlink: boolean;
+  statsOutboundUplink: boolean;
+  statsOutboundDownlink: boolean;
+}
+
+export interface Routing {
+  domainStrategy: string;
+  rules: Rule[];
+}
+
+export interface Rule {
+  type: string;
+  ip: string[];
+  outboundTag: string;
+  domain: string[];
+}
 
 export interface RConfig {
   coreStatus: 'Started' | 'Restarting' | 'Stopped';

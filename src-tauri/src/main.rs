@@ -205,6 +205,7 @@ fn message_handler(
                         Ok(_) => {
                             config.rua.core_status = CoreStatus::Started;
                             main_window.emit("rua://update-rua-config", &config.rua)?;
+                            main_window.emit("rua://update-core-config", &config.core)?;
                         }
                         Err(err) => {
                             error!("Core restart failed {err}");
