@@ -30,10 +30,10 @@ pub async fn select_node(
 
     let vmess = Vmess {
         address: node.add.clone(),
-        port: node.port,
+        port: node.port.parse()?,
         users: vec![CoreUser {
             id: node.id.clone(),
-            alter_id: node.aid,
+            alter_id: node.aid.parse()?,
             email: "rua@rua.rua".to_string(),
             security: "auto".to_string(),
         }],

@@ -1,4 +1,4 @@
-use std::{io, sync::PoisonError};
+use std::{io, num::ParseIntError, sync::PoisonError};
 
 use base64::DecodeError;
 use serde::{Serialize, Serializer};
@@ -46,6 +46,9 @@ pub enum VError {
     /// Target is None
     #[error("Target is empty: {0}")]
     EmptyError(&'static str),
+    /// Convert int to string
+    #[error("Failed to parse to int: {0}")]
+    ParseIntError(#[from] ParseIntError),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913

@@ -1,27 +1,25 @@
-use std::fmt::Display;
 use std::fs::{self, OpenOptions};
 use std::io::Read;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::sync::Arc;
 use std::{fs::File, io::Write};
 
 use log::error;
-use serde::{de, Deserialize, Deserializer};
+use serde::Deserialize;
 use serde_derive::Serialize;
 use tokio::sync::Mutex;
 
 use crate::utils::error::{VError, VResult};
 
-fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
-where
-    T: FromStr,
-    T::Err: Display,
-    D: Deserializer<'de>,
-{
-    let s = String::deserialize(deserializer)?;
-    T::from_str(&s).map_err(de::Error::custom)
-}
+// fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+// where
+//     T: FromStr,
+//     T::Err: Display,
+//     D: Deserializer<'de>,
+// {
+//     let s = String::deserialize(deserializer)?;
+//     T::from_str(&s).map_err(de::Error::custom)
+// }
 
 /// Subscription nodes
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -32,12 +30,12 @@ pub struct Node {
     pub ps: String,
     // Address
     pub add: String,
-    #[serde(deserialize_with = "from_str")]
-    pub port: u16,
+    // #[serde(deserialize_with = "from_str")]
+    pub port: String,
     pub id: String,
     // AlertID
-    #[serde(deserialize_with = "from_str")]
-    pub aid: u16,
+    // #[serde(deserialize_with = "from_str")]
+    pub aid: String,
     // Protocol type
     pub net: String,
     // Protocol type
