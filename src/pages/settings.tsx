@@ -9,6 +9,7 @@ import useStore from 'store';
 
 const Settings = () => {
   const core = useStore((s) => s.core);
+  const updateConfig = useStore((s) => s.updateConfig);
   const socksInbound = useMemo(
     () => core?.inbounds.find((i) => i.tag === 'socks'),
     [core?.inbounds]
@@ -47,7 +48,19 @@ const Settings = () => {
       <div className="flex">
         <div className={clsx('grid grid-cols-2', 'items-center gap-4')}>
           <div>Local socks port: </div>
-          <Input className="w-24" value={socksInbound?.port} />
+          <Input
+            className="w-24"
+            value={socksInbound?.port}
+            onChange={(e) => {
+              updateConfig((config) => {
+                const socks = config.core.inbounds.find(
+                  (i) => i.tag === 'socks'
+                );
+                if (!socks) throw new Error('Cannot find socks inbound');
+                socks.port = Number(e.target.value.trimEnd());
+              });
+            }}
+          />
         </div>
       </div>
     </MainLayout>

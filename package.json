@@ -15,6 +15,7 @@
     "antd": "^5.3.3",
     "clsx": "^1.2.1",
     "execa": "^7.1.1",
+    "immer": "^10.0.2",
     "modern-normalize": "^1.1.0",
     "next": "^13.2.4",
     "next-themes": "^0.2.1",

@@ -1,4 +1,6 @@
+import { produce } from 'immer';
 import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 
 export interface Subscription {
   name: string;
@@ -153,26 +155,34 @@ export interface RConfig {
 export interface VConfig {
   rua: RConfig;
   core: CoreConfig | null;
+}
+export interface Actions {
   updateRconfig: (config: RConfig) => void;
   updateCoreConfig: (config: CoreConfig) => void;
+  updateConfig: (callback: (config: VConfig) => void) => void;
 }
 
-const useStore = create<VConfig>()((set) => ({
-  rua: {
-    core_status: 'Stopped',
-    subscriptions: [],
-  },
-  core: null,
-  updateRconfig: (rua) => {
-    set(() => ({
-      rua,
-    }));
-  },
-  updateCoreConfig: (core) => {
-    set(() => ({
-      core,
-    }));
-  },
-}));
+const useStore = create(
+  immer<VConfig & Actions>((set) => ({
+    rua: {
+      core_status: 'Stopped',
+      subscriptions: [],
+    },
+    core: null,
+    updateRconfig: (rua) => {
+      set(() => ({
+        rua,
+      }));
+    },
+    updateCoreConfig: (core) => {
+      set(() => ({
+        core,
+      }));
+    },
+    updateConfig: (callback) => {
+      set(callback);
+    },
+  }))
+);
 
 export default useStore;
