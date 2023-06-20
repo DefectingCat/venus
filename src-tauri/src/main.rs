@@ -23,7 +23,7 @@ use crate::{
     commands::{
         config::{get_core_config, get_rua_config},
         core::select_node,
-        subs::{add_subscription, get_subscriptions, update_all_subs},
+        subs::{add_subscription, update_all_subs},
     },
     config::CoreStatus,
     core::VCore,
@@ -171,7 +171,6 @@ fn main() {
         .manage(tx)
         .invoke_handler(tauri::generate_handler![
             add_subscription,
-            get_subscriptions,
             update_all_subs,
             get_rua_config,
             get_core_config,

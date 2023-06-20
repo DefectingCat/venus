@@ -9,13 +9,6 @@ use crate::{
     utils::error::{VError, VResult},
 };
 
-#[tauri::command]
-pub async fn get_subscriptions(state: State<'_, ConfigState>) -> VResult<String> {
-    let config = state.lock().await;
-    let subs = serde_json::to_string(&config.rua.subscriptions)?;
-    Ok(subs)
-}
-
 /// Send http request to download subscription info
 async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
     let client = reqwest::Client::new();
