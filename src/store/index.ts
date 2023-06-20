@@ -157,9 +157,23 @@ export interface VConfig {
   core: CoreConfig | null;
 }
 export interface Actions {
+  /**
+   * Set rua config from backend to global state
+   */
   updateRconfig: (config: RConfig) => void;
+  /**
+   * Set core config from backend to global state
+   */
   updateCoreConfig: (config: CoreConfig) => void;
+
+  /**
+   * Update whole config with immer
+   */
   updateConfig: (callback: (config: VConfig) => void) => void;
+  /**
+   * Update the socks inbound settings
+   */
+  updateSocksInbound: (callback: (socksInbound: Inbound) => void) => void;
 }
 
 const useStore = create(
@@ -181,6 +195,13 @@ const useStore = create(
     },
     updateConfig: (callback) => {
       set(callback);
+    },
+    updateSocksInbound: (callback) => {
+      set((config) => {
+        const socks = config.core.inbounds.find((i) => i.tag === 'socks');
+        if (!socks) throw new Error('Cannot find socks inbound');
+        callback(socks);
+      });
     },
   }))
 );
