@@ -6,12 +6,13 @@ import { ThemeProvider } from 'next-themes';
 import ThemeSwitcher from 'components/theme-switcher';
 import { useEffect } from 'react';
 import useBackend from 'hooks/use-backend';
-import useStore, { RConfig } from 'store';
+import useStore, { CoreConfig, RConfig } from 'store';
 
 // This default export is required in a new `pages/_app.js` file.
 export default function MyApp({ Component, pageProps }: AppProps) {
   const updateRconfig = useStore((s) => s.updateRconfig);
-  const { reloadRconfig } = useBackend();
+  const updateCoreConfig = useStore((s) => s.updateCoreConfig);
+  const { reloadRconfig, reloadCoreCOnfig } = useBackend();
 
   useEffect(() => {
     const listeners: UnlistenFn[] = [];
@@ -21,10 +22,16 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           updateRconfig(e.payload);
         })
       );
+      listeners.push(
+        await listen<CoreConfig>('rua://update-core-config', (e) => {
+          updateCoreConfig(e.payload);
+        })
+      );
 
       emit('ready');
 
       reloadRconfig();
+      reloadCoreCOnfig();
     })();
 
     return () => {

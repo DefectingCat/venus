@@ -23,7 +23,7 @@ const ResizableTitle = dynamic(
 
 function App() {
   const [open, setOpen] = useBoolean(false);
-  const subscriptions = useStore((s) => s.subscriptions);
+  const subscriptions = useStore((s) => s.rua.subscriptions);
 
   // nodes table
   const [columns, setColumns] = useState<ColumnsType<Node>>([

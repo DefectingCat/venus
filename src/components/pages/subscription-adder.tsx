@@ -7,9 +7,9 @@ import useBackend from 'hooks/use-backend';
 import useStore from 'store';
 
 const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
-  const subscriptions = useStore((s) => s.subscriptions);
+  const subscriptions = useStore((s) => s.rua.subscriptions);
   const subs = subscriptions;
-  const { reloadSubs } = useBackend();
+  const { reloadRconfig } = useBackend();
 
   const [open, setOpen] = useBoolean(true);
   // Add subscripition
@@ -40,7 +40,7 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
         name: subscripition.name || 'Unnamed',
       });
       message.success('Add subscripition success');
-      await reloadSubs();
+      await reloadRconfig();
       setOpen.setFalse();
     } catch (err) {
       console.error(err);
@@ -66,6 +66,7 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
         loading,
         disabled: !subscripition.url || status === 'error',
       }}
+      maskClosable={!loading}
     >
       <div className="flex items-center mb-2 mr-2">
         <div className="w-14">Name: </div>

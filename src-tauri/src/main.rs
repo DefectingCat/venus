@@ -21,7 +21,7 @@ use utils::error::{VError, VResult};
 
 use crate::{
     commands::{
-        common::get_rua_config,
+        config::{get_core_config, get_rua_config},
         core::select_node,
         subs::{add_subscription, get_subscriptions, update_all_subs},
     },
@@ -111,7 +111,9 @@ fn main() {
         let msg_config = config_app.clone();
         // Receive message for core
         let msg_core = core_app.clone();
-        let main_window = app.get_window("main").unwrap();
+        let main_window = app
+            .get_window("main")
+            .ok_or(VError::EmptyError("Can not get main window"))?;
         // The config will use receiver here
         // when got a message, config will update and
         // emit a event to notify frontend to update global state
@@ -172,6 +174,7 @@ fn main() {
             get_subscriptions,
             update_all_subs,
             get_rua_config,
+            get_core_config,
             select_node
         ])
         .setup(handle_app)

@@ -146,14 +146,15 @@ export interface Rule {
 }
 
 export interface RConfig {
-  coreStatus: 'Started' | 'Restarting' | 'Stopped';
   core_status?: 'Started' | 'Restarting' | 'Stopped';
   subscriptions: Subscription[] | null;
-  // coreConfig:
 }
-export interface VConfig extends RConfig {
-  updateSubscription: (subscription: Subscription[] | null) => void;
+
+export interface VConfig {
+  rua: RConfig;
+  core: CoreConfig;
   updateRconfig: (config: RConfig) => void;
+  updateCoreConfig: (config: CoreConfig) => void;
 }
 
 export interface Inbound {
@@ -164,19 +165,19 @@ export interface CoreConfig {
 }
 
 const useStore = create<VConfig>()((set) => ({
-  coreStatus: 'Stopped',
-  coreConfig: {},
-  subscriptions: [],
-  updateSubscription: (subscriptions) => {
+  rua: {
+    core_status: 'Stopped',
+    subscriptions: [],
+  },
+  core: null,
+  updateRconfig: (rua) => {
     set(() => ({
-      subscriptions,
+      rua,
     }));
   },
-  updateRconfig: (config) => {
-    const { core_status: coreStatus, ...rest } = config;
+  updateCoreConfig: (core) => {
     set(() => ({
-      coreStatus,
-      ...rest,
+      core,
     }));
   },
 }));

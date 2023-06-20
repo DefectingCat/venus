@@ -228,7 +228,7 @@ pub struct System {
 #[serde(rename_all = "camelCase")]
 pub struct Other {}
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Subscription {
     pub name: String,
@@ -237,7 +237,7 @@ pub struct Subscription {
 }
 
 /// V2rayR config and frontend global state
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RConfig {
     pub core_status: CoreStatus,
     pub subscriptions: Option<Vec<Subscription>>,
