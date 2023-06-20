@@ -152,16 +152,9 @@ export interface RConfig {
 
 export interface VConfig {
   rua: RConfig;
-  core: CoreConfig;
+  core: CoreConfig | null;
   updateRconfig: (config: RConfig) => void;
   updateCoreConfig: (config: CoreConfig) => void;
-}
-
-export interface Inbound {
-  port: number;
-}
-export interface CoreConfig {
-  inbounds: Inbound[];
 }
 
 const useStore = create<VConfig>()((set) => ({

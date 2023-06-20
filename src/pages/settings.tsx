@@ -10,8 +10,8 @@ import useStore from 'store';
 const Settings = () => {
   const core = useStore((s) => s.core);
   const socksInbound = useMemo(
-    () => core.inbounds.find((i) => i.tag === 'socks'),
-    []
+    () => core?.inbounds.find((i) => i.tag === 'socks'),
+    [core?.inbounds]
   );
 
   const [mounted, setMounted] = useBoolean(false);
@@ -47,7 +47,7 @@ const Settings = () => {
       <div className="flex">
         <div className={clsx('grid grid-cols-2', 'items-center gap-4')}>
           <div>Local socks port: </div>
-          <Input className="w-24" value={socksInbound.port} />
+          <Input className="w-24" value={socksInbound?.port} />
         </div>
       </div>
     </MainLayout>
