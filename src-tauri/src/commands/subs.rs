@@ -5,7 +5,8 @@ use tauri::State;
 
 use crate::{
     config::{ConfigState, Node, Subscription},
-    utils::error::VResult,
+    message::MsgSender,
+    utils::error::{VError, VResult},
 };
 
 #[tauri::command]
@@ -75,17 +76,23 @@ pub async fn add_subscription(
 }
 
 #[tauri::command]
-pub async fn update_all_subs(config: State<'_, ConfigState>) -> VResult<()> {
+pub async fn update_all_subs(
+    config: State<'_, ConfigState>,
+    tx: State<'_, MsgSender>,
+) -> VResult<()> {
     info!("Starting update all subscriptions");
     let mut config = config.lock().await;
-    if let Some(subs) = config.rua.subscriptions.as_mut() {
-        for Subscription { name, url, nodes } in subs {
-            let new_nodes = request_subs(name, url).await?;
-            *nodes = Some(new_nodes);
-        }
-    } else {
-        info!("No subscription");
-    };
+    let subs = config
+        .rua
+        .subscriptions
+        .as_mut()
+        .ok_or(VError::EmptyError("Rua config is empty"))?;
+    for Subscription { name, url, nodes } in subs {
+        let new_nodes = request_subs(name, url).await?;
+        *nodes = Some(new_nodes);
+    }
+    config.write_rua()?;
+    tx.send(crate::message::ConfigMsg::RestartCore).await?;
     info!("Update all subscriptions done");
     Ok(())
 }

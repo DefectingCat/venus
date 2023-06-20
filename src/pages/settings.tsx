@@ -4,10 +4,15 @@ import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import { useTheme } from 'next-themes';
+import { useMemo } from 'react';
 import useStore from 'store';
 
 const Settings = () => {
-  // const {} = useStore
+  const core = useStore((s) => s.core);
+  const socksInbound = useMemo(
+    () => core.inbounds.find((i) => i.tag === 'socks'),
+    []
+  );
 
   const [mounted, setMounted] = useBoolean(false);
   useMount(setMounted.setTrue);
@@ -42,7 +47,7 @@ const Settings = () => {
       <div className="flex">
         <div className={clsx('grid grid-cols-2', 'items-center gap-4')}>
           <div>Local socks port: </div>
-          <Input className="w-24" />
+          <Input className="w-24" value={socksInbound.port} />
         </div>
       </div>
     </MainLayout>

@@ -57,6 +57,5 @@ pub async fn select_node(
     core.outbounds = outbounds;
     config.write_core()?;
     tx.send(crate::message::ConfigMsg::RestartCore).await?;
-
     Ok(())
 }
