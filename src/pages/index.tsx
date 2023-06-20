@@ -29,6 +29,7 @@ function App() {
     [subscriptions]
   );
 
+  // current outbound in config file
   const outbound = useStore(
     (s) => s.core?.outbounds?.[0]?.settings?.vnext?.[0]
   );
@@ -125,7 +126,6 @@ function App() {
   }));
 
   // Select node
-  // const [selected, setSelected] = useState('');
   const selected = useMemo(
     () => nodes.find((n) => n.nodeId === outbound?.users?.[0]?.id)?.nodeId,
     [nodes, outbound]
@@ -137,7 +137,7 @@ function App() {
         subName: node.subs,
         nodeId: node.nodeId,
       });
-      // setSelected(node.nodeId);
+      // TODO: add restarting status
     } catch (err) {
       console.error(err);
     }
