@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import useStore, { Node } from 'store';
 import styles from 'styles/index.module.scss';
@@ -24,6 +24,14 @@ const ResizableTitle = dynamic(
 function App() {
   const [open, setOpen] = useBoolean(false);
   const subscriptions = useStore((s) => s.rua.subscriptions);
+  const nodes = useMemo(
+    () => subscriptions.flatMap((sub) => sub.nodes),
+    [subscriptions]
+  );
+
+  const outbound = useStore(
+    (s) => s.core?.outbounds?.[0]?.settings?.vnext?.[0]
+  );
 
   // nodes table
   const [columns, setColumns] = useState<ColumnsType<Node>>([
@@ -117,14 +125,19 @@ function App() {
   }));
 
   // Select node
-  const [selected, setSelected] = useState('');
+  // const [selected, setSelected] = useState('');
+  const selected = useMemo(
+    () => nodes.find((n) => n.nodeId === outbound?.users?.[0]?.id)?.nodeId,
+    [nodes, outbound]
+  );
+
   const handleSelect = useCallback(async (node: Node) => {
     try {
       await invoke('select_node', {
         subName: node.subs,
         nodeId: node.nodeId,
       });
-      setSelected(node.nodeId);
+      // setSelected(node.nodeId);
     } catch (err) {
       console.error(err);
     }
@@ -184,7 +197,7 @@ function App() {
             pagination={{ pageSize: 100 }}
             rowKey={(record) => record.add + record.ps}
             columns={mergeColumns}
-            dataSource={subscriptions.flatMap((sub) => sub.nodes)}
+            dataSource={nodes}
             scroll={{
               x: '100%',
             }}

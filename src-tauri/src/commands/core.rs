@@ -32,7 +32,11 @@ pub async fn select_node(
         address: node.add.clone(),
         port: node.port.parse()?,
         users: vec![CoreUser {
-            id: node.id.clone(),
+            id: node
+                .node_id
+                .as_ref()
+                .ok_or(VError::EmptyError("selected node id is empty"))?
+                .clone(),
             alter_id: node.aid.parse()?,
             email: "rua@rua.rua".to_string(),
             security: "auto".to_string(),
@@ -47,13 +51,28 @@ pub async fn select_node(
         proxy_setting: None,
         mux: None,
     };
-    let mut outbounds = vec![proxy];
+
+    let freedom = Outbound {
+        protocol: "freedom".to_owned(),
+        settings: OutboundSettings { vnext: None },
+        tag: "direct".to_owned(),
+        proxy_setting: None,
+        mux: None,
+    };
+    let blackhole = Outbound {
+        protocol: "blackhole".to_owned(),
+        settings: OutboundSettings { vnext: None },
+        tag: "blocked".to_owned(),
+        proxy_setting: None,
+        mux: None,
+    };
+
+    let outbounds = vec![proxy, freedom, blackhole];
 
     let core = config
         .core
         .as_mut()
         .ok_or(VError::EmptyError("core config is empty"))?;
-    outbounds.append(&mut core.outbounds);
     core.outbounds = outbounds;
     config.write_core()?;
     tx.send(crate::message::ConfigMsg::RestartCore).await?;

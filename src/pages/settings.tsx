@@ -1,20 +1,16 @@
 import { useBoolean, useMount } from 'ahooks';
-import { Input, Select } from 'antd';
+import { Select } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import { useTheme } from 'next-themes';
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
-import useStore from 'store';
 
 const BasicSettings = dynamic(
   () => import('components/settings/basic-settings')
 );
 
 const Settings = () => {
-  const core = useStore((s) => s.core);
-
   const [mounted, setMounted] = useBoolean(false);
   useMount(setMounted.setTrue);
 
