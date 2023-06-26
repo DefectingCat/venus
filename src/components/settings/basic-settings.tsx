@@ -1,4 +1,5 @@
-import { Button, Input, Switch, Tooltip } from 'antd';
+import { invoke } from '@tauri-apps/api/tauri';
+import { Button, Input, Switch, Tooltip, message } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import { useMemo } from 'react';
@@ -11,6 +12,21 @@ const basicSettings = () => {
     () => core?.inbounds.find((i) => i.tag === 'socks'),
     [core?.inbounds]
   );
+
+  // Apply settings
+  const coreStatus = useStore((s) => s.rua.core_status);
+  const updateConfig = useStore((s) => s.updateConfig);
+  const handleApply = async () => {
+    try {
+      updateConfig((config) => {
+        config.rua.core_status = 'Restarting';
+      });
+      await invoke('update_core', { coreConfig: core });
+      message.success('Update config success');
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <>
@@ -59,7 +75,13 @@ const basicSettings = () => {
 
       <div className="mt-4">
         <Tooltip placement="top" title="Apply and restart core">
-          <Button>Apply</Button>
+          <Button
+            loading={coreStatus === 'Restarting'}
+            disabled={coreStatus === 'Stopped'}
+            onClick={handleApply}
+          >
+            Apply
+          </Button>
         </Tooltip>
       </div>
     </>

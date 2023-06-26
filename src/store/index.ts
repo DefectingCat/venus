@@ -196,6 +196,9 @@ const useStore = create(
     updateConfig: (callback) => {
       set(callback);
     },
+    /**
+     * Only update socks inbound with immer.
+     */
     updateSocksInbound: (callback) => {
       set((config) => {
         const socks = config.core.inbounds.find((i) => i.tag === 'socks');

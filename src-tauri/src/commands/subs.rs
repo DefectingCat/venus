@@ -44,6 +44,8 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
     Ok(subscription)
 }
 
+/// Add new subscription and write
+/// to config file
 #[tauri::command]
 pub async fn add_subscription(
     name: String,
@@ -68,6 +70,7 @@ pub async fn add_subscription(
     Ok(())
 }
 
+/// Update all subscriptions in config file.
 #[tauri::command]
 pub async fn update_all_subs(
     config: State<'_, ConfigState>,
