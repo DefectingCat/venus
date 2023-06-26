@@ -1,4 +1,4 @@
-import { Input, Switch } from 'antd';
+import { Button, Input, Switch, Tooltip } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import { useMemo } from 'react';
@@ -55,6 +55,12 @@ const basicSettings = () => {
             />
           </div>
         </div>
+      </div>
+
+      <div className="mt-4">
+        <Tooltip placement="top" title="Apply and restart core">
+          <Button>Apply</Button>
+        </Tooltip>
       </div>
     </>
   );

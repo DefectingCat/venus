@@ -130,14 +130,16 @@ function App() {
     () => nodes.find((n) => n.nodeId === outbound?.users?.[0]?.id)?.nodeId,
     [nodes, outbound]
   );
-
+  const updateConfig = useStore((s) => s.updateConfig);
   const handleSelect = useCallback(async (node: Node) => {
     try {
       await invoke('select_node', {
         subName: node.subs,
         nodeId: node.nodeId,
       });
-      // TODO: add restarting status
+      updateConfig((config) => {
+        config.rua.core_status = 'Restarting';
+      });
     } catch (err) {
       console.error(err);
     }

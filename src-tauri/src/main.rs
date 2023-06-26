@@ -200,8 +200,6 @@ fn message_handler(
                 ConfigMsg::RestartCore => {
                     info!("Restarting core");
                     let mut config = msg_config.lock().await;
-                    config.rua.core_status = CoreStatus::Restarting;
-                    main_window.emit("rua://update-rua-config", &config.rua)?;
                     let mut core = msg_core.lock()?;
                     match core.restart() {
                         Ok(_) => {
