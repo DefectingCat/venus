@@ -102,6 +102,7 @@ pub struct InboundSettings {
 pub struct Sniffing {
     pub enabled: bool,
     pub dest_override: Vec<String>,
+    pub route_only: Option<bool>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

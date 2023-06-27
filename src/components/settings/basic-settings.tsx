@@ -3,7 +3,7 @@ import { Button, Input, Switch, Tooltip, message } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import { useMemo } from 'react';
-import useStore from 'store';
+import useStore, { Inbound, InboundSettings, Sniffing } from 'store';
 
 const basicSettings = () => {
   const core = useStore((s) => s.core);
@@ -12,6 +12,34 @@ const basicSettings = () => {
     () => core?.inbounds.find((i) => i.tag === 'socks'),
     [core?.inbounds]
   );
+
+  const updateHttpInbound = useStore((s) => s.updateHttpInbound);
+  const httpInbound = useMemo(
+    () => core?.inbounds.find((i) => i.tag === 'http'),
+    [core?.inbounds]
+  );
+
+  // Change port
+  const changePort = (value: string) => (inbound: Inbound) => {
+    inbound.port = Number(value);
+  };
+  /**
+   * Toggle inbound settings with specified key
+   */
+  const toggleTarget =
+    (
+      checked: boolean,
+      target: (keyof Inbound | keyof InboundSettings | keyof Sniffing)[]
+    ) =>
+    (inbound: Inbound) => {
+      const len = target.length;
+      target.reduce<Inbound | InboundSettings | Sniffing>((prev, key, i) => {
+        if (i === len - 1) {
+          prev[key] = checked;
+        }
+        return prev[key];
+      }, inbound);
+    };
 
   // Apply settings
   const coreStatus = useStore((s) => s.rua.core_status);
@@ -41,9 +69,16 @@ const basicSettings = () => {
             className="w-24"
             value={socksInbound?.port}
             onChange={(e) => {
-              updateSocksInbound((socks) => {
-                socks.port = Number(e.target.value.trimEnd());
-              });
+              updateSocksInbound(changePort(e.target.value.trimEnd()));
+            }}
+          />
+
+          <div>Local http port</div>
+          <Input
+            className="w-24"
+            value={httpInbound?.port}
+            onChange={(e) => {
+              updateHttpInbound(changePort(e.target.value.trimEnd()));
             }}
           />
 
@@ -52,9 +87,8 @@ const basicSettings = () => {
             <Switch
               checked={socksInbound?.settings?.udp}
               onChange={(checked) => {
-                updateSocksInbound((socks) => {
-                  socks.settings.udp = checked;
-                });
+                updateSocksInbound(toggleTarget(checked, ['settings', 'udp']));
+                updateHttpInbound(toggleTarget(checked, ['settings', 'udp']));
               }}
             />
           </div>
@@ -64,9 +98,27 @@ const basicSettings = () => {
             <Switch
               checked={socksInbound?.sniffing?.enabled}
               onChange={(checked) => {
-                updateSocksInbound((socks) => {
-                  socks.sniffing.enabled = checked;
-                });
+                updateSocksInbound(
+                  toggleTarget(checked, ['sniffing', 'enabled'])
+                );
+                updateHttpInbound(
+                  toggleTarget(checked, ['sniffing', 'enabled'])
+                );
+              }}
+            />
+          </div>
+
+          <div>RouteOnly</div>
+          <div>
+            <Switch
+              checked={socksInbound?.sniffing?.routeOnly}
+              onChange={(checked) => {
+                updateSocksInbound(
+                  toggleTarget(checked, ['sniffing', 'routeOnly'])
+                );
+                updateHttpInbound(
+                  toggleTarget(checked, ['sniffing', 'routeOnly'])
+                );
               }}
             />
           </div>

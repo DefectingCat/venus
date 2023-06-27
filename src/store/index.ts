@@ -79,6 +79,7 @@ export interface InboundSettings {
 export interface Sniffing {
   enabled: boolean;
   destOverride: string[];
+  routeOnly?: boolean;
 }
 
 export interface Log {
@@ -174,6 +175,7 @@ export interface Actions {
    * Update the socks inbound settings
    */
   updateSocksInbound: (callback: (socksInbound: Inbound) => void) => void;
+  updateHttpInbound: (callback: (socksInbound: Inbound) => void) => void;
 }
 
 const useStore = create(
@@ -204,6 +206,13 @@ const useStore = create(
         const socks = config.core.inbounds.find((i) => i.tag === 'socks');
         if (!socks) throw new Error('Cannot find socks inbound');
         callback(socks);
+      });
+    },
+    updateHttpInbound: (callback) => {
+      set((config) => {
+        const http = config.core.inbounds.find((i) => i.tag === 'http');
+        if (!http) throw new Error('Cannot find http inbound');
+        callback(http);
       });
     },
   }))
