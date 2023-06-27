@@ -19,23 +19,19 @@ const basicSettings = () => {
     [core?.inbounds]
   );
 
-  // Change port
-  const changePort = (value: string) => (inbound: Inbound) => {
-    inbound.port = Number(value);
-  };
   /**
-   * Toggle inbound settings with specified key
+   * Set inbound settings with specified key
    */
-  const toggleTarget =
+  const changeTarget =
     (
-      checked: boolean,
+      value: string | number | boolean,
       target: (keyof Inbound | keyof InboundSettings | keyof Sniffing)[]
     ) =>
     (inbound: Inbound) => {
       const len = target.length;
       target.reduce<Inbound | InboundSettings | Sniffing>((prev, key, i) => {
         if (i === len - 1) {
-          prev[key] = checked;
+          prev[key] = value;
         }
         return prev[key];
       }, inbound);
@@ -69,7 +65,9 @@ const basicSettings = () => {
             className="w-24"
             value={socksInbound?.port}
             onChange={(e) => {
-              updateSocksInbound(changePort(e.target.value.trimEnd()));
+              updateSocksInbound(
+                changeTarget(Number(e.target.value.trimEnd()), ['port'])
+              );
             }}
           />
 
@@ -78,7 +76,9 @@ const basicSettings = () => {
             className="w-24"
             value={httpInbound?.port}
             onChange={(e) => {
-              updateHttpInbound(changePort(e.target.value.trimEnd()));
+              updateHttpInbound(
+                changeTarget(Number(e.target.value.trimEnd()), ['port'])
+              );
             }}
           />
 
@@ -87,8 +87,8 @@ const basicSettings = () => {
             <Switch
               checked={socksInbound?.settings?.udp}
               onChange={(checked) => {
-                updateSocksInbound(toggleTarget(checked, ['settings', 'udp']));
-                updateHttpInbound(toggleTarget(checked, ['settings', 'udp']));
+                updateSocksInbound(changeTarget(checked, ['settings', 'udp']));
+                updateHttpInbound(changeTarget(checked, ['settings', 'udp']));
               }}
             />
           </div>
@@ -99,10 +99,10 @@ const basicSettings = () => {
               checked={socksInbound?.sniffing?.enabled}
               onChange={(checked) => {
                 updateSocksInbound(
-                  toggleTarget(checked, ['sniffing', 'enabled'])
+                  changeTarget(checked, ['sniffing', 'enabled'])
                 );
                 updateHttpInbound(
-                  toggleTarget(checked, ['sniffing', 'enabled'])
+                  changeTarget(checked, ['sniffing', 'enabled'])
                 );
               }}
             />
@@ -114,11 +114,27 @@ const basicSettings = () => {
               checked={socksInbound?.sniffing?.routeOnly}
               onChange={(checked) => {
                 updateSocksInbound(
-                  toggleTarget(checked, ['sniffing', 'routeOnly'])
+                  changeTarget(checked, ['sniffing', 'routeOnly'])
                 );
                 updateHttpInbound(
-                  toggleTarget(checked, ['sniffing', 'routeOnly'])
+                  changeTarget(checked, ['sniffing', 'routeOnly'])
                 );
+              }}
+            />
+          </div>
+
+          <div>Allow connections from LAN</div>
+          <div>
+            <Switch
+              checked={socksInbound?.listen === '0.0.0.0'}
+              onChange={(checked) => {
+                if (checked) {
+                  updateSocksInbound(changeTarget('0.0.0.0', ['listen']));
+                  updateHttpInbound(changeTarget('0.0.0.0', ['listen']));
+                } else {
+                  updateSocksInbound(changeTarget('127.0.0.1', ['listen']));
+                  updateHttpInbound(changeTarget('127.0.0.1', ['listen']));
+                }
               }}
             />
           </div>
