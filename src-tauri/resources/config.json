@@ -11,11 +11,37 @@
       "settings": {
         "auth": "noauth",
         "udp": false,
-        "ip": "127.0.0.1"
+        "allowTransparent": false
       },
       "sniffing": {
         "enabled": true,
         "destOverride": ["http", "tls"]
+      }
+    },
+    {
+      "port": 10809,
+      "listen": "127.0.0.1",
+      "tag": "http",
+      "protocol": "http",
+      "settings": {
+        "auth": "noauth",
+        "udp": false,
+        "allowTransparent": false
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
+      }
+    },
+    {
+      "tag": "api",
+      "port": 1857,
+      "listen": "127.0.0.1",
+      "protocol": "dokodemo-door",
+      "settings": {
+        "udp": false,
+        "address": "127.0.0.1",
+        "allowTransparent": false
       }
     }
   ],

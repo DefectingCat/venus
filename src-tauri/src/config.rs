@@ -92,6 +92,9 @@ pub struct InboundSettings {
     pub auth: String,
     pub udp: bool,
     pub ip: String,
+    // for dokodemo-door
+    // pub address: Option<String>,
+    pub allow_transparent: bool,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
