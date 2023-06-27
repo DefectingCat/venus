@@ -83,15 +83,15 @@ pub struct Inbound {
     pub protocol: String,
     pub settings: InboundSettings,
     // Traffic sniffing
-    pub sniffing: Sniffing,
+    pub sniffing: Option<Sniffing>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InboundSettings {
-    pub auth: String,
+    pub auth: Option<String>,
     pub udp: bool,
-    pub ip: String,
+    // pub ip: String,
     // for dokodemo-door
     // pub address: Option<String>,
     pub allow_transparent: bool,
