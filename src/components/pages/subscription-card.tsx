@@ -68,7 +68,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
           'p-4 cursor-pointer dark:bg-rua-gray-700',
           'hover:shadow-lg transition-all',
           'duration-300 select-none w-56',
-          'flex flex-col'
+          'flex flex-col mr-4 mb-4'
         )}
       >
         <div

@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
-import { Button, Table, Tooltip, message } from 'antd';
+import { Button, Empty, Table, Tooltip, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
@@ -180,10 +180,14 @@ function App() {
               Update All
             </Button>
           </div>
-          <div className="mt-4">
-            {subscriptions.map((sub) => (
-              <SubscriptionCard key={sub.url} sub={sub} />
-            ))}
+          <div className={clsx('mt-4 flex flex-wrap', 'items-center ')}>
+            {!!subscriptions.length ? (
+              subscriptions.map((sub) => (
+                <SubscriptionCard key={sub.url} sub={sub} />
+              ))
+            ) : (
+              <Empty />
+            )}
           </div>
         </div>
 
