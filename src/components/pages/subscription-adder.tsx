@@ -2,10 +2,10 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
 import { Modal, message } from 'antd';
 import useBackend from 'hooks/use-backend';
+import useVaildUrl from 'hooks/use-vaild-url';
 import dynamic from 'next/dynamic';
 import { ChangeEvent, useState } from 'react';
 import useStore from 'store';
-import { URL_VALID } from 'utils/consts';
 
 const SubsModal = dynamic(() => import('components/common/subs-modal'));
 
@@ -20,7 +20,7 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
     name: '',
     url: '',
   });
-  const [status, setStatus] = useState<'' | 'error'>('');
+  const { status, setStatus, vaild } = useVaildUrl();
   const handleSubs = (type: 'name' | 'url') => {
     const map = {
       name: (e: ChangeEvent<HTMLInputElement>) => {
@@ -29,8 +29,8 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
       },
       url: (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.trim();
-        const valid = URL_VALID.test(value);
-        setStatus(!subscripition ? '' : valid ? '' : 'error');
+        const valid = vaild(value);
+        setStatus(!subscripition.url ? '' : valid ? '' : 'error');
         setSubscripiton((d) => ({ ...d, url: value }));
       },
     };

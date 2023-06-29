@@ -166,6 +166,7 @@ export interface Actions {
    * Set core config from backend to global state
    */
   updateCoreConfig: (config: CoreConfig) => void;
+  updateSubs: (callback: (subs: Subscription[]) => void) => void;
 
   /**
    * Update whole config with immer
@@ -197,6 +198,12 @@ const useStore = create(
     },
     updateConfig: (callback) => {
       set(callback);
+    },
+    updateSubs: (callback) => {
+      set((config) => {
+        const subs = config.rua.subscriptions;
+        callback(subs);
+      });
     },
     /**
      * Only update socks inbound with immer.
