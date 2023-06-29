@@ -1,4 +1,4 @@
-import { Button, Modal, Popconfirm, message } from 'antd';
+import { Button, Modal, Popconfirm, Popover, QRCode, message } from 'antd';
 import clsx from 'clsx';
 import useStore, { Subscription } from 'store';
 import { BsPencilSquare } from 'react-icons/bs';
@@ -92,12 +92,18 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
           >
             <BsPencilSquare />
           </Button>
-          <Button
-            shape="circle"
-            className={clsx('mr-2', 'flex justify-center items-center')}
+          <Popover
+            trigger="click"
+            overlayInnerStyle={{ padding: 0 }}
+            content={<QRCode value={sub.url} bordered={false} />}
           >
-            <AiOutlineShareAlt />
-          </Button>
+            <Button
+              shape="circle"
+              className={clsx('mr-2', 'flex justify-center items-center')}
+            >
+              <AiOutlineShareAlt />
+            </Button>
+          </Popover>
           <Popconfirm
             title="Delete this subscription?"
             description={'will be delete all nodes in this subscription'}
