@@ -1,10 +1,13 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
-import { Input, Modal, message } from 'antd';
-import { ChangeEventHandler, useState } from 'react';
-import { URL_VALID } from 'utils/consts';
+import { Modal, message } from 'antd';
 import useBackend from 'hooks/use-backend';
+import dynamic from 'next/dynamic';
+import { ChangeEvent, useState } from 'react';
 import useStore from 'store';
+import { URL_VALID } from 'utils/consts';
+
+const SubsModal = dynamic(() => import('components/common/subs-modal'));
 
 const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
   const subscriptions = useStore((s) => s.rua.subscriptions);
@@ -18,15 +21,20 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
     url: '',
   });
   const [status, setStatus] = useState<'' | 'error'>('');
-  const handleName: ChangeEventHandler<HTMLInputElement> = (e) => {
-    const value = e.target.value.trim();
-    setSubscripiton((d) => ({ ...d, name: value }));
-  };
-  const handleSub: ChangeEventHandler<HTMLInputElement> = (e) => {
-    const value = e.target.value.trim();
-    const valid = URL_VALID.test(value);
-    setStatus(!subscripition ? '' : valid ? '' : 'error');
-    setSubscripiton((d) => ({ ...d, url: value }));
+  const handleSubs = (type: 'name' | 'url') => {
+    const map = {
+      name: (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.trim();
+        setSubscripiton((d) => ({ ...d, name: value }));
+      },
+      url: (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.trim();
+        const valid = URL_VALID.test(value);
+        setStatus(!subscripition ? '' : valid ? '' : 'error');
+        setSubscripiton((d) => ({ ...d, url: value }));
+      },
+    };
+    return map[type];
   };
   // Send request
   const [loading, setLoading] = useBoolean(false);
@@ -68,31 +76,12 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
       }}
       maskClosable={!loading}
     >
-      <div className="flex items-center mb-2 mr-2">
-        <div className="w-14">Name: </div>
-        <div className="relative">
-          <Input
-            value={subscripition.name}
-            onChange={handleName}
-            allowClear
-            placeholder="Unnamed"
-            disabled={loading}
-          />
-        </div>
-      </div>
-      <div className="flex items-center mr-2">
-        <div className="w-14">URL: </div>
-        <div className="relative">
-          <Input
-            value={subscripition.url}
-            onChange={handleSub}
-            allowClear
-            placeholder="Subscription url"
-            status={status}
-            disabled={loading}
-          />
-        </div>
-      </div>
+      <SubsModal
+        subs={subscripition}
+        status={status}
+        loading={loading}
+        onChange={handleSubs}
+      />
     </Modal>
   );
 };
