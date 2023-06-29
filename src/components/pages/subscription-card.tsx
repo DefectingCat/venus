@@ -1,5 +1,8 @@
+import { Button } from 'antd';
 import clsx from 'clsx';
 import { Subscription } from 'store';
+import { BsPencilSquare } from 'react-icons/bs';
+import { AiOutlineShareAlt, AiOutlineDelete } from 'react-icons/ai';
 
 const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
   return (
@@ -22,6 +25,17 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
         )}
       >
         {sub.url}
+      </div>
+      <div className={clsx('flex items-center', 'mt-4')}>
+        <Button shape="circle" className="mr-2">
+          <BsPencilSquare />
+        </Button>
+        <Button shape="circle" className="mr-2">
+          <AiOutlineShareAlt />
+        </Button>
+        <Button shape="circle" className="mr-2">
+          <AiOutlineDelete />
+        </Button>
       </div>
     </div>
   );
