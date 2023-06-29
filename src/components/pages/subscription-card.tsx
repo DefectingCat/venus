@@ -1,4 +1,4 @@
-import { Button, Modal, message } from 'antd';
+import { Button, Modal, Popconfirm, message } from 'antd';
 import clsx from 'clsx';
 import useStore, { Subscription } from 'store';
 import { BsPencilSquare } from 'react-icons/bs';
@@ -10,6 +10,12 @@ import useVaildUrl from 'hooks/use-vaild-url';
 
 const SubsModal = dynamic(() => import('components/common/subs-modal'));
 
+/**
+ * Find specific subscription in subscription array.
+ *
+ * @param subs subscription array
+ * @param url target url
+ */
 const findSub = (subs: Subscription[], url: string) => {
   const target = subs.find((s) => s.url === url);
   if (!target) throw new Error('Cannot find target subscription');
@@ -40,6 +46,18 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
       },
     };
     return map[type];
+  };
+
+  // delete state
+  const handleDelete = () => {
+    updateSubs((subs) => {
+      const index = subs.findIndex((s) => s.url === sub.url);
+      if (!~index) {
+        console.error('Cannot find target subscription');
+        message.error('Cannot find target subscription');
+      }
+      subs.splice(index, 1);
+    });
   };
 
   return (
@@ -80,13 +98,19 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
           >
             <AiOutlineShareAlt />
           </Button>
-          <Button
-            shape="circle"
-            className={clsx('mr-2', 'flex justify-center items-center')}
-            danger
+          <Popconfirm
+            title="Delete this subscription?"
+            description={'will be delete all nodes in this subscription'}
+            onConfirm={handleDelete}
           >
-            <AiOutlineDelete />
-          </Button>
+            <Button
+              shape="circle"
+              className={clsx('mr-2', 'flex justify-center items-center')}
+              danger
+            >
+              <AiOutlineDelete />
+            </Button>
+          </Popconfirm>
         </div>
       </div>
 
