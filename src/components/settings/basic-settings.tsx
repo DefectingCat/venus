@@ -45,7 +45,7 @@ const basicSettings = () => {
       updateConfig((config) => {
         config.rua.core_status = 'Restarting';
       });
-      await invoke('update_core', { coreConfig: core });
+      await invoke('update_config', { coreConfig: core });
       message.success('Update config success');
     } catch (err) {
       console.error(err);

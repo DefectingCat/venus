@@ -21,7 +21,7 @@ use utils::error::{VError, VResult};
 
 use crate::{
     commands::{
-        config::{get_core_config, get_rua_config, update_core},
+        config::{get_core_config, get_rua_config, update_config},
         core::select_node,
         subs::{add_subscription, update_all_subs},
     },
@@ -175,7 +175,7 @@ fn main() {
             get_rua_config,
             get_core_config,
             select_node,
-            update_core
+            update_config
         ])
         .setup(handle_app)
         .build(tauri::generate_context!())

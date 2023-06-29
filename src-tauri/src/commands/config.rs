@@ -1,3 +1,4 @@
+use log::info;
 use tauri::State;
 
 use crate::config::{ConfigState, CoreConfig, RConfig};
@@ -20,17 +21,29 @@ pub async fn get_core_config(state: State<'_, ConfigState>) -> VResult<Option<Co
     Ok(config.core.clone())
 }
 
-/// Update core config file from frontend
+/// Update config file from frontend
 /// Core will restart alfter write config to file
 #[tauri::command]
-pub async fn update_core(
+pub async fn update_config(
     state: State<'_, ConfigState>,
     tx: State<'_, MsgSender>,
-    core_config: CoreConfig,
+    core_config: Option<CoreConfig>,
+    rua_config: Option<RConfig>,
 ) -> VResult<()> {
-    let mut config = state.lock().await;
-    config.core = Some(core_config);
-    config.write_core()?;
-    tx.send(ConfigMsg::RestartCore).await?;
+    if let Some(c) = core_config {
+        info!("Updating core config");
+        let mut config = state.lock().await;
+        config.core = Some(c);
+        config.write_core()?;
+        tx.send(ConfigMsg::RestartCore).await?;
+    }
+
+    if let Some(r) = rua_config {
+        info!("Updating rua config");
+        let mut config = state.lock().await;
+        config.rua = r;
+        config.write_rua()?;
+        tx.send(ConfigMsg::RestartCore).await?;
+    }
     Ok(())
 }
