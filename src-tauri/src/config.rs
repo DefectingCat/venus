@@ -10,6 +10,7 @@ use serde_derive::Serialize;
 use tokio::sync::Mutex;
 
 use crate::utils::error::{VError, VResult};
+use crate::VERSION;
 
 // fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 // where
@@ -243,6 +244,9 @@ pub struct Subscription {
 /// V2rayR config and frontend global state
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RConfig {
+    pub version: String,
+    /// Save state of all open windows to disk
+    pub save_windows: bool,
     pub core_status: CoreStatus,
     pub subscriptions: Option<Vec<Subscription>>,
 }
@@ -287,6 +291,8 @@ impl VConfig {
         use CoreStatus::*;
 
         let r_config = RConfig {
+            version: VERSION.to_owned(),
+            save_windows: true,
             core_status: Stopped,
             subscriptions: Some(vec![]),
         };
@@ -302,8 +308,6 @@ impl VConfig {
     /// Re-read config from file
     pub fn init(&mut self, resource_path: Option<PathBuf>) -> VResult<()> {
         let resource_path = resource_path.ok_or(VError::ResourceError("resource path is empty"))?;
-        let mut rua_default = resource_path.clone();
-        rua_default.push("config.toml");
         let mut core_default = resource_path;
         core_default.push("config.json");
 
@@ -323,11 +327,14 @@ impl VConfig {
         let mut rua_path = PathBuf::from(&home);
         rua_path.push("config.toml");
 
-        detect_and_create(&core_path, core_default)?;
-        detect_and_create(&rua_path, rua_default)?;
+        self.core_path = core_path.clone();
+        self.rua_path = rua_path.clone();
 
-        self.core_path = core_path;
-        self.rua_path = rua_path;
+        detect_and_create(&core_path, core_default)?;
+        if !rua_path.exists() {
+            self.write_rua()?;
+        }
+
         self.reload()?;
         Ok(())
     }
@@ -372,7 +379,10 @@ impl VConfig {
     }
 
     pub fn write_rua(&mut self) -> VResult<()> {
-        let mut rua_file = OpenOptions::new().write(true).open(&self.rua_path)?;
+        let mut rua_file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(&self.rua_path)?;
         let rua_string = toml::to_string(&self.rua)?;
         rua_file.write_all(rua_string.as_bytes())?;
         Ok(())

@@ -16,6 +16,7 @@ use std::{
 use tauri::{
     async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, Window, WindowEvent,
 };
+use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tokio::sync::{self, mpsc::Receiver};
 use utils::error::{VError, VResult};
 
@@ -41,6 +42,7 @@ mod utils;
 /// Determine the core is manual killed or it's got killed by not expected.
 /// if manual killed will be true, otherwise false.
 static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
+static VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {
     let tray = new_tray();
@@ -67,19 +69,20 @@ fn main() {
     // App handler
     let handle_app = move |app: &mut App| -> Result<(), Box<dyn Error>> {
         let resources_path = app.handle().path_resolver().resolve_resource("resources/");
-
         // Init config and core
         let init_config = config_app.clone();
+        let window = app
+            .get_window("main")
+            .ok_or(VError::EmptyError("Can not get main window"))?;
         async_runtime::spawn(async move {
             let mut config = init_config.lock().await;
-            match config.init(resources_path) {
-                Ok(_) => {
-                    info!("Config init sucess");
-                }
-                Err(err) => {
-                    error!("Config init failed {err}");
-                }
+            config.init(resources_path)?;
+            info!("Config init sucess");
+            // Restore alll window status.
+            if config.rua.save_windows {
+                window.restore_state(StateFlags::all())?;
             }
+            Ok::<(), VError>(())
         });
         let mut core = core_app.lock().expect("Can not lock core");
         info!("Start core");
@@ -128,28 +131,42 @@ fn main() {
 
     // Used to runner to manage core process
     let core_runner = core.clone();
+    let config_runner = config.clone();
     // Runner handler
     let runner = move |app: &AppHandle, event: RunEvent| match event {
         RunEvent::Exit => {
             let mut core = core_runner.lock().expect("");
             CORE_SHUTDOWN.store(true, Ordering::Relaxed);
-            core.exit().expect("Kill core failed")
+            core.exit().expect("Kill core failed");
         }
         RunEvent::ExitRequested { api, .. } => {
             let _api = api;
         }
-        RunEvent::WindowEvent {
-            label,
-            event: WindowEvent::CloseRequested { api, .. },
-            ..
-        } => {
-            let win = app.get_window(label.as_str()).expect("Cannot get window");
-            win.hide().expect("Cannot hide window");
-            api.prevent_close();
-            let tray_handle = app.tray_handle().get_item("hide");
-            tray_handle
-                .set_title("Show")
-                .expect("Can not set tray title");
+        RunEvent::WindowEvent { label, event, .. } => {
+            match event {
+                WindowEvent::CloseRequested { api, .. } => {
+                    let win = app.get_window(label.as_str()).expect("Cannot get window");
+                    win.hide().expect("Cannot hide window");
+                    api.prevent_close();
+                    let tray_handle = app.tray_handle().get_item("hide");
+                    tray_handle
+                        .set_title("Show")
+                        .expect("Can not set tray title");
+                }
+                _ => {
+                    let config = config_runner.clone();
+                    let app_handler = app.app_handle();
+                    async_runtime::spawn(async move {
+                        let config = config.lock().await;
+                        if config.rua.save_windows {
+                            app_handler
+                                .save_window_state(StateFlags::all())
+                                .map_err(|_e| VError::EmptyError("Save window status failed"))?;
+                        }
+                        Ok::<(), VError>(())
+                    });
+                }
+            };
         }
         _ => {}
     };
@@ -177,6 +194,7 @@ fn main() {
             select_node,
             update_config
         ])
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(handle_app)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
