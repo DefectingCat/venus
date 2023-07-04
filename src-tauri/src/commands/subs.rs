@@ -82,7 +82,7 @@ pub async fn update_all_subs(
         .rua
         .subscriptions
         .as_mut()
-        .ok_or(VError::EmptyError("Rua config is empty"))?;
+        .ok_or(VError::EmptyError("Subscriptions is empty"))?;
     for Subscription { name, url, nodes } in subs {
         let new_nodes = request_subs(name, url).await?;
         *nodes = Some(new_nodes);
@@ -90,5 +90,30 @@ pub async fn update_all_subs(
     config.write_rua()?;
     tx.send(crate::message::ConfigMsg::RestartCore).await?;
     info!("Update all subscriptions done");
+    Ok(())
+}
+
+/// Update specific subscription with url
+#[tauri::command]
+pub async fn update_sub(
+    config: State<'_, ConfigState>,
+    tx: State<'_, MsgSender>,
+    url: &str,
+) -> VResult<()> {
+    info!("Start update subscription {}", &url);
+    let mut config = config.lock().await;
+    let sub = config
+        .rua
+        .subscriptions
+        .as_mut()
+        .ok_or(VError::EmptyError("Subscriptions is empty"))?
+        .iter_mut()
+        .find(|s| s.url == url)
+        .ok_or(VError::EmptyError("Cannot find target subscription"))?;
+    let new_nodes = request_subs(&sub.name, &sub.url).await?;
+    sub.nodes = Some(new_nodes);
+    config.write_rua()?;
+    tx.send(crate::message::ConfigMsg::RestartCore).await?;
+    info!("Update subscription {} done", &url);
     Ok(())
 }

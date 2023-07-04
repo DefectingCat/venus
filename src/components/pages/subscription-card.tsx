@@ -1,12 +1,23 @@
-import { Button, Modal, Popconfirm, Popover, QRCode, message } from 'antd';
-import clsx from 'clsx';
-import useStore, { Subscription } from 'store';
-import { BsPencilSquare } from 'react-icons/bs';
-import { AiOutlineShareAlt, AiOutlineDelete } from 'react-icons/ai';
+import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
+import {
+  Button,
+  Modal,
+  Popconfirm,
+  Popover,
+  QRCode,
+  Tooltip,
+  message,
+} from 'antd';
+import clsx from 'clsx';
+import useVaildUrl from 'hooks/use-vaild-url';
 import dynamic from 'next/dynamic';
 import { ChangeEvent, useState } from 'react';
-import useVaildUrl from 'hooks/use-vaild-url';
+import { AiOutlineDelete, AiOutlineShareAlt } from 'react-icons/ai';
+import { BsPencilSquare } from 'react-icons/bs';
+import { RxUpdate } from 'react-icons/rx';
+import useStore, { Subscription } from 'store';
+import styles from './subscription-card.module.scss';
 
 const SubsModal = dynamic(() => import('components/common/subs-modal'));
 
@@ -47,6 +58,22 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
     };
     return map[type];
   };
+  const handleOk = () => {
+    updateSubs((subs) => {
+      try {
+        setLoading.setTrue();
+        const target = findSub(subs, sub.url);
+        target.name = buffer.name;
+        target.url = buffer.url;
+        setOpen.setFalse();
+      } catch (err) {
+        message.error(err);
+        console.error(err);
+      } finally {
+        setLoading.setFalse();
+      }
+    });
+  };
 
   // delete state
   const handleDelete = () => {
@@ -58,6 +85,20 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
       }
       subs.splice(index, 1);
     });
+  };
+
+  // update state
+  const handleUpdate = async () => {
+    try {
+      setLoading.setTrue();
+      await invoke('update_sub', { url: sub.url });
+      message.success(`Update subscription ${sub.name} success`);
+    } catch (err) {
+      console.error(err);
+      message.error(err);
+    } finally {
+      setLoading.setFalse();
+    }
   };
 
   return (
@@ -85,38 +126,55 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
           {sub.url}
         </div>
         <div className={clsx('flex items-center', 'mt-4')}>
-          <Button
-            shape="circle"
-            className={clsx('mr-2', 'flex justify-center items-center')}
-            onClick={setOpen.setTrue}
-          >
-            <BsPencilSquare />
-          </Button>
-          <Popover
-            trigger="click"
-            overlayInnerStyle={{ padding: 0 }}
-            content={<QRCode value={sub.url} bordered={false} />}
-          >
+          <Tooltip title="Edit">
             <Button
               shape="circle"
               className={clsx('mr-2', 'flex justify-center items-center')}
+              onClick={setOpen.setTrue}
             >
-              <AiOutlineShareAlt />
+              <BsPencilSquare />
             </Button>
-          </Popover>
-          <Popconfirm
-            title="Delete this subscription?"
-            description={'will be delete all nodes in this subscription'}
-            onConfirm={handleDelete}
-          >
+          </Tooltip>
+          <Tooltip title="Update" className={clsx(styles['update-btn'])}>
             <Button
               shape="circle"
               className={clsx('mr-2', 'flex justify-center items-center')}
-              danger
+              loading={loading}
+              disabled={loading}
+              onClick={handleUpdate}
             >
-              <AiOutlineDelete />
+              <RxUpdate className={clsx(loading && 'hidden')} />
             </Button>
-          </Popconfirm>
+          </Tooltip>
+          <Tooltip title="Share">
+            <Popover
+              trigger="click"
+              overlayInnerStyle={{ padding: 0 }}
+              content={<QRCode value={sub.url} bordered={false} />}
+            >
+              <Button
+                shape="circle"
+                className={clsx('mr-2', 'flex justify-center items-center')}
+              >
+                <AiOutlineShareAlt />
+              </Button>
+            </Popover>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Popconfirm
+              title="Delete this subscription?"
+              description={'will be delete all nodes in this subscription'}
+              onConfirm={handleDelete}
+            >
+              <Button
+                shape="circle"
+                className={clsx('mr-2', 'flex justify-center items-center')}
+                danger
+              >
+                <AiOutlineDelete />
+              </Button>
+            </Popconfirm>
+          </Tooltip>
         </div>
       </div>
 
@@ -125,22 +183,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
         title="Edit subscription"
         open={open}
         onCancel={setOpen.setFalse}
-        onOk={() => {
-          updateSubs((subs) => {
-            try {
-              setLoading.setTrue();
-              const target = findSub(subs, sub.url);
-              target.name = buffer.name;
-              target.url = buffer.url;
-              setOpen.setFalse();
-            } catch (err) {
-              message.error(err);
-              console.error(err);
-            } finally {
-              setLoading.setFalse();
-            }
-          });
-        }}
+        onOk={handleOk}
         confirmLoading={loading}
       >
         <SubsModal
