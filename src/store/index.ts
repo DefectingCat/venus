@@ -149,6 +149,8 @@ export interface Rule {
 }
 
 export interface RConfig {
+  version: string;
+  save_windows: boolean;
   core_status?: 'Started' | 'Restarting' | 'Stopped';
   subscriptions: Subscription[] | null;
 }
@@ -182,6 +184,8 @@ export interface Actions {
 const useStore = create(
   immer<VConfig & Actions>((set) => ({
     rua: {
+      version: '',
+      save_windows: true,
       core_status: 'Stopped',
       subscriptions: [],
     },
