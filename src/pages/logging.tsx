@@ -10,7 +10,7 @@ const Logging = () => {
           <Title>Logging</Title>
         </div>
 
-        <div className={clsx('flex-1 rounded-lg bg-gray-200')}></div>
+        <div className={clsx('flex-1 rounded-lg bg-gray-200', 'p-6')}>123</div>
       </div>
     </MainLayout>
   );

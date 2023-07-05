@@ -1,7 +1,8 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { message } from 'antd';
 import { useCallback } from 'react';
-import useStore, { CoreConfig, RConfig } from 'store';
+import useStore from 'store';
+import { CoreConfig, RConfig } from 'store/config-store';
 
 const useBackend = () => {
   const { updateRconfig, updateCoreConfig } = useStore();
