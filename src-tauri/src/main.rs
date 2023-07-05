@@ -4,7 +4,6 @@
 )]
 
 use config::VConfig;
-use env_logger::Env;
 use log::{error, info};
 use std::{
     error::Error,
@@ -28,6 +27,7 @@ use crate::{
     },
     config::CoreStatus,
     core::VCore,
+    logger::init_logger,
     message::{msg_build, ConfigMsg},
     tray::{handle_tray_click, new_tray},
 };
@@ -35,6 +35,7 @@ use crate::{
 mod commands;
 mod config;
 mod core;
+mod logger;
 mod message;
 mod tray;
 mod utils;
@@ -47,9 +48,6 @@ static VERSION: &str = env!("CARGO_PKG_VERSION");
 fn main() {
     let tray = new_tray();
 
-    let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
-    env_logger::init_from_env(env);
-
     // Init message
     // Create a mpsc channel for config and other stuff,
     // when other stuff change state and need to update config
@@ -58,6 +56,13 @@ fn main() {
     let tx = Arc::new(tx);
     // Init config.
     let config = Arc::new(async_runtime::Mutex::new(VConfig::new()));
+
+    match init_logger(tx.clone()) {
+        Ok(()) => {}
+        Err(e) => {
+            eprintln!("Logger init failed {e}");
+        }
+    }
 
     info!("starting up.");
     info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));

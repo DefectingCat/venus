@@ -33,6 +33,7 @@ toml = "0.4.10"
 md5 = "0.7.0"
 home = "0.5.5"
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+chrono = "0.4.26"
 
 [features]
 # by default Tauri runs in production mode
