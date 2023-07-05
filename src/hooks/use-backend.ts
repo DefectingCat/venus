@@ -7,6 +7,9 @@ import { CoreConfig, RConfig } from 'store/config-store';
 const useBackend = () => {
   const { updateRconfig, updateCoreConfig } = useStore();
 
+  /**
+   * Get newest rua config from backend
+   */
   const reloadRconfig = useCallback(async () => {
     try {
       const rua = await invoke<RConfig>('get_rua_config');
@@ -17,6 +20,9 @@ const useBackend = () => {
     }
   }, []);
 
+  /**
+   * Get newest core config from backend
+   */
   const reloadCoreCOnfig = useCallback(async () => {
     try {
       const core = await invoke<CoreConfig>('get_core_config');

@@ -13,6 +13,7 @@ import { CoreConfig, RConfig } from 'store/config-store';
 export default function MyApp({ Component, pageProps }: AppProps) {
   const updateRconfig = useStore((s) => s.updateRconfig);
   const updateCoreConfig = useStore((s) => s.updateCoreConfig);
+  const updateLogging = useStore((s) => s.updateLogging);
   const { reloadRconfig, reloadCoreCOnfig } = useBackend();
 
   useEffect(() => {
@@ -31,7 +32,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
       listeners.push(
         await listen<string>('rua://emit-log', (e) => {
-          console.log(e.payload);
+          updateLogging((log) => {
+            log.logs.push(e.payload);
+          });
         })
       );
 

@@ -14,10 +14,10 @@ use tokio::sync::mpsc::Sender;
 pub fn init_logger(tx: Arc<Sender<ConfigMsg>>) -> VResult<()> {
     let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
     let mut builder = Builder::from_env(env);
-    let now = Local::now();
 
     builder
         .format(move |buf, record| {
+            let now = Local::now();
             let formatted = format!("{}", now.format("%Y-%m-%d %H:%M:%S"));
             let log = format!("{} - {} - {}", formatted, record.level(), record.args());
 
