@@ -80,7 +80,7 @@ const Settings = () => {
             }
           />
 
-          <div className="mt-4">
+          <div>
             <Tooltip placement="top" title="Apply and restart core">
               <Button
                 loading={coreStatus === 'Restarting'}

@@ -19,6 +19,11 @@ const navi = [
     name: 'Settings',
     path: '/settings',
   },
+  {
+    id: 2,
+    name: 'Logging',
+    path: '/logging',
+  },
 ];
 
 export default function SideBar() {
