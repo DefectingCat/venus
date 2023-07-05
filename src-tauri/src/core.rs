@@ -54,19 +54,16 @@ fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &str) -> VResult<CommandChild> {
                         info!("Kill core succeed");
                     } else {
                         error!("{line:?}");
-                        tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped))
-                            .await
-                            .expect("Cannot send config msg");
+                        tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped)).await?;
                     }
                 }
                 _ => {
-                    tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped))
-                        .await
-                        .expect("Cannot send config msg");
+                    tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped)).await?;
                     error!("Core unknown error {event:?}");
                 }
             }
         }
+        Ok::<(), VError>(())
     });
 
     Ok(child)

@@ -237,6 +237,9 @@ fn message_handler(
                         }
                     }
                 }
+                ConfigMsg::EmitLog(log) => {
+                    main_window.emit("rua://emit-log", log)?;
+                }
             }
         }
         Ok::<(), VError>(())

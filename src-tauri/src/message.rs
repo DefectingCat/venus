@@ -11,6 +11,7 @@ use crate::config::CoreStatus;
 pub enum ConfigMsg {
     CoreStatue(CoreStatus),
     RestartCore,
+    EmitLog(String),
 }
 // pub struct ConfigMsg {
 //     pub msg: ConfigMsgType,
