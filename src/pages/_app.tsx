@@ -28,6 +28,12 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         })
       );
 
+      listeners.push(
+        await listen<string>('rua://emit-log', (e) => {
+          console.log(e.payload);
+        })
+      );
+
       emit('ready');
 
       reloadRconfig();
