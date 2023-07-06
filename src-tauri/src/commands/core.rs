@@ -6,6 +6,7 @@ use crate::{
     utils::error::{VError, VResult},
 };
 
+/// Active select node from frontend
 #[tauri::command]
 pub async fn select_node(
     sub_name: String,

@@ -3,6 +3,7 @@ import { ConfigSlice } from './config-store';
 import { immer } from 'zustand/middleware/immer';
 
 export interface Logging {
+  enable: boolean;
   logs: string[];
 }
 export interface LoggingAction {
@@ -17,6 +18,7 @@ const createLogSlice: StateCreator<
   [['zustand/immer', never]],
   LogSlice
 > = immer<LogSlice>((set) => ({
+  enable: false,
   logs: [],
   updateLogging(callback) {
     set(callback);

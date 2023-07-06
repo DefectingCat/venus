@@ -1,6 +1,6 @@
 use chrono::Local;
-use std::io::Write;
 use std::sync::Arc;
+use std::{io::Write, sync::atomic::Ordering};
 use tauri::async_runtime;
 
 use env_logger::{Builder, Env};
@@ -8,6 +8,7 @@ use env_logger::{Builder, Env};
 use crate::{
     message::ConfigMsg,
     utils::error::{VError, VResult},
+    LOGGING,
 };
 use tokio::sync::mpsc::Sender;
 
@@ -23,10 +24,12 @@ pub fn init_logger(tx: Arc<Sender<ConfigMsg>>) -> VResult<()> {
 
             let emit_log = log.clone();
             let tx = tx.clone();
-            async_runtime::spawn(async move {
-                tx.send(ConfigMsg::EmitLog(emit_log)).await?;
-                Ok::<(), VError>(())
-            });
+            if LOGGING.load(Ordering::Relaxed) {
+                async_runtime::spawn(async move {
+                    tx.send(ConfigMsg::EmitLog(emit_log)).await?;
+                    Ok::<(), VError>(())
+                });
+            };
             writeln!(buf, "{log}")
         })
         .init();
