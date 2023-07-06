@@ -50,6 +50,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     return () => {
       listeners.forEach((listener) => listener());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

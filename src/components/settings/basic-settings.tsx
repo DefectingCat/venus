@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import useStore from 'store';
 import { Inbound, InboundSettings, Sniffing } from 'store/config-store';
 
-const basicSettings = () => {
+const BasicSettings = () => {
   const core = useStore((s) => s.core);
   const updateSocksInbound = useStore((s) => s.updateSocksInbound);
   const socksInbound = useMemo(
@@ -157,4 +157,4 @@ const basicSettings = () => {
   );
 };
 
-export default basicSettings;
+export default BasicSettings;

@@ -27,6 +27,7 @@ const useBackend = () => {
       console.error(err);
       message.error('Get rua config failed', err.toString());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -47,6 +48,7 @@ const useBackend = () => {
         }
       })();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
