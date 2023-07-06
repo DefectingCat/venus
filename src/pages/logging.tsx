@@ -39,6 +39,7 @@ const Logging = () => {
               }}
             />
           </div>
+          {logs.length}
         </div>
         <div
           className={clsx(
@@ -49,8 +50,8 @@ const Logging = () => {
           ref={ref}
         >
           <pre className="m-0">
-            {logs.map((log) => (
-              <div className={clsx('px-2', 'pb-2 last:pb-0')}>
+            {logs.map((log, i) => (
+              <div key={i} className={clsx('px-2', 'pb-2 last:pb-0')}>
                 <code>{log}</code>
               </div>
             ))}

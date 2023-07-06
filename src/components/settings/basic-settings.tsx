@@ -47,7 +47,7 @@ const basicSettings = () => {
       updateConfig((config) => {
         config.rua.core_status = 'Restarting';
       });
-      writeConfig('rua');
+      writeConfig('core');
     } catch (err) {
       console.error(err);
     }

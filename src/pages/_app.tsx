@@ -33,6 +33,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       listeners.push(
         await listen<string>('rua://emit-log', (e) => {
           updateLogging((log) => {
+            if (log.logs.length > 1_000) {
+              log.logs.shift();
+            }
             log.logs.push(e.payload);
           });
         })
