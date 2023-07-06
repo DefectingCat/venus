@@ -12,7 +12,7 @@ const SubsModal = dynamic(() => import('components/common/subs-modal'));
 const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
   const subscriptions = useStore((s) => s.rua.subscriptions);
   const subs = subscriptions;
-  const { reloadRconfig } = useBackend();
+  const { reloadConfig } = useBackend();
 
   const [open, setOpen] = useBoolean(true);
   // Add subscripition
@@ -48,7 +48,7 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
         name: subscripition.name || 'Unnamed',
       });
       message.success('Add subscripition success');
-      await reloadRconfig();
+      await reloadConfig('rua');
       setOpen.setFalse();
     } catch (err) {
       console.error(err);

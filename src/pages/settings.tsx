@@ -11,6 +11,7 @@ import {
 } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
+import useBackend from 'hooks/use-backend';
 import MainLayout from 'layouts/main-layout';
 import { useTheme } from 'next-themes';
 import dynamic from 'next/dynamic';
@@ -27,6 +28,7 @@ const Settings = () => {
 
   const { theme, setTheme } = useTheme();
 
+  const { writeConfig } = useBackend();
   const rua = useStore((s) => s.rua);
   const coreStatus = useStore((s) => s.rua.core_status);
   const updateConfig = useStore((s) => s.updateConfig);
@@ -35,8 +37,7 @@ const Settings = () => {
       updateConfig((config) => {
         config.rua.core_status = 'Restarting';
       });
-      await invoke('update_config', { ruaConfig: rua });
-      message.success('Update config success');
+      writeConfig('rua');
     } catch (err) {
       console.error(err);
     }

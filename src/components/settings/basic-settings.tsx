@@ -1,7 +1,7 @@
-import { invoke } from '@tauri-apps/api/tauri';
-import { Button, Input, Switch, Tooltip, message } from 'antd';
+import { Button, Input, Switch, Tooltip } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
+import useBackend from 'hooks/use-backend';
 import { useMemo } from 'react';
 import useStore from 'store';
 import { Inbound, InboundSettings, Sniffing } from 'store/config-store';
@@ -39,6 +39,7 @@ const basicSettings = () => {
     };
 
   // Apply settings
+  const { writeConfig } = useBackend();
   const coreStatus = useStore((s) => s.rua.core_status);
   const updateConfig = useStore((s) => s.updateConfig);
   const handleApply = async () => {
@@ -46,8 +47,7 @@ const basicSettings = () => {
       updateConfig((config) => {
         config.rua.core_status = 'Restarting';
       });
-      await invoke('update_config', { coreConfig: core });
-      message.success('Update config success');
+      writeConfig('rua');
     } catch (err) {
       console.error(err);
     }

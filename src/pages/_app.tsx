@@ -11,17 +11,17 @@ import { CoreConfig, RConfig } from 'store/config-store';
 
 // This default export is required in a new `pages/_app.js` file.
 export default function MyApp({ Component, pageProps }: AppProps) {
-  const updateRconfig = useStore((s) => s.updateRconfig);
+  const updateRConfig = useStore((s) => s.updateRConfig);
   const updateCoreConfig = useStore((s) => s.updateCoreConfig);
   const updateLogging = useStore((s) => s.updateLogging);
-  const { reloadRconfig, reloadCoreCOnfig } = useBackend();
+  const { reloadConfig } = useBackend();
 
   useEffect(() => {
     const listeners: UnlistenFn[] = [];
     (async () => {
       listeners.push(
         await listen<RConfig>('rua://update-rua-config', (e) => {
-          updateRconfig(e.payload);
+          updateRConfig(e.payload);
         })
       );
       listeners.push(
@@ -40,8 +40,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
       emit('ready');
 
-      reloadRconfig();
-      reloadCoreCOnfig();
+      reloadConfig('core');
+      reloadConfig('rua');
     })();
 
     return () => {

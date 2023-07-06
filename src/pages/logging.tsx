@@ -1,15 +1,17 @@
-import { invoke } from '@tauri-apps/api/tauri';
-import { Switch, message } from 'antd';
+import { Switch } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
+import useBackend from 'hooks/use-backend';
 import MainLayout from 'layouts/main-layout';
 import { useEffect, useRef } from 'react';
 import useStore from 'store';
 
 const Logging = () => {
   const logs = useStore((s) => s.logs);
-  const enable = useStore((s) => s.enable);
-  const updateLogging = useStore((s) => s.updateLogging);
+  const enable = useStore((s) => s.rua.logging);
+
+  const updateConfig = useStore((s) => s.updateConfig);
+  const { writeConfig } = useBackend();
 
   // scroll to bottom
   const ref = useRef<HTMLDivElement>(null);
@@ -30,15 +32,10 @@ const Logging = () => {
             <Switch
               checked={enable}
               onChange={async (checked) => {
-                updateLogging((log) => {
-                  log.enable = checked;
+                updateConfig((config) => {
+                  config.rua.logging = checked;
                 });
-                try {
-                  await invoke('toggle_logging', { enable: checked });
-                } catch (err) {
-                  console.error(err);
-                  message.error(err);
-                }
+                writeConfig('rua');
               }}
             />
           </div>

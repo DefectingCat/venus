@@ -19,6 +19,7 @@ import { RxUpdate } from 'react-icons/rx';
 import useStore from 'store';
 import { Subscription } from 'store/config-store';
 import styles from './subscription-card.module.scss';
+import useBackend from 'hooks/use-backend';
 
 const SubsModal = dynamic(() => import('components/common/subs-modal'));
 
@@ -37,6 +38,7 @@ const findSub = (subs: Subscription[], url: string) => {
 const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
   const updateSubs = useStore((s) => s.updateSubs);
   const updateConfig = useStore((s) => s.updateConfig);
+  const { writeConfig } = useBackend();
 
   // edit subscription state
   const [loading, setLoading] = useBoolean(false);
@@ -87,16 +89,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
       }
       subs.splice(index, 1);
     });
-    updateConfig((config) => {
-      (async () => {
-        try {
-          await invoke('update_config', { ruaConfig: config.rua });
-        } catch (err) {
-          console.error(err);
-          message.error(err);
-        }
-      })();
-    });
+    writeConfig('rua');
   };
 
   // update state

@@ -21,7 +21,6 @@ use utils::error::{VError, VResult};
 
 use crate::{
     commands::{
-        common::toggle_logging,
         config::{get_core_config, get_rua_config, update_config},
         core::select_node,
         subs::{add_subscription, update_all_subs, update_sub},
@@ -204,7 +203,6 @@ fn main() {
             // core
             select_node,
             // common commands
-            toggle_logging
         ])
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(handle_app)

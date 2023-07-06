@@ -1,4 +1,4 @@
-import { StateCreator, create } from 'zustand';
+import { StateCreator } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { LogSlice } from './log-store';
 
@@ -149,6 +149,7 @@ export interface Rule {
 }
 
 export interface RConfig {
+  logging: boolean;
   version: string;
   save_windows: boolean;
   core_status?: 'Started' | 'Restarting' | 'Stopped';
@@ -163,7 +164,7 @@ export interface Actions {
   /**
    * Set rua config from backend to global state
    */
-  updateRconfig: (config: RConfig) => void;
+  updateRConfig: (config: RConfig) => void;
   /**
    * Set core config from backend to global state
    */
@@ -189,13 +190,14 @@ const createConfigSlice: StateCreator<
   ConfigSlice
 > = immer<ConfigSlice>((set) => ({
   rua: {
+    logging: false,
     version: '',
     save_windows: true,
     core_status: 'Stopped',
     subscriptions: [],
   },
   core: null,
-  updateRconfig: (rua) => {
+  updateRConfig: (rua) => {
     set(() => ({
       rua,
     }));
