@@ -47,8 +47,8 @@ pub enum VError {
     #[error("Target is empty: {0}")]
     EmptyError(&'static str),
     /// Some serve start error
-    #[error("Target init failed: {0}")]
-    InitError(&'static str),
+    // #[error("Target init failed: {0}")]
+    // InitError(&'static str),
     /// Convert int to string
     #[error("Failed to parse to int: {0}")]
     ParseIntError(#[from] ParseIntError),

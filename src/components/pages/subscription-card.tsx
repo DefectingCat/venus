@@ -16,7 +16,8 @@ import { ChangeEvent, useState } from 'react';
 import { AiOutlineDelete, AiOutlineShareAlt } from 'react-icons/ai';
 import { BsPencilSquare } from 'react-icons/bs';
 import { RxUpdate } from 'react-icons/rx';
-import useStore, { Subscription } from 'store';
+import useStore from 'store';
+import { Subscription } from 'store/config-store';
 import styles from './subscription-card.module.scss';
 
 const SubsModal = dynamic(() => import('components/common/subs-modal'));

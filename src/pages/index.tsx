@@ -8,7 +8,8 @@ import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
 import { useCallback, useMemo, useState } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
-import useStore, { Node } from 'store';
+import useStore from 'store';
+import { Node } from 'store/config-store';
 import styles from 'styles/index.module.scss';
 
 const SubscriptionAdder = dynamic(

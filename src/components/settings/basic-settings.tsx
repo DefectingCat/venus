@@ -3,7 +3,8 @@ import { Button, Input, Switch, Tooltip, message } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import { useMemo } from 'react';
-import useStore, { Inbound, InboundSettings, Sniffing } from 'store';
+import useStore from 'store';
+import { Inbound, InboundSettings, Sniffing } from 'store/config-store';
 
 const basicSettings = () => {
   const core = useStore((s) => s.core);
