@@ -1,18 +1,18 @@
 use chrono::Local;
+use std::io::Write;
 use std::sync::Arc;
-use std::{io::Write, sync::atomic::Ordering};
 use tauri::async_runtime;
 
 use env_logger::{Builder, Env};
 
+use crate::config::ConfigState;
 use crate::{
     message::ConfigMsg,
     utils::error::{VError, VResult},
-    LOGGING,
 };
 use tokio::sync::mpsc::Sender;
 
-pub fn init_logger(tx: Arc<Sender<ConfigMsg>>) -> VResult<()> {
+pub fn init_logger(tx: Arc<Sender<ConfigMsg>>, config: ConfigState) -> VResult<()> {
     let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
     let mut builder = Builder::from_env(env);
 
@@ -24,12 +24,14 @@ pub fn init_logger(tx: Arc<Sender<ConfigMsg>>) -> VResult<()> {
 
             let emit_log = log.clone();
             let tx = tx.clone();
-            if LOGGING.load(Ordering::Relaxed) {
-                async_runtime::spawn(async move {
+            let config = config.clone();
+            async_runtime::spawn(async move {
+                let config = config.lock().await;
+                if config.rua.logging {
                     tx.send(ConfigMsg::EmitLog(emit_log)).await?;
-                    Ok::<(), VError>(())
-                });
-            };
+                }
+                Ok::<(), VError>(())
+            });
             writeln!(buf, "{log}")
         })
         .init();

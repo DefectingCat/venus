@@ -244,6 +244,7 @@ pub struct Subscription {
 /// V2rayR config and frontend global state
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RConfig {
+    pub logging: bool,
     pub version: String,
     /// Save state of all open windows to disk
     pub save_windows: bool,
@@ -291,6 +292,7 @@ impl VConfig {
         use CoreStatus::*;
 
         let r_config = RConfig {
+            logging: false,
             version: VERSION.to_owned(),
             save_windows: true,
             core_status: Stopped,

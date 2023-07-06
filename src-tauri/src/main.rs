@@ -44,8 +44,6 @@ mod utils;
 /// Determine the core is manual killed or it's got killed by not expected.
 /// if manual killed will be true, otherwise false.
 static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
-/// Determine whether logging log to frontend
-static LOGGING: AtomicBool = AtomicBool::new(false);
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {
@@ -60,7 +58,7 @@ fn main() {
     // Init config.
     let config = Arc::new(async_runtime::Mutex::new(VConfig::new()));
 
-    match init_logger(tx.clone()) {
+    match init_logger(tx.clone(), config.clone()) {
         Ok(()) => {}
         Err(e) => {
             eprintln!("Logger init failed {e}");
