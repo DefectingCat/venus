@@ -10,7 +10,7 @@ use serde_derive::Serialize;
 use tokio::sync::Mutex;
 
 use crate::utils::error::{VError, VResult};
-use crate::VERSION;
+use crate::{NAME, VERSION};
 
 // fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 // where
@@ -112,8 +112,151 @@ pub struct Outbound {
     pub protocol: String,
     pub settings: OutboundSettings,
     pub tag: String,
+    pub stream_settings: StreamSettings,
     pub proxy_setting: Option<ProxySetting>,
     pub mux: Option<Mux>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamSettings {
+    pub network: String,
+    pub security: String,
+    pub tls_settings: TlsSettings,
+    pub tcp_settings: TcpSettings,
+    pub kcp_settings: KcpSettings,
+    pub ws_settings: WsSettings,
+    pub http_settings: HttpSettings,
+    pub ds_settings: DsSettings,
+    pub quic_settings: QuicSettings,
+    pub sockopt: Sockopt,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TlsSettings {
+    pub server_name: String,
+    pub allow_insecure: bool,
+    pub alpn: Vec<String>,
+    pub certificates: Vec<String>,
+    pub disable_system_root: bool,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TcpSettings {
+    pub header: KcpHeader,
+    pub request: Option<Request>,
+    pub response: Option<Response>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Request {
+    pub version: String,
+    pub method: String,
+    pub path: Vec<String>,
+    pub headers: Headers,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Headers {
+    #[serde(rename = "Host")]
+    pub host: Vec<String>,
+    #[serde(rename = "User-Agent")]
+    pub user_agent: Vec<String>,
+    #[serde(rename = "Accept-Encoding")]
+    pub accept_encoding: Vec<String>,
+    #[serde(rename = "Connection")]
+    pub connection: Vec<String>,
+    #[serde(rename = "Pragma")]
+    pub pragma: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Response {
+    pub version: String,
+    pub status: String,
+    pub reason: String,
+    pub headers: Headers2,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Headers2 {
+    #[serde(rename = "Content-Type")]
+    pub content_type: Vec<String>,
+    #[serde(rename = "Transfer-Encoding")]
+    pub transfer_encoding: Vec<String>,
+    #[serde(rename = "Connection")]
+    pub connection: Vec<String>,
+    #[serde(rename = "Pragma")]
+    pub pragma: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KcpSettings {
+    pub mtu: i64,
+    pub tti: i64,
+    pub uplink_capacity: i64,
+    pub downlink_capacity: i64,
+    pub congestion: bool,
+    pub read_buffer_size: i64,
+    pub write_buffer_size: i64,
+    pub header: KcpHeader,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KcpHeader {
+    #[serde(rename = "type")]
+    pub type_field: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WsSettings {
+    pub path: String,
+    pub headers: WsHeaders,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WsHeaders {
+    #[serde(rename = "Host")]
+    pub host: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HttpSettings {
+    pub host: Vec<String>,
+    pub path: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DsSettings {
+    path: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct QuicSettings {
+    pub security: String,
+    pub key: String,
+    pub header: KcpHeader,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Sockopt {
+    pub mark: i64,
+    pub tcp_fast_open: bool,
+    pub tproxy: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -241,7 +384,7 @@ pub struct Subscription {
     pub nodes: Option<Vec<Node>>,
 }
 
-/// V2rayR config and frontend global state
+/// RUA config and frontend global state
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RConfig {
     pub logging: bool,
@@ -316,12 +459,12 @@ impl VConfig {
         let home = match home::home_dir() {
             Some(path) => {
                 let mut path = path;
-                path.push(".config/v2ray-r");
+                path.push(format!(".config/{}", NAME));
                 path
             }
             None => {
                 error!("Cannot detect user home folder, use /usr/local instead");
-                PathBuf::from("/usr/local/v2ray-r")
+                PathBuf::from(format!("/usr/local/{}", NAME))
             }
         };
         let mut core_path = PathBuf::from(&home);

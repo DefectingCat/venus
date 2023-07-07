@@ -1,5 +1,5 @@
 [package]
-name = "v2ray-r"
+name = "venus"
 version = "0.0.1"
 description = "A v2ray GUI client."
 authors = ["xfy"]
@@ -16,7 +16,15 @@ tauri-build = { version = "1.4", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive", "rc"] }
-tauri = { version = "1.4", features = [ "window-maximize", "window-unminimize", "window-unmaximize", "window-minimize", "window-close", "window-hide", "window-show", "window-start-dragging",
+tauri = { version = "1.4", features = [
+  "window-maximize",
+  "window-unminimize",
+  "window-unmaximize",
+  "window-minimize",
+  "window-close",
+  "window-hide",
+  "window-show",
+  "window-start-dragging",
   "shell-open",
   "shell-sidecar",
   "system-tray",

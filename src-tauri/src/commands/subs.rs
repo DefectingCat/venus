@@ -7,6 +7,7 @@ use crate::{
     config::{ConfigState, Node, Subscription},
     message::MsgSender,
     utils::error::{VError, VResult},
+    NAME, VERSION,
 };
 
 /// Send http request to download subscription info
@@ -14,7 +15,7 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
     let client = reqwest::Client::new();
     let result = client
         .get(url)
-        .header(USER_AGENT, format!("V2rayR/{}", env!("CARGO_PKG_VERSION")))
+        .header(USER_AGENT, format!("{}/{}", NAME, VERSION))
         .send()
         .await?
         .text()

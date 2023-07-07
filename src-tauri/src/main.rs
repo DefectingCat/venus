@@ -50,6 +50,7 @@ struct Payload {
 /// if manual killed will be true, otherwise false.
 static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
 static VERSION: &str = env!("CARGO_PKG_VERSION");
+static NAME: &str = env!("CARGO_PKG_NAME");
 
 fn main() {
     let tray = new_tray();
@@ -71,7 +72,7 @@ fn main() {
     }
 
     info!("Starting up.");
-    info!("V2rayR - {}", VERSION);
+    info!("Venus - {}", VERSION);
 
     let core = Arc::new(Mutex::new(VCore::build(tx.clone())));
 
