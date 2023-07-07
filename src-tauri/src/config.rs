@@ -112,7 +112,7 @@ pub struct Outbound {
     pub protocol: String,
     pub settings: OutboundSettings,
     pub tag: String,
-    pub stream_settings: StreamSettings,
+    pub stream_settings: Option<StreamSettings>,
     pub proxy_setting: Option<ProxySetting>,
     pub mux: Option<Mux>,
 }
@@ -529,6 +529,7 @@ impl VConfig {
             .create(true)
             .open(&self.rua_path)?;
         let rua_string = toml::to_string(&self.rua)?;
+        rua_file.set_len(0)?;
         rua_file.write_all(rua_string.as_bytes())?;
         Ok(())
     }

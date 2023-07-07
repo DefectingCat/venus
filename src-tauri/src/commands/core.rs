@@ -33,11 +33,7 @@ pub async fn select_node(
         address: node.add.clone(),
         port: node.port.parse()?,
         users: vec![CoreUser {
-            id: node
-                .node_id
-                .as_ref()
-                .ok_or(VError::EmptyError("selected node id is empty"))?
-                .clone(),
+            id: node.id.clone(),
             alter_id: node.aid.parse()?,
             email: "rua@rua.rua".to_string(),
             security: "auto".to_string(),
@@ -49,6 +45,7 @@ pub async fn select_node(
         settings: OutboundSettings {
             vnext: Some(vec![vmess]),
         },
+        stream_settings: None,
         proxy_setting: None,
         mux: None,
     };
@@ -58,6 +55,7 @@ pub async fn select_node(
         settings: OutboundSettings { vnext: None },
         tag: "direct".to_owned(),
         proxy_setting: None,
+        stream_settings: None,
         mux: None,
     };
     let blackhole = Outbound {
@@ -65,6 +63,7 @@ pub async fn select_node(
         settings: OutboundSettings { vnext: None },
         tag: "blocked".to_owned(),
         proxy_setting: None,
+        stream_settings: None,
         mux: None,
     };
 
