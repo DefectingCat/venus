@@ -8,6 +8,10 @@
   }
 }
 
+.ant-app {
+  font-size: 16px;
+}
+
 .react-resizable {
   position: relative;
   background-clip: padding-box;

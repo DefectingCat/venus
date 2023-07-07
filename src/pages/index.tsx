@@ -218,8 +218,8 @@ function App() {
               className: clsx(
                 'cursor-pointer select-none',
                 record.nodeId === selected
-                  ? 'bg-gray-300'
-                  : 'hover:bg-[#fafafa]',
+                  ? 'bg-gray-300 dark:bg-gray-900'
+                  : 'hover:bg-[#fafafa] hover:dark:bg-gray-800',
                 'transition-all duration-300'
               ),
             })}

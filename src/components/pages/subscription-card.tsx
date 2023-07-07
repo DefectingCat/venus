@@ -127,7 +127,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
                 className={clsx('mr-2', 'flex justify-center items-center')}
                 onClick={setOpen.setTrue}
               >
-                <BsPencilSquare />
+                <BsPencilSquare className="dark:text-gray-500" />
               </Button>
             </div>
           </Tooltip>
@@ -140,7 +140,9 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
                 disabled={loading}
                 onClick={handleUpdate}
               >
-                <RxUpdate className={clsx(loading && 'hidden')} />
+                <RxUpdate
+                  className={clsx(loading ? 'hidden' : 'dark:text-gray-500')}
+                />
               </Button>
             </div>
           </Tooltip>
@@ -155,7 +157,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
                   shape="circle"
                   className={clsx('mr-2', 'flex justify-center items-center')}
                 >
-                  <AiOutlineShareAlt />
+                  <AiOutlineShareAlt className="dark:text-gray-500" />
                 </Button>
               </Popover>
             </div>

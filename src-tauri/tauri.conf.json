@@ -81,12 +81,13 @@
     },
     "windows": [
       {
-        "decorations": false,
         "fullscreen": false,
         "width": 1000,
         "height": 700,
         "resizable": true,
-        "title": "V2rayR"
+        "title": "V2rayR",
+        "hiddenTitle": true,
+        "titleBarStyle": "Overlay"
       }
     ]
   }
