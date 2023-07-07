@@ -1,10 +1,11 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import { message } from 'antd';
+import { App } from 'antd';
 import { useCallback } from 'react';
 import useStore from 'store';
 import { CoreConfig, RConfig } from 'store/config-store';
 
 const useBackend = () => {
+  const { message } = App.useApp();
   const { updateRConfig, updateCoreConfig, updateConfig } = useStore();
 
   /**
@@ -24,7 +25,6 @@ const useBackend = () => {
     try {
       map[type]();
     } catch (err) {
-      console.error(err);
       message.error('Get rua config failed', err.toString());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

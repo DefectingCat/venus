@@ -1,4 +1,4 @@
-import { Button, Input, Switch, Tooltip } from 'antd';
+import { App, Button, Input, Switch, Tooltip } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import useBackend from 'hooks/use-backend';
@@ -7,6 +7,7 @@ import useStore from 'store';
 import { Inbound, InboundSettings, Sniffing } from 'store/config-store';
 
 const BasicSettings = () => {
+  const { message } = App.useApp();
   const core = useStore((s) => s.core);
   const updateSocksInbound = useStore((s) => s.updateSocksInbound);
   const socksInbound = useMemo(
@@ -49,7 +50,7 @@ const BasicSettings = () => {
       });
       writeConfig('core');
     } catch (err) {
-      console.error(err);
+      message.error(err);
     }
   };
 

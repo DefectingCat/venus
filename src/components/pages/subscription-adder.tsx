@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
-import { Modal, message } from 'antd';
+import { App, Modal } from 'antd';
 import useBackend from 'hooks/use-backend';
 import useVaildUrl from 'hooks/use-vaild-url';
 import dynamic from 'next/dynamic';
@@ -10,6 +10,7 @@ import useStore from 'store';
 const SubsModal = dynamic(() => import('components/common/subs-modal'));
 
 const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
+  const { message } = App.useApp();
   const subscriptions = useStore((s) => s.rua.subscriptions);
   const subs = subscriptions;
   const { reloadConfig } = useBackend();
@@ -51,7 +52,6 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
       await reloadConfig('rua');
       setOpen.setFalse();
     } catch (err) {
-      console.error(err);
       message.error(`Failed to add subscripition ${err?.toString()}`);
     } finally {
       setLoading.setFalse();

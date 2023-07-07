@@ -1,6 +1,7 @@
 import { ConfigProvider, theme as antTheme } from 'antd';
 import { useTheme } from 'next-themes';
 import { AppProps } from 'next/app';
+import { App } from 'antd';
 
 const themeMap = {
   light: antTheme.defaultAlgorithm,
@@ -17,7 +18,9 @@ const ThemeSwitcher = ({ Component, pageProps }: AppProps) => {
         algorithm: themeMap[currentTheme],
       }}
     >
-      <Component {...pageProps} />
+      <App>
+        <Component {...pageProps} />
+      </App>
     </ConfigProvider>
   );
 };

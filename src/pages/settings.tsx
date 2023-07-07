@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean, useMount } from 'ahooks';
 import {
+  App,
   Button,
   Checkbox,
   Select,
@@ -23,6 +24,7 @@ const BasicSettings = dynamic(
 );
 
 const Settings = () => {
+  const { message } = App.useApp();
   const [mounted, setMounted] = useBoolean(false);
   useMount(setMounted.setTrue);
 
@@ -39,7 +41,7 @@ const Settings = () => {
       });
       writeConfig('rua');
     } catch (err) {
-      console.error(err);
+      message.error(err);
     }
   };
 

@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
-import { Button, Empty, Table, Tooltip, message } from 'antd';
+import { Button, Empty, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
@@ -11,6 +11,7 @@ import { ResizeCallbackData } from 'react-resizable';
 import useStore from 'store';
 import { Node } from 'store/config-store';
 import styles from 'styles/index.module.scss';
+import { App as AntApp } from 'antd';
 
 const SubscriptionAdder = dynamic(
   () => import('components/pages/subscription-adder')
@@ -23,6 +24,7 @@ const ResizableTitle = dynamic(
 );
 
 function App() {
+  const { message } = AntApp.useApp();
   const [open, setOpen] = useBoolean(false);
   const subscriptions = useStore((s) => s.rua.subscriptions);
   const nodes = useMemo(
@@ -142,7 +144,7 @@ function App() {
         config.rua.core_status = 'Restarting';
       });
     } catch (err) {
-      console.error(err);
+      message.error(err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -1,14 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
-import {
-  Button,
-  Modal,
-  Popconfirm,
-  Popover,
-  QRCode,
-  Tooltip,
-  message,
-} from 'antd';
+import { App, Button, Modal, Popconfirm, Popover, QRCode, Tooltip } from 'antd';
 import clsx from 'clsx';
 import useVaildUrl from 'hooks/use-vaild-url';
 import dynamic from 'next/dynamic';
@@ -36,8 +28,8 @@ const findSub = (subs: Subscription[], url: string) => {
 };
 
 const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
+  const { message } = App.useApp();
   const updateSubs = useStore((s) => s.updateSubs);
-  const updateConfig = useStore((s) => s.updateConfig);
   const { writeConfig } = useBackend();
 
   // edit subscription state
@@ -72,7 +64,6 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
         setOpen.setFalse();
       } catch (err) {
         message.error(err);
-        console.error(err);
       } finally {
         setLoading.setFalse();
       }
@@ -84,7 +75,6 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
     updateSubs((subs) => {
       const index = subs.findIndex((s) => s.url === sub.url);
       if (!~index) {
-        console.error('Cannot find target subscription');
         message.error('Cannot find target subscription');
       }
       subs.splice(index, 1);
@@ -99,7 +89,6 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
       await invoke('update_sub', { url: sub.url });
       message.success(`Update subscription ${sub.name} success`);
     } catch (err) {
-      console.error(err);
       message.error(err);
     } finally {
       setLoading.setFalse();
@@ -132,53 +121,61 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
         </div>
         <div className={clsx('flex items-center', 'mt-4')}>
           <Tooltip title="Edit">
-            <Button
-              shape="circle"
-              className={clsx('mr-2', 'flex justify-center items-center')}
-              onClick={setOpen.setTrue}
-            >
-              <BsPencilSquare />
-            </Button>
+            <div>
+              <Button
+                shape="circle"
+                className={clsx('mr-2', 'flex justify-center items-center')}
+                onClick={setOpen.setTrue}
+              >
+                <BsPencilSquare />
+              </Button>
+            </div>
           </Tooltip>
           <Tooltip title="Update" className={clsx(styles['update-btn'])}>
-            <Button
-              shape="circle"
-              className={clsx('mr-2', 'flex justify-center items-center')}
-              loading={loading}
-              disabled={loading}
-              onClick={handleUpdate}
-            >
-              <RxUpdate className={clsx(loading && 'hidden')} />
-            </Button>
+            <div>
+              <Button
+                shape="circle"
+                className={clsx('mr-2', 'flex justify-center items-center')}
+                loading={loading}
+                disabled={loading}
+                onClick={handleUpdate}
+              >
+                <RxUpdate className={clsx(loading && 'hidden')} />
+              </Button>
+            </div>
           </Tooltip>
           <Tooltip title="Share">
-            <Popover
-              trigger="click"
-              overlayInnerStyle={{ padding: 0 }}
-              content={<QRCode value={sub.url} bordered={false} />}
-            >
-              <Button
-                shape="circle"
-                className={clsx('mr-2', 'flex justify-center items-center')}
+            <div>
+              <Popover
+                trigger="click"
+                overlayInnerStyle={{ padding: 0 }}
+                content={<QRCode value={sub.url} bordered={false} />}
               >
-                <AiOutlineShareAlt />
-              </Button>
-            </Popover>
+                <Button
+                  shape="circle"
+                  className={clsx('mr-2', 'flex justify-center items-center')}
+                >
+                  <AiOutlineShareAlt />
+                </Button>
+              </Popover>
+            </div>
           </Tooltip>
           <Tooltip title="Delete">
-            <Popconfirm
-              title="Delete this subscription?"
-              description={'will be delete all nodes in this subscription'}
-              onConfirm={handleDelete}
-            >
-              <Button
-                shape="circle"
-                className={clsx('mr-2', 'flex justify-center items-center')}
-                danger
+            <div>
+              <Popconfirm
+                title="Delete this subscription?"
+                description={'will be delete all nodes in this subscription'}
+                onConfirm={handleDelete}
               >
-                <AiOutlineDelete />
-              </Button>
-            </Popconfirm>
+                <Button
+                  shape="circle"
+                  className={clsx('mr-2', 'flex justify-center items-center')}
+                  danger
+                >
+                  <AiOutlineDelete />
+                </Button>
+              </Popconfirm>
+            </div>
           </Tooltip>
         </div>
       </div>

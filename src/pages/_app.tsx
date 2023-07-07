@@ -16,6 +16,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const updateLogging = useStore((s) => s.updateLogging);
   const { reloadConfig } = useBackend();
 
+  // Update configs
   useEffect(() => {
     const listeners: UnlistenFn[] = [];
     (async () => {
@@ -51,6 +52,15 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       listeners.forEach((listener) => listener());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Custom context menu
+  useEffect(() => {
+    const contextHandler = (e: MouseEvent) => {
+      console.log(e);
+    };
+    document.addEventListener('contextmenu', contextHandler);
+    return () => document.removeEventListener('contextmenu', contextHandler);
   }, []);
 
   return (
