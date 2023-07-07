@@ -40,6 +40,12 @@ mod message;
 mod tray;
 mod utils;
 
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+    args: Vec<String>,
+    cwd: String,
+}
+
 /// Determine the core is manual killed or it's got killed by not expected.
 /// if manual killed will be true, otherwise false.
 static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
@@ -64,8 +70,8 @@ fn main() {
         }
     }
 
-    info!("starting up.");
-    info!("V2rayR - {}", env!("CARGO_PKG_VERSION"));
+    info!("Starting up.");
+    info!("V2rayR - {}", VERSION);
 
     let core = Arc::new(Mutex::new(VCore::build(tx.clone())));
 
@@ -205,6 +211,11 @@ fn main() {
             // common commands
         ])
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            info!("{}, {argv:?}, {cwd}", app.package_info().name);
+            app.emit_all("single-instance", Payload { args: argv, cwd })
+                .unwrap();
+        }))
         .setup(handle_app)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
