@@ -1,6 +1,11 @@
-use tauri::{AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayMenu, SystemTrayMenuItem};
+use std::sync::atomic::Ordering;
 
-use crate::core::AVCore;
+use tauri::{
+    async_runtime, AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayMenu,
+    SystemTrayMenuItem,
+};
+
+use crate::{core::AVCore, utils::error::VError, CORE_SHUTDOWN};
 
 /// Build new system tray.
 pub fn new_tray() -> SystemTray {
@@ -19,25 +24,31 @@ pub fn handle_tray_click(app: &AppHandle, id: String, core: &AVCore) {
     match id.as_str() {
         "quit" => {
             let mut core = core.lock().expect("");
-            core.exit().expect("");
+            CORE_SHUTDOWN.store(true, Ordering::Relaxed);
+            core.exit().expect("Kill core failed");
             app.exit(0);
         }
         "hide" => {
+            let windows = app.windows();
             let main_window = app.get_window("main").expect("Can not get main window");
-            let main_visible = main_window
-                .is_visible()
-                .expect("Failed to detect window visible");
-            if main_visible {
-                main_window.hide().expect("Can not hide main window");
-                item_handle
-                    .set_title("Show")
-                    .expect("Can not set title to menu item");
-            } else {
-                main_window.show().expect("Can not show main window");
-                item_handle
-                    .set_title("Hide")
-                    .expect("Can not set title tray title");
-            }
+            let task = async move {
+                let main_visible = main_window.is_visible()?;
+                if main_visible {
+                    for (_, window) in windows {
+                        window.hide()?;
+                    }
+                    item_handle.set_title("Show")?;
+                } else {
+                    for (_, window) in windows {
+                        window.show()?;
+                        window.set_focus()?;
+                    }
+                    item_handle.set_title("Hide")?;
+                    // .expect("Can not set title tray title");
+                }
+                Ok::<(), VError>(())
+            };
+            async_runtime::spawn(task);
         }
         _ => {}
     }

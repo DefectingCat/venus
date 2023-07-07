@@ -118,8 +118,22 @@ fn main() {
             }
         }
 
+        let window = app
+            .get_window("main")
+            .ok_or(VError::EmptyError("Can not get main window"))?;
+        let event_config = config_app.clone();
         app.listen_global("ready", move |_e| {
-            info!("Got front ready event");
+            info!("Frontend ready");
+            let window = window.get_window("main").unwrap();
+            let event_config = event_config.clone();
+            let task = async move {
+                let config = event_config.lock().await;
+                window.emit_all("rua://update-rua-config", &config.rua)?;
+                window.emit_all("rua://update-core-config", &config.core)?;
+                info!("Reload config succeeded");
+                Ok::<(), VError>(())
+            };
+            async_runtime::spawn(task);
         });
 
         let msg_config = config_app.clone();
@@ -131,12 +145,7 @@ fn main() {
         // The config will use receiver here
         // when got a message, config will update and
         // emit a event to notify frontend to update global state
-        match message_handler(main_window, rx, msg_config, msg_core) {
-            Ok(_) => {}
-            Err(err) => {
-                error!("Handle message failed: {err}")
-            }
-        }
+        message_handler(main_window, rx, msg_config, msg_core)?;
         Ok(())
     };
 
@@ -188,9 +197,14 @@ fn main() {
             SystemTrayEvent::LeftClick { .. } => {}
             SystemTrayEvent::DoubleClick { .. } => {
                 let windows = app.windows();
-                for (_, window) in windows {
-                    window.show().unwrap()
-                }
+                let task = async move {
+                    for (_, window) in windows {
+                        window.show()?;
+                        window.set_focus()?;
+                    }
+                    Ok::<(), VError>(())
+                };
+                async_runtime::spawn(task);
             }
             SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core),
             _ => {}
@@ -223,7 +237,7 @@ fn main() {
 }
 
 fn message_handler(
-    main_window: Window,
+    window: Window,
     mut rx: Receiver<ConfigMsg>,
     msg_config: Arc<sync::Mutex<VConfig>>,
     msg_core: Arc<Mutex<VCore>>,
@@ -235,7 +249,7 @@ fn message_handler(
                     info!("Update core status {}", status.as_str());
                     let mut config = msg_config.lock().await;
                     config.rua.core_status = status;
-                    main_window.emit("rua://update-rua-config", &config.rua)?;
+                    window.emit_all("rua://update-rua-config", &config.rua)?;
                 }
                 ConfigMsg::RestartCore => {
                     info!("Restarting core");
@@ -244,8 +258,8 @@ fn message_handler(
                     match core.restart() {
                         Ok(_) => {
                             config.rua.core_status = CoreStatus::Started;
-                            main_window.emit("rua://update-rua-config", &config.rua)?;
-                            main_window.emit("rua://update-core-config", &config.core)?;
+                            window.emit_all("rua://update-rua-config", &config.rua)?;
+                            window.emit_all("rua://update-core-config", &config.core)?;
                         }
                         Err(err) => {
                             error!("Core restart failed {err}");
@@ -253,7 +267,7 @@ fn message_handler(
                     }
                 }
                 ConfigMsg::EmitLog(log) => {
-                    main_window.emit("rua://emit-log", log)?;
+                    window.emit("rua://emit-log", log)?;
                 }
             }
         }

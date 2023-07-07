@@ -27,6 +27,17 @@
       },
       "fs": {
         "scope": ["$RESOURCE/*"]
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
       }
     },
     "bundle": {
@@ -70,6 +81,7 @@
     },
     "windows": [
       {
+        "decorations": false,
         "fullscreen": false,
         "width": 1000,
         "height": 700,

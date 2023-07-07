@@ -5,7 +5,6 @@ import 'modern-normalize';
 import { ThemeProvider } from 'next-themes';
 import ThemeSwitcher from 'components/theme-switcher';
 import { useEffect } from 'react';
-import useBackend from 'hooks/use-backend';
 import useStore from 'store';
 import { CoreConfig, RConfig } from 'store/config-store';
 
@@ -14,7 +13,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const updateRConfig = useStore((s) => s.updateRConfig);
   const updateCoreConfig = useStore((s) => s.updateCoreConfig);
   const updateLogging = useStore((s) => s.updateLogging);
-  const { reloadConfig } = useBackend();
 
   // Update configs
   useEffect(() => {
@@ -43,9 +41,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       );
 
       emit('ready');
-
-      reloadConfig('core');
-      reloadConfig('rua');
     })();
 
     return () => {
