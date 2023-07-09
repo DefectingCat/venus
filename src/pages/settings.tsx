@@ -1,4 +1,3 @@
-import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean, useMount } from 'ahooks';
 import { App, Button, Checkbox, Select, Tabs, TabsProps, Tooltip } from 'antd';
 import clsx from 'clsx';
