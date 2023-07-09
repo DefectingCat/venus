@@ -6,6 +6,7 @@
 use config::VConfig;
 use log::{error, info};
 use std::{
+    env,
     error::Error,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -80,44 +81,44 @@ fn main() {
     let config_app = config.clone();
     // App handler
     let handle_app = move |app: &mut App| -> Result<(), Box<dyn Error>> {
-        let resources_path = app.handle().path_resolver().resolve_resource("resources/");
+        let resources_path = app
+            .handle()
+            .path_resolver()
+            .resolve_resource("resources/")
+            .ok_or(VError::ResourceError("resource path is empty"))?;
         // Init config and core
         let init_config = config_app.clone();
         let window = app
             .get_window("main")
             .ok_or(VError::EmptyError("Can not get main window"))?;
+        let core = core_app.clone();
+        // Start config and core
         async_runtime::spawn(async move {
             let mut config = init_config.lock().await;
-            config.init(resources_path)?;
+            config.init(&resources_path)?;
             info!("Config init sucess");
             // Restore alll window status.
             if config.rua.save_windows {
                 window.restore_state(StateFlags::all())?;
             }
-            Ok::<(), VError>(())
-        });
-        let mut core = core_app.lock().expect("Can not lock core");
-        info!("Start core");
-        let resources_path = app.handle().path_resolver().resolve_resource("resources/");
-        // Used to start core
-        let config_core = config_app.clone();
-        match core.init(resources_path) {
-            Ok(_) => {
-                async_runtime::spawn(async move {
-                    let mut config = config_core.lock().await;
+
+            info!("Start core");
+            let mut core = core.lock().expect("Can not lock core");
+            // Set v2ray assert location with environment
+            env::set_var("V2RAY_LOCATION_ASSET", &resources_path);
+            match core.init(&config.core_path) {
+                Ok(_) => {
                     config.rua.core_status = CoreStatus::Started;
                     info!("Core started")
-                });
-            }
-            Err(err) => {
-                error!("Core start failed {err:?}");
-                CORE_SHUTDOWN.store(false, Ordering::Relaxed);
-                async_runtime::spawn(async move {
-                    let mut config = config_core.lock().await;
+                }
+                Err(err) => {
+                    error!("Core start failed {err:?}");
+                    CORE_SHUTDOWN.store(false, Ordering::Relaxed);
                     config.rua.core_status = CoreStatus::Stopped;
-                });
+                }
             }
-        }
+            Ok::<(), VError>(())
+        });
 
         let window = app
             .get_window("main")

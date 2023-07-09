@@ -1,6 +1,5 @@
 use std::{
-    env,
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::{atomic::Ordering, Arc, Mutex},
 };
 
@@ -27,16 +26,14 @@ pub struct VCore {
     // Message sender
     pub tx: Arc<Sender<ConfigMsg>>,
     // Core resource path
-    asset_path: String,
+    asset_path: PathBuf,
 }
 
-fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &str) -> VResult<CommandChild> {
+fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &Path) -> VResult<CommandChild> {
     // `new_sidecar()` expects just the filename, NOT the whole path like in JavaScript
-    let mut config_path = PathBuf::from(path);
-    config_path.push("config.json");
     let (mut rx, child) = Command::new_sidecar("v2ray")
         .expect("Failed to create `v2ray` binary command")
-        .args(["run", "-c", &config_path.to_string_lossy()])
+        .args(["run", "-c", &path.to_string_lossy()])
         .spawn()
         .expect("Failed to spawn sidecar");
 
@@ -74,20 +71,15 @@ impl VCore {
         Self {
             child: None,
             tx,
-            asset_path: String::new(),
+            asset_path: PathBuf::new(),
         }
     }
 
     /// Init core add assets path and start core
-    pub fn init(&mut self, asset_path: Option<PathBuf>) -> VResult<()> {
-        let asset_path = asset_path.ok_or(VError::ResourceError("resource path is empty"))?;
-        let path = asset_path
-            .to_str()
-            .ok_or(VError::ResourceError("resource path is empty"))?;
-        // Set v2ray assert location with environment
-        env::set_var("V2RAY_LOCATION_ASSET", path);
-        self.child = Some(start_core(self.tx.clone(), path)?);
-        self.asset_path = path.into();
+    pub fn init(&mut self, asset_path: &Path) -> VResult<()> {
+        self.asset_path = PathBuf::from(asset_path);
+        self.child = Some(start_core(self.tx.clone(), &self.asset_path)?);
+        // self.asset_path = path.into();
         Ok(())
     }
 

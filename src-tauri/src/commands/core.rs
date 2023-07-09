@@ -1,7 +1,7 @@
 use tauri::State;
 
 use crate::{
-    config::{ConfigState, CoreUser, Outbound, OutboundSettings, Vmess},
+    config::{stream_settings_builder, ConfigState, CoreUser, Outbound, OutboundSettings, Vmess},
     message::MsgSender,
     utils::error::{VError, VResult},
 };
@@ -45,7 +45,7 @@ pub async fn select_node(
         settings: OutboundSettings {
             vnext: Some(vec![vmess]),
         },
-        stream_settings: None,
+        stream_settings: Some(stream_settings_builder(node)?),
         proxy_setting: None,
         mux: None,
     };

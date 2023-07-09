@@ -1,6 +1,6 @@
 use std::fs::{self, OpenOptions};
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::{fs::File, io::Write};
 
@@ -37,14 +37,17 @@ pub struct Node {
     // AlertID
     // #[serde(deserialize_with = "from_str")]
     pub aid: String,
-    // Protocol type
+    // Protocol type determine streamSettings network field
     pub net: String,
     // Protocol type
     #[serde(rename = "type")]
     pub type_field: String,
     pub host: String,
+    // streamSettings
     pub path: String,
+    // Determine streamSettings security field
     pub tls: String,
+    // Determine streamSettings headers sni
     pub sni: String,
     pub alpn: String,
     // Add by manually
@@ -122,14 +125,14 @@ pub struct Outbound {
 pub struct StreamSettings {
     pub network: String,
     pub security: String,
-    pub tls_settings: TlsSettings,
-    pub tcp_settings: TcpSettings,
-    pub kcp_settings: KcpSettings,
-    pub ws_settings: WsSettings,
-    pub http_settings: HttpSettings,
-    pub ds_settings: DsSettings,
-    pub quic_settings: QuicSettings,
-    pub sockopt: Sockopt,
+    pub tls_settings: Option<TlsSettings>,
+    pub tcp_settings: Option<TcpSettings>,
+    pub kcp_settings: Option<KcpSettings>,
+    pub ws_settings: Option<WsSettings>,
+    pub http_settings: Option<HttpSettings>,
+    pub ds_settings: Option<DsSettings>,
+    pub quic_settings: Option<QuicSettings>,
+    pub sockopt: Option<Sockopt>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -451,9 +454,9 @@ impl VConfig {
     }
 
     /// Re-read config from file
-    pub fn init(&mut self, resource_path: Option<PathBuf>) -> VResult<()> {
-        let resource_path = resource_path.ok_or(VError::ResourceError("resource path is empty"))?;
-        let mut core_default = resource_path;
+    pub fn init(&mut self, resource_path: &Path) -> VResult<()> {
+        // let resource_path = resource_path.ok_or(VError::ResourceError("resource path is empty"))?;
+        let mut core_default = PathBuf::from(resource_path);
         core_default.push("config.json");
 
         let home = match home::home_dir() {
@@ -547,4 +550,45 @@ fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> VResult<()
         fs::copy(default_path, target_path)?;
     }
     Ok(())
+}
+
+/// Build outbound stream setting with node in subscription
+pub fn stream_settings_builder(node: &Node) -> VResult<StreamSettings> {
+    let setting = StreamSettings {
+        network: node.net.clone(),
+        security: if !node.tls.is_empty() {
+            node.tls.clone()
+        } else {
+            "none".to_owned()
+        },
+        tls_settings: if !node.tls.is_empty() {
+            Some(TlsSettings {
+                alpn: vec![],
+                server_name: node.host.clone(),
+                certificates: vec![],
+                allow_insecure: false,
+                disable_system_root: false,
+            })
+        } else {
+            None
+        },
+        tcp_settings: None,
+        kcp_settings: None,
+        ws_settings: if node.net.as_str() == "ws" {
+            Some(WsSettings {
+                path: node.path.clone(),
+                headers: WsHeaders {
+                    host: node.host.clone(),
+                },
+            })
+        } else {
+            None
+        },
+        http_settings: None,
+        ds_settings: None,
+        quic_settings: None,
+        sockopt: None,
+    };
+
+    Ok(setting)
 }

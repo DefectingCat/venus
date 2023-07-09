@@ -129,10 +129,12 @@ function App() {
   }));
 
   // Select node
-  const selected = useMemo(
-    () => nodes.find((n) => n.nodeId === outbound?.users?.[0]?.id)?.nodeId,
-    [nodes, outbound]
-  );
+  const selected = useMemo(() => {
+    const target = nodes.find(
+      (n) => `${n.add}${n.port}` === `${outbound?.address}${outbound?.port}`
+    );
+    return `${target?.add}${target?.port}`;
+  }, [nodes, outbound]);
   const updateConfig = useStore((s) => s.updateConfig);
   const handleSelect = useCallback(async (node: Node) => {
     try {
@@ -217,7 +219,7 @@ function App() {
               },
               className: clsx(
                 'cursor-pointer select-none',
-                record.nodeId === selected
+                `${record.add}${record.port}` === selected
                   ? 'bg-gray-300 dark:bg-gray-900'
                   : 'hover:bg-[#fafafa] hover:dark:bg-gray-800',
                 'transition-all duration-300'
