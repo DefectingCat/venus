@@ -13,12 +13,9 @@ use std::{
         Arc, Mutex,
     },
 };
-use tauri::{
-    async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, Window, WindowEvent,
-};
+use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
-use tokio::sync::{self, mpsc::Receiver};
-use utils::error::{VError, VResult};
+use utils::error::VError;
 
 use crate::{
     commands::{
@@ -29,8 +26,9 @@ use crate::{
     config::CoreStatus,
     core::VCore,
     logger::init_logger,
-    message::{msg_build, ConfigMsg},
+    message::msg_build,
     tray::{handle_tray_click, new_tray},
+    utils::{get_main_window, message_handler},
 };
 
 mod commands;
@@ -88,9 +86,7 @@ fn main() {
             .ok_or(VError::ResourceError("resource path is empty"))?;
         // Init config and core
         let init_config = config_app.clone();
-        let window = app
-            .get_window("main")
-            .ok_or(VError::EmptyError("Can not get main window"))?;
+        let window = get_main_window(app)?;
         let core = core_app.clone();
         // Start config and core
         async_runtime::spawn(async move {
@@ -120,9 +116,7 @@ fn main() {
             Ok::<(), VError>(())
         });
 
-        let window = app
-            .get_window("main")
-            .ok_or(VError::EmptyError("Can not get main window"))?;
+        let window = get_main_window(app)?;
         let event_config = config_app.clone();
         app.listen_global("ready", move |_e| {
             info!("Frontend ready");
@@ -141,13 +135,11 @@ fn main() {
         let msg_config = config_app.clone();
         // Receive message for core
         let msg_core = core_app.clone();
-        let main_window = app
-            .get_window("main")
-            .ok_or(VError::EmptyError("Can not get main window"))?;
+        let window = get_main_window(app)?;
         // The config will use receiver here
         // when got a message, config will update and
         // emit a event to notify frontend to update global state
-        message_handler(main_window, rx, msg_config, msg_core)?;
+        message_handler(window, rx, msg_config, msg_core)?;
         Ok(())
     };
 
@@ -236,45 +228,4 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(runner);
-}
-
-fn message_handler(
-    window: Window,
-    mut rx: Receiver<ConfigMsg>,
-    msg_config: Arc<sync::Mutex<VConfig>>,
-    msg_core: Arc<Mutex<VCore>>,
-) -> VResult<()> {
-    let handler = async move {
-        while let Some(msg) = rx.recv().await {
-            match msg {
-                ConfigMsg::CoreStatue(status) => {
-                    info!("Update core status {}", status.as_str());
-                    let mut config = msg_config.lock().await;
-                    config.rua.core_status = status;
-                    window.emit_all("rua://update-rua-config", &config.rua)?;
-                }
-                ConfigMsg::RestartCore => {
-                    info!("Restarting core");
-                    let mut config = msg_config.lock().await;
-                    let mut core = msg_core.lock()?;
-                    match core.restart() {
-                        Ok(_) => {
-                            config.rua.core_status = CoreStatus::Started;
-                            window.emit_all("rua://update-rua-config", &config.rua)?;
-                            window.emit_all("rua://update-core-config", &config.core)?;
-                        }
-                        Err(err) => {
-                            error!("Core restart failed {err}");
-                        }
-                    }
-                }
-                ConfigMsg::EmitLog(log) => {
-                    window.emit("rua://emit-log", log)?;
-                }
-            }
-        }
-        Ok::<(), VError>(())
-    };
-    async_runtime::spawn(handler);
-    Ok(())
 }

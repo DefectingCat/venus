@@ -49,6 +49,9 @@ pub enum VError {
     /// Some serve start error
     // #[error("Target init failed: {0}")]
     // InitError(&'static str),
+    /// WindowError
+    #[error("Cannot get taget window: {0}")]
+    WindowError(&'static str),
     /// Convert int to string
     #[error("Failed to parse to int: {0}")]
     ParseIntError(#[from] ParseIntError),
