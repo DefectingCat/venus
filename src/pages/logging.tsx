@@ -39,7 +39,6 @@ const Logging = () => {
               }}
             />
           </div>
-          {logs.length}
         </div>
         <div
           className={clsx(
