@@ -1,15 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean, useMount } from 'ahooks';
-import {
-  App,
-  Button,
-  Checkbox,
-  Select,
-  Tabs,
-  TabsProps,
-  Tooltip,
-  message,
-} from 'antd';
+import { App, Button, Checkbox, Select, Tabs, TabsProps, Tooltip } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import useBackend from 'hooks/use-backend';

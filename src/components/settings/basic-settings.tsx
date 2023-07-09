@@ -56,10 +56,6 @@ const BasicSettings = () => {
 
   return (
     <>
-      <div className="mt-1 mb-4">
-        <Title.h2>Core basic</Title.h2>
-      </div>
-
       <div className="flex">
         <div className={clsx('grid grid-cols-2', 'items-center gap-4')}>
           <div>Local socks port</div>

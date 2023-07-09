@@ -8,6 +8,12 @@ const themeMap = {
   dark: antTheme.darkAlgorithm,
 };
 
+const defaultTheme = {
+  colorPrimary: '#a6a6a6',
+  colorInfo: '#778dab',
+  wireframe: false,
+};
+
 const ThemeSwitcher = ({ Component, pageProps }: AppProps) => {
   const { systemTheme, theme } = useTheme();
   const currentTheme = theme === 'system' ? systemTheme : theme;
@@ -16,6 +22,14 @@ const ThemeSwitcher = ({ Component, pageProps }: AppProps) => {
     <ConfigProvider
       theme={{
         algorithm: themeMap[currentTheme],
+        token: {
+          ...defaultTheme,
+        },
+        components: {
+          Tabs: {
+            fontSize: 16,
+          },
+        },
       }}
     >
       <App>
