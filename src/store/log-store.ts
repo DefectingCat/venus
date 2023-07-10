@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { ConfigSlice } from './config-store';
 import { immer } from 'zustand/middleware/immer';
+import { UISlice } from './ui-store';
 
 export interface Logging {
   logs: string[];
@@ -12,7 +13,7 @@ export interface LoggingAction {
 export type LogSlice = Logging & LoggingAction;
 
 const createLogSlice: StateCreator<
-  LogSlice & ConfigSlice,
+  LogSlice & ConfigSlice & UISlice,
   [],
   [['zustand/immer', never]],
   LogSlice

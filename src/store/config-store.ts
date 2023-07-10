@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { LogSlice } from './log-store';
+import { UISlice } from './ui-store';
 
 export interface Subscription {
   name: string;
@@ -184,7 +185,7 @@ export interface Actions {
 
 export type ConfigSlice = VConfig & Actions;
 const createConfigSlice: StateCreator<
-  ConfigSlice & LogSlice,
+  ConfigSlice & LogSlice & UISlice,
   [],
   [['zustand/immer', never]],
   ConfigSlice

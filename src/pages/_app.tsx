@@ -1,18 +1,20 @@
-import type { AppProps } from 'next/app';
 import { UnlistenFn, emit, listen } from '@tauri-apps/api/event';
-import 'styles/global.css';
+import { ContextID } from 'components/context-menu';
+import ThemeSwitcher from 'components/theme-switcher';
 import 'modern-normalize';
 import { ThemeProvider } from 'next-themes';
-import ThemeSwitcher from 'components/theme-switcher';
+import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
 import useStore from 'store';
 import { CoreConfig, RConfig } from 'store/config-store';
+import 'styles/global.css';
 
 // This default export is required in a new `pages/_app.js` file.
 export default function MyApp({ Component, pageProps }: AppProps) {
   const updateRConfig = useStore((s) => s.updateRConfig);
   const updateCoreConfig = useStore((s) => s.updateCoreConfig);
   const updateLogging = useStore((s) => s.updateLogging);
+  const toggleUI = useStore((s) => s.toggleUI);
 
   // Update configs
   useEffect(() => {
@@ -52,10 +54,32 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   // Custom context menu
   useEffect(() => {
     const contextHandler = (e: MouseEvent) => {
-      console.log(e);
+      e.stopPropagation();
+      e.preventDefault();
+      toggleUI((ui) => {
+        ui.showMenu = true;
+        ui.mousePos = {
+          x: e.clientX,
+          y: e.clientY,
+        };
+      });
     };
     document.addEventListener('contextmenu', contextHandler);
-    return () => document.removeEventListener('contextmenu', contextHandler);
+
+    const contextClose = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const id = target.getAttribute('id');
+      if (id === ContextID) return;
+      toggleUI((ui) => {
+        ui.showMenu = false;
+      });
+    };
+    document.addEventListener('click', contextClose);
+    return () => {
+      document.removeEventListener('contextmenu', contextHandler);
+      document.removeEventListener('click', contextClose);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
