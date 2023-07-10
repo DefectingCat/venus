@@ -1,7 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
 import { App, Modal } from 'antd';
-import useBackend from 'hooks/use-backend';
 import useVaildUrl from 'hooks/use-vaild-url';
 import dynamic from 'next/dynamic';
 import { ChangeEvent, useState } from 'react';
@@ -13,7 +12,6 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
   const { message } = App.useApp();
   const subscriptions = useStore((s) => s.rua.subscriptions);
   const subs = subscriptions;
-  const { reloadConfig } = useBackend();
 
   const [open, setOpen] = useBoolean(true);
   // Add subscripition
@@ -49,7 +47,6 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
         name: subscripition.name || 'Unnamed',
       });
       message.success('Add subscripition success');
-      await reloadConfig('rua');
       setOpen.setFalse();
     } catch (err) {
       message.error(`Failed to add subscripition ${err?.toString()}`);

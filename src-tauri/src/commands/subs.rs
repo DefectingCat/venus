@@ -52,6 +52,7 @@ pub async fn add_subscription(
     name: String,
     url: String,
     config: State<'_, ConfigState>,
+    tx: State<'_, MsgSender>,
 ) -> VResult<()> {
     let mut config = config.lock().await;
     let nodes = request_subs(&name, &url).await?;
@@ -68,6 +69,7 @@ pub async fn add_subscription(
         config.rua.subscriptions = Some(vec![sub])
     }
     config.write_rua()?;
+    tx.send(crate::message::ConfigMsg::RestartCore).await?;
     Ok(())
 }
 

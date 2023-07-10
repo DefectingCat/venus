@@ -28,7 +28,8 @@ const useLoading = (key: keyof UI['loading'], subUrl?: string) => {
         (sub) => sub.url === subUrl
       );
       if (!target) {
-        throw new Error(`Cannot find target subscription ${subUrl}`);
+        // throw new Error(`Cannot find target subscription ${subUrl}`);
+        return false;
       }
       return target.loading;
     } else {
