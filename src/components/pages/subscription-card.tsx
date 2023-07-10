@@ -61,6 +61,11 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
       try {
         setLoading.setTrue();
         const target = findSub(subs, sub.url);
+        if (target.name !== buffer.name) {
+          target.nodes.forEach((node) => {
+            node.subs = buffer.name;
+          });
+        }
         target.name = buffer.name;
         target.url = buffer.url;
         setOpen.setFalse();
@@ -70,6 +75,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
         setLoading.setFalse();
       }
     });
+    writeConfig('rua');
   };
 
   // delete state
