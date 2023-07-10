@@ -1,6 +1,5 @@
-import { App, Button, Input, Switch, Tooltip } from 'antd';
+import { App, Button, Input, Select, Switch, Tooltip } from 'antd';
 import clsx from 'clsx';
-import Title from 'components/pages/page-title';
 import useBackend from 'hooks/use-backend';
 import { useMemo } from 'react';
 import useStore from 'store';
@@ -58,6 +57,24 @@ const BasicSettings = () => {
     <>
       <div className="flex">
         <div className={clsx('grid grid-cols-2', 'items-center gap-4')}>
+          <div>Log Level</div>
+          <Select
+            value={core.log.loglevel}
+            options={[
+              { value: 'debug', label: 'Debug' },
+              { value: 'info', label: 'Info' },
+              { value: 'warning', label: 'Warning' },
+              { value: 'error', label: 'Error' },
+              { value: 'none', label: 'None' },
+            ]}
+            className="w-24"
+            onChange={(value) => {
+              updateConfig((config) => {
+                config.core.log.loglevel = value;
+              });
+            }}
+          />
+
           <div>Local socks port</div>
           <Input
             className="w-24"
