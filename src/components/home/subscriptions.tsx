@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { useBoolean } from 'ahooks';
 import { App as AntApp, Button, Empty } from 'antd';
 import clsx from 'clsx';
+import useLoading from 'hooks/use-loading';
 import dynamic from 'next/dynamic';
 import useStore from 'store';
 
@@ -18,7 +19,7 @@ const Subscriptions = () => {
   const subscriptions = useStore((s) => s.rua.subscriptions);
 
   // Update subscriptions
-  const [loading, setLoading] = useBoolean(false);
+  const [loading, setLoading] = useLoading('updateAll');
   const handleUpdate = async () => {
     try {
       setLoading.setTrue();

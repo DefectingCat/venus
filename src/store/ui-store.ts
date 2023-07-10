@@ -11,6 +11,16 @@ export interface UI {
     x: number;
     y: number;
   };
+  // loadings
+  loading: {
+    // update all loading
+    updateAll: boolean;
+    // subs card loading
+    subCrad: {
+      url: string;
+      loading: boolean;
+    }[];
+  };
 }
 export interface UIAction {
   toggleUI: (callback: (ui: UI) => void) => void;
@@ -28,6 +38,10 @@ const createUISlice: StateCreator<
   mousePos: {
     x: 0,
     y: 0,
+  },
+  loading: {
+    updateAll: false,
+    subCrad: [],
   },
   toggleUI(callback) {
     set(callback);

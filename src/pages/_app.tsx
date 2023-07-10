@@ -22,7 +22,14 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     (async () => {
       listeners.push(
         await listen<RConfig>('rua://update-rua-config', (e) => {
-          updateRConfig(e.payload);
+          const rua = e.payload;
+          toggleUI((ui) => {
+            ui.loading.subCrad = rua.subscriptions.map((sub) => ({
+              url: sub.url,
+              loading: false,
+            }));
+          });
+          updateRConfig(rua);
         })
       );
       listeners.push(

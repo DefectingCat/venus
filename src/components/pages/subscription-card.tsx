@@ -12,6 +12,7 @@ import useStore from 'store';
 import { Subscription } from 'store/config-store';
 import styles from './subscription-card.module.scss';
 import useBackend from 'hooks/use-backend';
+import useLoading from 'hooks/use-loading';
 
 const SubsModal = dynamic(() => import('components/common/subs-modal'));
 
@@ -30,10 +31,11 @@ const findSub = (subs: Subscription[], url: string) => {
 const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
   const { message } = App.useApp();
   const updateSubs = useStore((s) => s.updateSubs);
+
   const { writeConfig } = useBackend();
 
   // edit subscription state
-  const [loading, setLoading] = useBoolean(false);
+  const [loading, setLoading] = useLoading('subCrad', sub.url);
   // local subscription buffer, when changed will be dispatch to global
   const [buffer, setBuffer] = useState({ name: sub.name, url: sub.url });
   // modal state
