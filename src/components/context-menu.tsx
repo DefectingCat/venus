@@ -8,7 +8,7 @@ export const ContextID = 'rua-context-menu';
  */
 const ContextMenu = () => {
   const pos = useStore((s) => s.mousePos);
-  const show = useStore((s) => s.showMenu);
+  const type = useStore((s) => s.showMenu);
 
   return (
     <div
@@ -17,9 +17,18 @@ const ContextMenu = () => {
         'py-2 rounded-lg shadow-lg',
         'transition-all opacity-0'
       )}
-      style={{ left: pos.x + 10, top: pos.y + 8, opacity: show ? 1 : 0 }}
+      style={{ left: pos.x + 10, top: pos.y + 8, opacity: !!type ? 1 : 0 }}
       id={ContextID}
     >
+      <div
+        className={clsx(
+          'transition-all hover:bg-gray-200',
+          'px-4 py-2 select-none',
+          'cursor-pointer'
+        )}
+      >
+        {type}
+      </div>
       <div
         className={clsx(
           'transition-all hover:bg-gray-200',

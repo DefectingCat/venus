@@ -3,9 +3,10 @@ import { ConfigSlice } from './config-store';
 import { immer } from 'zustand/middleware/immer';
 import { LogSlice } from './log-store';
 
+export type MenuType = 'global' | 'node';
 export interface UI {
   // content menu on right click
-  showMenu: boolean;
+  showMenu: MenuType | null;
   // mouse position when right click
   mousePos: {
     x: number;
@@ -39,7 +40,7 @@ const createUISlice: StateCreator<
   [['zustand/immer', never]],
   UISlice
 > = immer<UISlice>((set) => ({
-  showMenu: false,
+  showMenu: null,
   mousePos: {
     x: 0,
     y: 0,

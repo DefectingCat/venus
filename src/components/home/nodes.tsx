@@ -16,6 +16,8 @@ const ResizableTitle = dynamic(
 const Nodes = () => {
   const { message } = App.useApp();
   const subscriptions = useStore((s) => s.rua.subscriptions);
+  const toggleUI = useStore((s) => s.toggleUI);
+
   const nodes = useMemo(
     () => subscriptions.flatMap((sub) => sub.nodes),
     [subscriptions]
@@ -159,6 +161,17 @@ const Nodes = () => {
         onRow={(record) => ({
           onDoubleClick: () => {
             handleSelect(record);
+          },
+          onContextMenu: (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            toggleUI((ui) => {
+              ui.showMenu = 'node';
+              ui.mousePos = {
+                x: e.clientX,
+                y: e.clientY,
+              };
+            });
           },
           className: clsx(
             'cursor-pointer select-none',

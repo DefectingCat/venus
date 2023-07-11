@@ -64,7 +64,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       e.stopPropagation();
       e.preventDefault();
       toggleUI((ui) => {
-        ui.showMenu = true;
+        ui.showMenu = 'global';
         ui.mousePos = {
           x: e.clientX,
           y: e.clientY,
@@ -78,7 +78,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       const id = target.getAttribute('id');
       if (id === ContextID) return;
       toggleUI((ui) => {
-        ui.showMenu = false;
+        ui.showMenu = null;
       });
     };
     document.addEventListener('click', contextClose);
