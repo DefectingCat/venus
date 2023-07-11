@@ -220,8 +220,18 @@ fn main() {
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             info!("{}, {argv:?}, {cwd}", app.package_info().name);
-            app.emit_all("single-instance", Payload { args: argv, cwd })
-                .unwrap();
+            match app.emit_all("single-instance", Payload { args: argv, cwd }) {
+                Ok(_) => {
+                    let windows = app.windows();
+                    windows.iter().for_each(|(_, win)| {
+                        win.show().expect("Cannot show window");
+                        win.set_focus().expect("Cannot set focus on window");
+                    })
+                }
+                Err(err) => {
+                    error!("{err}");
+                }
+            };
         }))
         .setup(handle_app)
         .build(tauri::generate_context!())
