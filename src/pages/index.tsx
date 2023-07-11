@@ -3,6 +3,7 @@ import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
+import useStore from 'store';
 
 const Subscriptions = dynamic(() => import('components/home/subscriptions'));
 const Nodes = dynamic(() => import('components/home/nodes'));
@@ -18,7 +19,9 @@ function App() {
       label: 'Nodes',
     },
   ];
-  const [current, setCurrent] = useState('1');
+  const current = useStore((s) => s.tabs.index);
+  const toggleUI = useStore((s) => s.toggleUI);
+
   const childrenMap = {
     1: <Subscriptions />,
     2: <Nodes />,
@@ -32,9 +35,13 @@ function App() {
         </div>
 
         <Tabs
-          accessKey={current}
+          activeKey={current}
           items={tabItems}
-          onChange={(key) => setCurrent(key)}
+          onChange={(key) =>
+            toggleUI((ui) => {
+              ui.tabs.index = key;
+            })
+          }
         />
         {childrenMap[current]}
       </MainLayout>

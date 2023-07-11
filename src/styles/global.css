@@ -6,6 +6,28 @@
   body {
     @apply dark:text-gray-300;
   }
+
+  /* 滚动槽 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    border-radius: 3px;
+    /* box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08); */
+  }
+
+  ::-webkit-scrollbar-track-piece {
+    background: 0 0;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-400;
+    border-radius: 3px;
+    box-shadow: inset 0 0 10px rgba(185, 69, 69, 0.2);
+  }
 }
 
 .ant-app {

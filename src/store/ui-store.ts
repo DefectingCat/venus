@@ -21,6 +21,11 @@ export interface UI {
       loading: boolean;
     }[];
   };
+  // current selected tabs
+  tabs: {
+    index: string;
+    setting: string;
+  };
 }
 export interface UIAction {
   toggleUI: (callback: (ui: UI) => void) => void;
@@ -42,6 +47,10 @@ const createUISlice: StateCreator<
   loading: {
     updateAll: false,
     subCrad: [],
+  },
+  tabs: {
+    index: '1',
+    setting: '1',
   },
   toggleUI(callback) {
     set(callback);

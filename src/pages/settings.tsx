@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import useStore from 'store';
 
 const BasicSettings = dynamic(
   () => import('components/settings/basic-settings')
@@ -21,7 +21,8 @@ const Settings = () => {
       label: 'Core Basic',
     },
   ];
-  const [current, setCurrent] = useState('1');
+  const current = useStore((s) => s.tabs.index);
+  const toggleUI = useStore((s) => s.toggleUI);
 
   const children = {
     1: <VenusSetting />,
@@ -35,9 +36,13 @@ const Settings = () => {
       </div>
 
       <Tabs
-        accessKey={current}
+        activeKey={current}
         items={tabItems}
-        onChange={(key) => setCurrent(key)}
+        onChange={(key) =>
+          toggleUI((ui) => {
+            ui.tabs.index = key;
+          })
+        }
       />
       {children[current]}
     </MainLayout>
