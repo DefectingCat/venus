@@ -45,11 +45,13 @@ const NodeDrawer = ({ node }: { node: Node }) => {
       title="Node"
       open={open}
       onClose={() => {
-        toggleUI((ui) => {
-          ui.showMenu = null;
-          ui.menus.nodeDrawer = false;
-        });
         setOpen.setFalse();
+        setTimeout(() => {
+          toggleUI((ui) => {
+            ui.showMenu = null;
+            ui.menus.nodeDrawer = false;
+          });
+        }, 300);
       }}
     >
       <DrawerItem label="Protocol" value={node.type} />

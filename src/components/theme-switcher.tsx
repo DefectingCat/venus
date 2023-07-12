@@ -29,6 +29,9 @@ const ThemeSwitcher = ({ Component, pageProps }: AppProps) => {
           Tabs: {
             fontSize: 16,
           },
+          Table: {
+            borderRadius: 8,
+          },
         },
       }}
     >

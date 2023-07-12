@@ -33,9 +33,7 @@ const Nodes = () => {
   const [columns, setColumns] = useState<ColumnsType<Node>>([
     {
       title: 'ID',
-      ellipsis: {
-        showTitle: false,
-      },
+      ellipsis: true,
       key: 'nodeId',
       width: 80,
       render: (_, _node, i) => (
@@ -47,30 +45,22 @@ const Nodes = () => {
     {
       title: 'Name',
       dataIndex: 'ps',
+      ellipsis: true,
       key: 'ps',
-      ellipsis: {
-        showTitle: false,
-      },
       width: 300,
       sorter: (a, b) => a.ps.localeCompare(b.ps),
       render: (addr) => (
-        <Tooltip placement="topLeft" title={addr}>
-          <div className="text-ellipsis overflow-hidden">{addr}</div>
-        </Tooltip>
+        <div className="text-ellipsis overflow-hidden">{addr}</div>
       ),
     },
     {
       title: 'Address',
       dataIndex: 'add',
       key: 'add',
-      ellipsis: {
-        showTitle: false,
-      },
+      ellipsis: true,
       width: 100,
       render: (addr) => (
-        <Tooltip placement="topLeft" title={addr}>
-          <div className="text-ellipsis overflow-hidden">{addr}</div>
-        </Tooltip>
+        <div className="text-ellipsis overflow-hidden">{addr}</div>
       ),
     },
     {
@@ -156,13 +146,10 @@ const Nodes = () => {
             cell: ResizableTitle,
           },
         }}
-        pagination={{ pageSize: 100 }}
+        pagination={false}
         rowKey={(record) => record.add + record.ps}
         columns={mergeColumns}
         dataSource={nodes}
-        scroll={{
-          x: '100%',
-        }}
         onRow={(record) => ({
           onDoubleClick: () => {
             handleSelect(record);

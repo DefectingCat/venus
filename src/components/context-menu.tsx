@@ -5,8 +5,9 @@ import { MenuType } from 'store/ui-store';
 export const ContextID = 'rua-context-menu';
 const MenuItemClass = clsx(
   'transition-all hover:bg-gray-200',
-  'px-4 py-2 select-none',
-  'cursor-pointer'
+  'px-4 py-1 select-none',
+  'cursor-pointer rounded-lg',
+  'mb-1 last:mb-0'
 );
 
 /**
@@ -46,8 +47,9 @@ const ContextMenu = () => {
     <div
       className={clsx(
         'fixed bg-white dark:bg-rua-gray-800',
-        'py-2 rounded-lg shadow-lg',
-        'transition-all opacity-0'
+        'py-1 rounded-lg shadow-lg',
+        'transition-all opacity-0',
+        'w-52 text-sm px-1'
       )}
       style={{ left: pos.x + 10, top: pos.y + 8, opacity: !!type ? 1 : 0 }}
       id={ContextID}
