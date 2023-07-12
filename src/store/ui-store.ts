@@ -12,6 +12,11 @@ export interface UI {
     x: number;
     y: number;
   };
+  // control by context menu
+  menus: {
+    nodeDrawer: boolean;
+  };
+
   // loadings
   loading: {
     // update all loading
@@ -44,6 +49,9 @@ const createUISlice: StateCreator<
   mousePos: {
     x: 0,
     y: 0,
+  },
+  menus: {
+    nodeDrawer: false,
   },
   loading: {
     updateAll: false,

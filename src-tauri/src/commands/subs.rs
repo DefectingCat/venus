@@ -29,16 +29,17 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
         .split('\n')
         .filter(|line| !line.is_empty())
         .map(|line| {
-            let line = line.replace("vmess://", "");
-            let line = general_purpose::STANDARD.decode(line)?;
-            let line = String::from_utf8_lossy(&line).to_string();
-            let mut line = serde_json::from_str::<Node>(&line)?;
+            let link = line.replace("vmess://", "");
+            let link = general_purpose::STANDARD.decode(link)?;
+            let link = String::from_utf8_lossy(&link).to_string();
+            let mut sub = serde_json::from_str::<Node>(&link)?;
 
-            line.subs = Some(name.to_string());
+            sub.subs = Some(name.to_string());
             // Add unique id
-            let id = md5::compute(format!("{}-{}-{}", line.ps, line.add, line.port));
-            line.node_id = Some(format!("{:?}", id));
-            Ok(line)
+            let id = md5::compute(format!("{}-{}-{}", sub.ps, sub.add, sub.port));
+            sub.node_id = Some(format!("{:?}", id));
+            sub.raw_link = Some(line.to_owned());
+            Ok(sub)
         })
         .collect::<VResult<Vec<_>>>()?;
     debug!("{subscription:?}");

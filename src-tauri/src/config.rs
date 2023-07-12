@@ -54,6 +54,7 @@ pub struct Node {
     pub subs: Option<String>,
     pub delay: Option<String>,
     pub node_id: Option<String>,
+    pub raw_link: Option<String>,
 }
 
 /// Core config root

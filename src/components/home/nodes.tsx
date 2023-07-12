@@ -12,6 +12,7 @@ import dynamic from 'next/dynamic';
 const ResizableTitle = dynamic(
   () => import('components/pages/resizable-title')
 );
+const NodeDrawer = dynamic(() => import('components/home/node-drawer'));
 
 const Nodes = () => {
   const { message } = App.useApp();
@@ -142,6 +143,10 @@ const Nodes = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Edit or view node, open by context menu
+  const nodeDrawer = useStore((s) => s.menus.nodeDrawer);
+  const [currentNode, setCurrentNode] = useState<Node>(null);
+
   return (
     <>
       <Table
@@ -172,6 +177,7 @@ const Nodes = () => {
                 y: e.clientY,
               };
             });
+            setCurrentNode(record);
           },
           className: clsx(
             'cursor-pointer select-none',
@@ -182,6 +188,8 @@ const Nodes = () => {
           ),
         })}
       />
+
+      {nodeDrawer && <NodeDrawer node={currentNode} />}
     </>
   );
 };
