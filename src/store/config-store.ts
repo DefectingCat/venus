@@ -30,6 +30,7 @@ export interface Node {
   subs: string;
   delay: string;
   nodeId: string;
+  rawLink: string;
 }
 
 export interface CoreConfig {

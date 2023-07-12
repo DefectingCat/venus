@@ -23,7 +23,10 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       >
         <div
           data-tauri-drag-region
-          className={clsx('h-7 bg-transparent fixed', 'top-0 left-0 right-0')}
+          className={clsx(
+            'h-7 bg-transparent fixed',
+            'top-0 left-0 right-0 z-[1000]'
+          )}
         ></div>
 
         {/* navi */}
