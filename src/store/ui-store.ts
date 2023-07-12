@@ -4,6 +4,7 @@ import { immer } from 'zustand/middleware/immer';
 import { LogSlice } from './log-store';
 
 export type MenuType = 'global' | 'node';
+export type NodeDrawerType = 'editor' | 'share';
 export interface UI {
   // content menu on right click
   showMenu: MenuType | null;
@@ -14,7 +15,12 @@ export interface UI {
   };
   // control by context menu
   menus: {
+    // node editor
     nodeDrawer: boolean;
+    // node qrcode
+    nodeShare: boolean;
+    // node menus
+    node: NodeDrawerType | false;
   };
 
   // loadings
@@ -35,6 +41,7 @@ export interface UI {
 }
 export interface UIAction {
   toggleUI: (callback: (ui: UI) => void) => void;
+  closeMenus: () => void;
 }
 
 export type UISlice = UI & UIAction;
@@ -52,6 +59,8 @@ const createUISlice: StateCreator<
   },
   menus: {
     nodeDrawer: false,
+    nodeShare: false,
+    node: false,
   },
   loading: {
     updateAll: false,
@@ -63,6 +72,13 @@ const createUISlice: StateCreator<
   },
   toggleUI(callback) {
     set(callback);
+  },
+  closeMenus() {
+    set((ui) => {
+      Object.keys(ui.menus).forEach((key) => {
+        ui.menus[key] = false;
+      });
+    });
   },
 }));
 

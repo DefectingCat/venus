@@ -16,7 +16,10 @@ const MenuItemClass = clsx(
 const ContextMenu = () => {
   const pos = useStore((s) => s.mousePos);
   const type = useStore((s) => s.showMenu);
-  const toggleUI = useStore((s) => s.toggleUI);
+  const { toggleUI, closeMenus } = useStore((s) => ({
+    toggleUI: s.toggleUI,
+    closeMenus: s.closeMenus,
+  }));
 
   const menuMap: { [key in MenuType]: JSX.Element } = {
     node: (
@@ -24,14 +27,25 @@ const ContextMenu = () => {
         <div
           className={MenuItemClass}
           onClick={() => {
+            closeMenus();
             toggleUI((ui) => {
-              ui.menus.nodeDrawer = true;
+              ui.menus.node = 'editor';
             });
           }}
         >
           Edit
         </div>
-        <div className={MenuItemClass}>Share</div>
+        <div
+          className={MenuItemClass}
+          onClick={() => {
+            closeMenus();
+            toggleUI((ui) => {
+              ui.menus.node = 'share';
+            });
+          }}
+        >
+          Share
+        </div>
         <div className={MenuItemClass}>Delete</div>
       </>
     ),

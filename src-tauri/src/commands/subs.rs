@@ -39,6 +39,7 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
             let id = md5::compute(format!("{}-{}-{}", sub.ps, sub.add, sub.port));
             sub.node_id = Some(format!("{:?}", id));
             sub.raw_link = Some(line.to_owned());
+            sub.type_field = "vmess".to_owned();
             Ok(sub)
         })
         .collect::<VResult<Vec<_>>>()?;

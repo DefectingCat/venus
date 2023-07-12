@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/tauri';
+import { shallow } from 'zustand/shallow';
 import type { Node } from 'store/config-store';
 import { App, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -35,7 +36,7 @@ const Nodes = () => {
       title: 'ID',
       ellipsis: true,
       key: 'nodeId',
-      width: 80,
+      width: 50,
       render: (_, _node, i) => (
         <div className={clsx('text-ellipsis', 'break-keep overflow-hidden')}>
           {i + 1}
@@ -134,7 +135,7 @@ const Nodes = () => {
   }, []);
 
   // Edit or view node, open by context menu
-  const nodeDrawer = useStore((s) => s.menus.nodeDrawer);
+  const drawerType = useStore((s) => s.menus.node);
   const [currentNode, setCurrentNode] = useState<Node>(null);
 
   return (
@@ -176,7 +177,7 @@ const Nodes = () => {
         })}
       />
 
-      {nodeDrawer && <NodeDrawer node={currentNode} />}
+      {!!drawerType && <NodeDrawer node={currentNode} />}
     </>
   );
 };
