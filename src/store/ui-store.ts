@@ -15,10 +15,6 @@ export interface UI {
   };
   // control by context menu
   menus: {
-    // node editor
-    nodeDrawer: boolean;
-    // node qrcode
-    nodeShare: boolean;
     // node menus
     node: NodeDrawerType | false;
   };
@@ -58,8 +54,6 @@ const createUISlice: StateCreator<
     y: 0,
   },
   menus: {
-    nodeDrawer: false,
-    nodeShare: false,
     node: false,
   },
   loading: {

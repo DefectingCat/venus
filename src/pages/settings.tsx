@@ -21,7 +21,7 @@ const Settings = () => {
       label: 'Core Basic',
     },
   ];
-  const current = useStore((s) => s.tabs.index);
+  const current = useStore((s) => s.tabs.setting);
   const toggleUI = useStore((s) => s.toggleUI);
 
   const children = {
@@ -40,7 +40,7 @@ const Settings = () => {
         items={tabItems}
         onChange={(key) =>
           toggleUI((ui) => {
-            ui.tabs.index = key;
+            ui.tabs.setting = key;
           })
         }
       />
