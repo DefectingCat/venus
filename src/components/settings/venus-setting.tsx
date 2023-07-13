@@ -3,7 +3,9 @@ import { App, Button, Checkbox, Select, Tooltip } from 'antd';
 import clsx from 'clsx';
 import useBackend from 'hooks/use-backend';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 import useStore from 'store';
+import { enable, isEnabled, disable } from 'tauri-plugin-autostart-api';
 
 const VenusSetting = () => {
   const { message } = App.useApp();
@@ -26,6 +28,16 @@ const VenusSetting = () => {
       message.error(err);
     }
   };
+
+  // auto start
+  const [isAuto, setIsAuto] = useState(false);
+  const updateAuto = async () => {
+    const target = await isEnabled();
+    setIsAuto(target);
+  };
+  useEffect(() => {
+    updateAuto();
+  }, []);
 
   return (
     <div className="flex">
@@ -50,6 +62,15 @@ const VenusSetting = () => {
               config.rua.save_windows = e.target.checked;
             })
           }
+        />
+
+        <div>Auto start</div>
+        <Checkbox
+          checked={isAuto}
+          onClick={async () => {
+            isAuto ? await disable() : await enable();
+            await updateAuto();
+          }}
         />
 
         <div>

@@ -3,7 +3,6 @@ import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
 import useStore from 'store';
 
 const Subscriptions = dynamic(() => import('components/home/subscriptions'));

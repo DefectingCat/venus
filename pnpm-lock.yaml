@@ -44,6 +44,9 @@ dependencies:
   react-resizable:
     specifier: ^3.0.5
     version: 3.0.5(react-dom@18.2.0)(react@18.2.0)
+  tauri-plugin-autostart-api:
+    specifier: github:tauri-apps/tauri-plugin-autostart#v1
+    version: github.com/tauri-apps/tauri-plugin-autostart/59c48c642cea6a854bb1f4181972ad0bfbeb0c75
   terminal-kit:
     specifier: ^3.0.0
     version: 3.0.0
@@ -5214,4 +5217,12 @@ packages:
       immer: 10.0.2
       react: 18.2.0
       use-sync-external-store: 1.2.0(react@18.2.0)
+    dev: false
+
+  github.com/tauri-apps/tauri-plugin-autostart/59c48c642cea6a854bb1f4181972ad0bfbeb0c75:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-autostart/tar.gz/59c48c642cea6a854bb1f4181972ad0bfbeb0c75}
+    name: tauri-plugin-autostart-api
+    version: 0.0.0
+    dependencies:
+      '@tauri-apps/api': 1.4.0
     dev: false

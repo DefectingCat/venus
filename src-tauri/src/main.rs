@@ -14,6 +14,7 @@ use std::{
     },
 };
 use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, WindowEvent};
+use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use utils::error::VError;
 
@@ -233,6 +234,10 @@ fn main() {
                 }
             };
         }))
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec![]),
+        ))
         .setup(handle_app)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
