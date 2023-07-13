@@ -48,7 +48,8 @@ function App() {
           </div>
 
           <div className="flex-1 rounded-lg overflow-hidden">
-            <div className="h-full overflow-auto">{childrenMap[current]}</div>
+            {/* <div className="h-full overflow-auto">{childrenMap[current]}</div> */}
+            {childrenMap[current]}
           </div>
         </div>
       </MainLayout>

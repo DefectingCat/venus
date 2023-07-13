@@ -1,7 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import { shallow } from 'zustand/shallow';
 import type { Node } from 'store/config-store';
-import { App, Table, Tooltip } from 'antd';
+import { App, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
@@ -149,6 +148,9 @@ const Nodes = () => {
         }}
         pagination={false}
         rowKey={(record) => record.add + record.ps}
+        scroll={{
+          y: '100%',
+        }}
         columns={mergeColumns}
         dataSource={nodes}
         onRow={(record) => ({

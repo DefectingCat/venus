@@ -1,5 +1,14 @@
 .table {
+  height: 100%;
+
   :global(.ant-table-cell-row-hover) {
     background-color: transparent !important;
+  }
+
+  :global(.ant-spin-nested-loading),
+  :global(.ant-spin-container),
+  :global(.ant-table),
+  :global(.ant-table-container) {
+    height: 100%;
   }
 }
