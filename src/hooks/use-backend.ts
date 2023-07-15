@@ -4,6 +4,11 @@ import { useCallback } from 'react';
 import useStore from 'store';
 import { CoreConfig, RConfig } from 'store/config-store';
 
+const writeConfigMap = {
+  core: 'coreConfig',
+  rua: 'ruaConfig',
+};
+
 const useBackend = () => {
   const { message } = App.useApp();
   const { updateRConfig, updateCoreConfig, updateConfig } = useStore();
@@ -33,23 +38,32 @@ const useBackend = () => {
   /**
    * Send current config in global state to backend
    */
-  const writeConfig = useCallback((type: 'core' | 'rua') => {
-    updateConfig((config) => {
-      (async () => {
-        const map = {
-          core: 'coreConfig',
-          rua: 'ruaConfig',
-        };
-        try {
-          await invoke('update_config', { [`${map[type]}`]: config[type] });
-          message.success('Update config success');
-        } catch (err) {
-          message.error(err);
-        }
-      })();
-    });
+  const writeConfig = useCallback(
+    (type: 'core' | 'rua' | ('core' | 'rua')[]) => {
+      updateConfig((config) => {
+        (async () => {
+          try {
+            if (Array.isArray(type)) {
+              type.forEach(async (t) => {
+                await invoke('update_config', {
+                  [`${writeConfigMap[t]}`]: config[t],
+                });
+              });
+            } else {
+              await invoke('update_config', {
+                [`${writeConfigMap[type]}`]: config[type],
+              });
+            }
+            message.success('Update config success');
+          } catch (err) {
+            message.error(err);
+          }
+        })();
+      });
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    []
+  );
 
   return {
     reloadConfig,

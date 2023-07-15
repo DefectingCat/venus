@@ -99,8 +99,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
         config.core.outbounds.shift();
       }
     });
-    writeConfig('rua');
-    writeConfig('core');
+    writeConfig(['core', 'rua']);
   };
 
   // update state
