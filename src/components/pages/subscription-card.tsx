@@ -13,6 +13,7 @@ import { Subscription } from 'store/config-store';
 import styles from './subscription-card.module.scss';
 import useBackend from 'hooks/use-backend';
 import useLoading from 'hooks/use-loading';
+import { shallow } from 'zustand/shallow';
 
 const SubsModal = dynamic(() => import('components/common/subs-modal'));
 
@@ -30,7 +31,13 @@ const findSub = (subs: Subscription[], url: string) => {
 
 const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
   const { message } = App.useApp();
-  const updateSubs = useStore((s) => s.updateSubs);
+  const { updateSubs, updateConfig } = useStore(
+    (s) => ({
+      updateSubs: s.updateSubs,
+      updateConfig: s.updateConfig,
+    }),
+    shallow
+  );
 
   const { writeConfig } = useBackend();
 
@@ -87,7 +94,13 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
       }
       subs.splice(index, 1);
     });
+    updateConfig((config) => {
+      if (config.core.outbounds.length === 3) {
+        config.core.outbounds.shift();
+      }
+    });
     writeConfig('rua');
+    writeConfig('core');
   };
 
   // update state
