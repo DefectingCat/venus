@@ -28,7 +28,6 @@ pub enum NodeType {
 impl From<&str> for NodeType {
     fn from(value: &str) -> Self {
         use NodeType::*;
-
         match value {
             "vmess" => VMESS,
             "vless" => VLESS,
@@ -47,7 +46,6 @@ impl From<&str> for NodeType {
 impl NodeType {
     pub fn to_string(&self) -> &str {
         use NodeType::*;
-
         match self {
             VMESS => "vmess",
             VLESS => "vless",

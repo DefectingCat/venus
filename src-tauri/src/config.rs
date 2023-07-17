@@ -13,15 +13,219 @@ use crate::commands::subs::NodeType;
 use crate::utils::error::{VError, VResult};
 use crate::{NAME, VERSION};
 
-// fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
-// where
-//     T: FromStr,
-//     T::Err: Display,
-//     D: Deserializer<'de>,
-// {
-//     let s = String::deserialize(deserializer)?;
-//     T::from_str(&s).map_err(de::Error::custom)
-// }
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Subscription {
+    pub name: String,
+    pub url: String,
+    pub nodes: Option<Vec<Node>>,
+}
+
+/// RUA config and frontend global state
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct RConfig {
+    pub logging: bool,
+    pub version: String,
+    /// Save state of all open windows to disk
+    pub save_windows: bool,
+    pub core_status: CoreStatus,
+    pub subscriptions: Option<Vec<Subscription>>,
+}
+
+/// All config field
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VConfig {
+    pub core: Option<CoreConfig>,
+    pub core_path: PathBuf,
+    pub rua: RConfig,
+    pub rua_path: PathBuf,
+}
+
+/// The core current status
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+pub enum CoreStatus {
+    Started,
+    Restarting,
+    Stopped,
+}
+
+impl CoreStatus {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            CoreStatus::Started => "Started",
+            CoreStatus::Restarting => "Restarting",
+            CoreStatus::Stopped => "Stopped",
+        }
+    }
+}
+
+pub type ConfigState = Arc<Mutex<VConfig>>;
+
+/// Core config and global stats
+/// The rua field is self state and
+/// frontend global state.
+/// When rua config changed, need to
+/// notify frontend to update global state.
+impl VConfig {
+    pub fn new() -> Self {
+        use CoreStatus::*;
+
+        let r_config = RConfig {
+            logging: false,
+            version: VERSION.to_owned(),
+            save_windows: true,
+            core_status: Stopped,
+            subscriptions: Some(vec![]),
+        };
+
+        Self {
+            core: None,
+            rua: r_config,
+            rua_path: PathBuf::new(),
+            core_path: PathBuf::new(),
+        }
+    }
+
+    /// Re-read config from file
+    pub fn init(&mut self, resource_path: &Path) -> VResult<()> {
+        // let resource_path = resource_path.ok_or(VError::ResourceError("resource path is empty"))?;
+        let mut core_default = PathBuf::from(resource_path);
+        core_default.push("config.json");
+
+        let home = match home::home_dir() {
+            Some(path) => {
+                let mut path = path;
+                path.push(format!(".config/{}", NAME));
+                path
+            }
+            None => {
+                error!("Cannot detect user home folder, use /usr/local instead");
+                PathBuf::from(format!("/usr/local/{}", NAME))
+            }
+        };
+        let mut core_path = PathBuf::from(&home);
+        core_path.push("config.json");
+        let mut rua_path = PathBuf::from(&home);
+        rua_path.push("config.toml");
+
+        self.core_path = core_path.clone();
+        self.rua_path = rua_path.clone();
+
+        detect_and_create(&core_path, core_default)?;
+        if !rua_path.exists() {
+            self.write_rua()?;
+        }
+
+        self.reload()?;
+        Ok(())
+    }
+
+    /// Reload core and rua config from file
+    pub fn reload(&mut self) -> VResult<()> {
+        self.reload_core()?;
+        self.reload_rua()?;
+        Ok(())
+    }
+
+    pub fn reload_rua(&mut self) -> VResult<()> {
+        let mut config_file = File::open(&self.rua_path)?;
+        let mut buffer = String::new();
+        config_file.read_to_string(&mut buffer)?;
+        let mut rua_config = toml::from_str::<RConfig>(&buffer)?;
+        // Do not read core status from config file
+        rua_config.core_status = self.rua.core_status;
+        rua_config.subscriptions = rua_config.subscriptions.or(Some(vec![]));
+        self.rua = rua_config;
+        Ok(())
+    }
+
+    /// Reload core config file to VConfig
+    pub fn reload_core(&mut self) -> VResult<()> {
+        let core_file = File::open(&self.core_path)?;
+        let core_config: CoreConfig = serde_json::from_reader(core_file)?;
+        self.core = Some(core_config);
+        Ok(())
+    }
+
+    ///  Write core config to config file
+    pub fn write_core(&mut self) -> VResult<()> {
+        let config = self
+            .core
+            .as_ref()
+            .ok_or(VError::EmptyError("core config is empty"))?;
+        let core_file = OpenOptions::new().write(true).open(&self.core_path)?;
+        core_file.set_len(0)?;
+        serde_json::to_writer(&core_file, &config)?;
+        Ok(())
+    }
+
+    pub fn write_rua(&mut self) -> VResult<()> {
+        let mut rua_file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(&self.rua_path)?;
+        let rua_string = toml::to_string(&self.rua)?;
+        rua_file.set_len(0)?;
+        rua_file.write_all(rua_string.as_bytes())?;
+        Ok(())
+    }
+}
+
+/// Detect target config path exists
+/// If not exists, create all parent folders
+/// and copy default config file to target path.
+fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> VResult<()> {
+    if !target_path.exists() {
+        let parent = target_path
+            .parent()
+            .ok_or(VError::EmptyError("Core path parent is empty"))?;
+        fs::create_dir_all(parent)?;
+        fs::copy(default_path, target_path)?;
+    }
+    Ok(())
+}
+
+/// Build outbound stream setting with node in subscription
+pub fn stream_settings_builder(node: &Node) -> VResult<StreamSettings> {
+    let setting = StreamSettings {
+        network: node.net.clone(),
+        security: if !node.tls.is_empty() {
+            node.tls.clone()
+        } else {
+            "none".to_owned()
+        },
+        tls_settings: if !node.tls.is_empty() {
+            Some(TlsSettings {
+                alpn: vec![],
+                server_name: node.host.clone(),
+                certificates: vec![],
+                allow_insecure: false,
+                disable_system_root: false,
+            })
+        } else {
+            None
+        },
+        tcp_settings: None,
+        kcp_settings: None,
+        ws_settings: if node.net.as_str() == "ws" {
+            Some(WsSettings {
+                path: node.path.clone(),
+                headers: WsHeaders {
+                    host: node.host.clone(),
+                },
+            })
+        } else {
+            None
+        },
+        http_settings: None,
+        ds_settings: None,
+        quic_settings: None,
+        sockopt: None,
+    };
+
+    Ok(setting)
+}
 
 /// Subscription nodes
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -384,217 +588,3 @@ pub struct System {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Other {}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Subscription {
-    pub name: String,
-    pub url: String,
-    pub nodes: Option<Vec<Node>>,
-}
-
-/// RUA config and frontend global state
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RConfig {
-    pub logging: bool,
-    pub version: String,
-    /// Save state of all open windows to disk
-    pub save_windows: bool,
-    pub core_status: CoreStatus,
-    pub subscriptions: Option<Vec<Subscription>>,
-}
-
-/// All config field
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct VConfig {
-    pub core: Option<CoreConfig>,
-    pub core_path: PathBuf,
-    pub rua: RConfig,
-    pub rua_path: PathBuf,
-}
-
-/// The core current status
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub enum CoreStatus {
-    Started,
-    Restarting,
-    Stopped,
-}
-
-impl CoreStatus {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            CoreStatus::Started => "Started",
-            CoreStatus::Restarting => "Restarting",
-            CoreStatus::Stopped => "Stopped",
-        }
-    }
-}
-
-pub type ConfigState = Arc<Mutex<VConfig>>;
-
-/// Core config and global stats
-/// The rua field is self state and
-/// frontend global state.
-/// When rua config changed, need to
-/// notify frontend to update global state.
-impl VConfig {
-    pub fn new() -> Self {
-        use CoreStatus::*;
-
-        let r_config = RConfig {
-            logging: false,
-            version: VERSION.to_owned(),
-            save_windows: true,
-            core_status: Stopped,
-            subscriptions: Some(vec![]),
-        };
-
-        Self {
-            core: None,
-            rua: r_config,
-            rua_path: PathBuf::new(),
-            core_path: PathBuf::new(),
-        }
-    }
-
-    /// Re-read config from file
-    pub fn init(&mut self, resource_path: &Path) -> VResult<()> {
-        // let resource_path = resource_path.ok_or(VError::ResourceError("resource path is empty"))?;
-        let mut core_default = PathBuf::from(resource_path);
-        core_default.push("config.json");
-
-        let home = match home::home_dir() {
-            Some(path) => {
-                let mut path = path;
-                path.push(format!(".config/{}", NAME));
-                path
-            }
-            None => {
-                error!("Cannot detect user home folder, use /usr/local instead");
-                PathBuf::from(format!("/usr/local/{}", NAME))
-            }
-        };
-        let mut core_path = PathBuf::from(&home);
-        core_path.push("config.json");
-        let mut rua_path = PathBuf::from(&home);
-        rua_path.push("config.toml");
-
-        self.core_path = core_path.clone();
-        self.rua_path = rua_path.clone();
-
-        detect_and_create(&core_path, core_default)?;
-        if !rua_path.exists() {
-            self.write_rua()?;
-        }
-
-        self.reload()?;
-        Ok(())
-    }
-
-    /// Reload core and rua config from file
-    pub fn reload(&mut self) -> VResult<()> {
-        self.reload_core()?;
-        self.reload_rua()?;
-        Ok(())
-    }
-
-    pub fn reload_rua(&mut self) -> VResult<()> {
-        let mut config_file = File::open(&self.rua_path)?;
-        let mut buffer = String::new();
-        config_file.read_to_string(&mut buffer)?;
-        let mut rua_config = toml::from_str::<RConfig>(&buffer)?;
-        // Do not read core status from config file
-        rua_config.core_status = self.rua.core_status;
-        rua_config.subscriptions = rua_config.subscriptions.or(Some(vec![]));
-        self.rua = rua_config;
-        Ok(())
-    }
-
-    /// Reload core config file to VConfig
-    pub fn reload_core(&mut self) -> VResult<()> {
-        let core_file = File::open(&self.core_path)?;
-        let core_config: CoreConfig = serde_json::from_reader(core_file)?;
-        self.core = Some(core_config);
-        Ok(())
-    }
-
-    ///  Write core config to config file
-    pub fn write_core(&mut self) -> VResult<()> {
-        let config = self
-            .core
-            .as_ref()
-            .ok_or(VError::EmptyError("core config is empty"))?;
-        let core_file = OpenOptions::new().write(true).open(&self.core_path)?;
-        core_file.set_len(0)?;
-        serde_json::to_writer(&core_file, &config)?;
-        Ok(())
-    }
-
-    pub fn write_rua(&mut self) -> VResult<()> {
-        let mut rua_file = OpenOptions::new()
-            .write(true)
-            .create(true)
-            .open(&self.rua_path)?;
-        let rua_string = toml::to_string(&self.rua)?;
-        rua_file.set_len(0)?;
-        rua_file.write_all(rua_string.as_bytes())?;
-        Ok(())
-    }
-}
-
-/// Detect target config path exists
-/// If not exists, create all parent folders
-/// and copy default config file to target path.
-fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> VResult<()> {
-    if !target_path.exists() {
-        let parent = target_path
-            .parent()
-            .ok_or(VError::EmptyError("Core path parent is empty"))?;
-        fs::create_dir_all(parent)?;
-        fs::copy(default_path, target_path)?;
-    }
-    Ok(())
-}
-
-/// Build outbound stream setting with node in subscription
-pub fn stream_settings_builder(node: &Node) -> VResult<StreamSettings> {
-    let setting = StreamSettings {
-        network: node.net.clone(),
-        security: if !node.tls.is_empty() {
-            node.tls.clone()
-        } else {
-            "none".to_owned()
-        },
-        tls_settings: if !node.tls.is_empty() {
-            Some(TlsSettings {
-                alpn: vec![],
-                server_name: node.host.clone(),
-                certificates: vec![],
-                allow_insecure: false,
-                disable_system_root: false,
-            })
-        } else {
-            None
-        },
-        tcp_settings: None,
-        kcp_settings: None,
-        ws_settings: if node.net.as_str() == "ws" {
-            Some(WsSettings {
-                path: node.path.clone(),
-                headers: WsHeaders {
-                    host: node.host.clone(),
-                },
-            })
-        } else {
-            None
-        },
-        http_settings: None,
-        ds_settings: None,
-        quic_settings: None,
-        sockopt: None,
-    };
-
-    Ok(setting)
-}
