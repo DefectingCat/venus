@@ -45,7 +45,7 @@ const NodeDrawer = ({ node }: { node: Node }) => {
   const typeMap: { [key in NodeDrawerType]: JSX.Element } = {
     editor: (
       <>
-        <DrawerItem label="Protocol" value={node.type} />
+        <DrawerItem label="Protocol" value={node.nodeType} />
         <DrawerItem label="Name" value={node.ps} />
         <DrawerItem label="Address" value={node.add} />
         <DrawerItem label="Port" value={node.port} />
@@ -62,7 +62,7 @@ const NodeDrawer = ({ node }: { node: Node }) => {
       <>
         <DrawerItem label="Name" value={node.ps} />
         <DrawerItem label="Link" value={node.rawLink} />
-        <div className="w-full flex items-center justify-center">
+        <div className="flex items-center justify-center w-full">
           <QRCode size={330} value={node.rawLink} />
         </div>
       </>

@@ -31,6 +31,7 @@ export interface Node {
   delay: string;
   nodeId: string;
   rawLink: string;
+  nodeType: string;
 }
 
 export interface CoreConfig {

@@ -9,6 +9,7 @@ use serde::Deserialize;
 use serde_derive::Serialize;
 use tokio::sync::Mutex;
 
+use crate::commands::subs::NodeType;
 use crate::utils::error::{VError, VResult};
 use crate::{NAME, VERSION};
 
@@ -31,11 +32,9 @@ pub struct Node {
     pub ps: String,
     // Address
     pub add: String,
-    // #[serde(deserialize_with = "from_str")]
     pub port: String,
     pub id: String,
     // AlertID
-    // #[serde(deserialize_with = "from_str")]
     pub aid: String,
     // Protocol type determine streamSettings network field
     pub net: String,
@@ -51,10 +50,16 @@ pub struct Node {
     pub sni: String,
     pub alpn: String,
     // Add by manually
+    // The subscription group
     pub subs: Option<String>,
+    // Current node delay
     pub delay: Option<String>,
+    // Node unique ID
     pub node_id: Option<String>,
+    // Node raw link from subcription link
     pub raw_link: Option<String>,
+    // Node net type
+    pub node_type: Option<NodeType>,
 }
 
 /// Core config root

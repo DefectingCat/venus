@@ -1,6 +1,7 @@
 use base64::{engine::general_purpose, Engine};
 use log::{debug, info};
 use reqwest::header::USER_AGENT;
+use serde::{Deserialize, Serialize};
 use tauri::State;
 
 use crate::{
@@ -9,6 +10,88 @@ use crate::{
     utils::error::{VError, VResult},
     NAME, VERSION,
 };
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum NodeType {
+    VMESS,
+    VLESS,
+    SS,
+    SSR,
+    TROJAN,
+    TROJANGO,
+    HTTPPROXY,
+    HTTPSPROXY,
+    SOCKS5,
+    HTTP2,
+    UNKNOWN,
+}
+impl From<&str> for NodeType {
+    fn from(value: &str) -> Self {
+        use NodeType::*;
+
+        match value {
+            "vmess" => VMESS,
+            "vless" => VLESS,
+            "ss" => SS,
+            "ssr" => SSR,
+            "trojan" => TROJAN,
+            "trojan-go" => TROJANGO,
+            "http-proxy" => HTTPPROXY,
+            "https-proxy" => HTTPSPROXY,
+            "socks5" => SOCKS5,
+            "http2" => HTTP2,
+            _ => UNKNOWN,
+        }
+    }
+}
+impl NodeType {
+    pub fn to_string(&self) -> &str {
+        use NodeType::*;
+
+        match self {
+            VMESS => "vmess",
+            VLESS => "vless",
+            SS => "ss",
+            SSR => "ssr",
+            TROJAN => "trojan",
+            TROJANGO => "trojan-go",
+            HTTPPROXY => "http-proxy",
+            HTTPSPROXY => "https-proxy",
+            SOCKS5 => "socks5",
+            HTTP2 => "http2",
+            UNKNOWN => "unknown",
+        }
+    }
+}
+impl Serialize for NodeType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.to_string())
+    }
+}
+impl<'de> Deserialize<'de> for NodeType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Ok(NodeType::from(s.as_str()))
+    }
+}
+// const NODE_PREFIX: [&str; 10] = [
+//     "vmess",
+//     "vless",
+//     "ss",
+//     "ssr",
+//     "trojan",
+//     "trojan-go",
+//     "http-proxy",
+//     "https-proxy",
+//     "socks5",
+//     "http2",
+// ];
 
 /// Send http request to download subscription info
 async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
@@ -29,18 +112,20 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
         .split('\n')
         .filter(|line| !line.is_empty())
         .map(|line| {
-            let link = line.replace("vmess://", "");
+            let (node_type, link) = line
+                .split_once("://")
+                .ok_or(VError::EmptyError("Cannot serialize node link"))?;
             let link = general_purpose::STANDARD.decode(link)?;
             let link = String::from_utf8_lossy(&link).to_string();
-            let mut sub = serde_json::from_str::<Node>(&link)?;
+            let mut node = serde_json::from_str::<Node>(&link)?;
 
-            sub.subs = Some(name.to_string());
+            node.subs = Some(name.to_string());
             // Add unique id
-            let id = md5::compute(format!("{}-{}-{}", sub.ps, sub.add, sub.port));
-            sub.node_id = Some(format!("{:?}", id));
-            sub.raw_link = Some(line.to_owned());
-            sub.type_field = "vmess".to_owned();
-            Ok(sub)
+            let id = md5::compute(format!("{}-{}-{}", node.ps, node.add, node.port));
+            node.node_id = Some(format!("{:?}", id));
+            node.raw_link = Some(line.to_owned());
+            node.node_type = Some(NodeType::from(node_type));
+            Ok(node)
         })
         .collect::<VResult<Vec<_>>>()?;
     debug!("{subscription:?}");
