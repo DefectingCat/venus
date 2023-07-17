@@ -44,7 +44,7 @@ impl From<&str> for NodeType {
     }
 }
 impl NodeType {
-    pub fn to_string(&self) -> &str {
+    pub fn as_str(&self) -> &str {
         use NodeType::*;
         match self {
             VMESS => "vmess",
@@ -66,7 +66,7 @@ impl Serialize for NodeType {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_str(self.to_string())
+        serializer.serialize_str(self.as_str())
     }
 }
 impl<'de> Deserialize<'de> for NodeType {
