@@ -135,6 +135,7 @@ impl VConfig {
         // Do not read core status from config file
         rua_config.core_status = self.rua.core_status;
         rua_config.subscriptions = rua_config.subscriptions.or(Some(vec![]));
+        rua_config.version = VERSION.to_owned();
         self.rua = rua_config;
         Ok(())
     }
