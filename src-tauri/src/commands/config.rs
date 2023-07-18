@@ -1,24 +1,37 @@
 use log::info;
+use serde::{Deserialize, Serialize};
 use tauri::State;
 
 use crate::config::{ConfigState, CoreConfig, RConfig};
 use crate::message::{ConfigMsg, MsgSender};
 use crate::utils::error::VResult;
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-
-/// Send rua config to frontend
-#[tauri::command]
-pub async fn get_rua_config(state: State<'_, ConfigState>) -> VResult<RConfig> {
-    let config = state.lock().await;
-    Ok(config.rua.clone())
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ReturnConfig {
+    Core(CoreConfig),
+    Rua(RConfig),
 }
-
-/// Send core config to frontend
+/// Return specify config field
 #[tauri::command]
-pub async fn get_core_config(state: State<'_, ConfigState>) -> VResult<Option<CoreConfig>> {
+pub async fn get_config(
+    state: State<'_, ConfigState>,
+    config_type: &str,
+) -> VResult<Option<ReturnConfig>> {
     let config = state.lock().await;
-    Ok(config.core.clone())
+    match config_type {
+        "core" => {
+            let core: Option<ReturnConfig> = config
+                .core
+                .clone()
+                .and_then(|core| Some(ReturnConfig::Core(core)));
+            return Ok(core);
+        }
+        "rua" => {
+            let rua = config.rua.clone();
+            return Ok(Some(ReturnConfig::Rua(rua)));
+        }
+        _ => return Ok(None),
+    }
 }
 
 /// Update config file from frontend

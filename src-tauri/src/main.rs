@@ -20,7 +20,7 @@ use utils::error::VError;
 
 use crate::{
     commands::{
-        config::{get_core_config, get_rua_config, update_config},
+        config::{get_config, update_config},
         core::select_node,
         subs::{add_subscription, update_all_subs, update_sub},
     },
@@ -211,8 +211,7 @@ fn main() {
             update_all_subs,
             update_sub,
             // configs
-            get_rua_config,
-            get_core_config,
+            get_config,
             update_config,
             // core
             select_node,

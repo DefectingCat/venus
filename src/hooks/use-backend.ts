@@ -19,11 +19,13 @@ const useBackend = () => {
   const reloadConfig = useCallback(async (type: 'core' | 'rua') => {
     const map = {
       rua: async () => {
-        const rua = await invoke<RConfig>('get_rua_config');
+        const rua = await invoke<RConfig>('get_config', { configType: 'rua' });
         updateRConfig(rua);
       },
       core: async () => {
-        const core = await invoke<CoreConfig>('get_core_config');
+        const core = await invoke<CoreConfig>('get_config', {
+          configType: 'core',
+        });
         updateCoreConfig(core);
       },
     };
