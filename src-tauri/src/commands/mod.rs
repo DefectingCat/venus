@@ -1,10 +1,7 @@
 use log::info;
 use tokio::time::Instant;
 
-use crate::{
-    config::ConfigState,
-    utils::error::{VError, VResult},
-};
+use crate::{config::ConfigState, utils::error::VResult};
 
 pub mod config;
 pub mod core;
@@ -38,15 +35,8 @@ pub async fn node_speed(config: tauri::State<'_, ConfigState>, nodes: Vec<String
     let local_nodes = config
         .rua
         .subscriptions
-        .as_ref()
-        .and_then(|subs| {
-            let nodes = subs.iter().fold(vec![], |prev, sub| match &sub.nodes {
-                Some(nodes) => [&prev[..], &nodes[..]].concat(),
-                None => prev,
-            });
-            Some(nodes)
-        })
-        .ok_or(VError::EmptyError(""))?;
+        .iter()
+        .fold(vec![], |prev, sub| [&prev[..], &sub.nodes[..]].concat());
 
     nodes.iter().for_each(|id| {
         let target = local_nodes

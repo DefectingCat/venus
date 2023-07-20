@@ -143,16 +143,8 @@ pub async fn add_subscription(
     let nodes = request_subs(&name, &url).await?;
 
     // Write subscription and nodes to config file
-    let sub = Subscription {
-        name,
-        url,
-        nodes: Some(nodes),
-    };
-    if let Some(subscriptions) = config.rua.subscriptions.as_mut() {
-        subscriptions.push(sub);
-    } else {
-        config.rua.subscriptions = Some(vec![sub])
-    }
+    let sub = Subscription { name, url, nodes };
+    config.rua.subscriptions.push(sub);
     config.write_rua()?;
     tx.send(crate::message::ConfigMsg::RestartCore).await?;
     Ok(())
@@ -166,14 +158,10 @@ pub async fn update_all_subs(
 ) -> VResult<()> {
     info!("Starting update all subscriptions");
     let mut config = config.lock().await;
-    let subs = config
-        .rua
-        .subscriptions
-        .as_mut()
-        .ok_or(VError::EmptyError("Subscriptions is empty"))?;
-    for Subscription { name, url, nodes } in subs {
-        let new_nodes = request_subs(name, url).await?;
-        *nodes = Some(new_nodes);
+    let subs = &mut config.rua.subscriptions;
+    for sub in subs.iter_mut() {
+        let new_nodes = request_subs(&sub.name, &sub.url).await?;
+        sub.nodes = new_nodes;
     }
     config.write_rua()?;
     tx.send(crate::message::ConfigMsg::RestartCore).await?;
@@ -193,13 +181,11 @@ pub async fn update_sub(
     let sub = config
         .rua
         .subscriptions
-        .as_mut()
-        .ok_or(VError::EmptyError("Subscriptions is empty"))?
         .iter_mut()
         .find(|s| s.url == url)
         .ok_or(VError::EmptyError("Cannot find target subscription"))?;
     let new_nodes = request_subs(&sub.name, &sub.url).await?;
-    sub.nodes = Some(new_nodes);
+    sub.nodes = new_nodes;
     config.write_rua()?;
     tx.send(crate::message::ConfigMsg::RestartCore).await?;
     info!("Update subscription {} done", &url);

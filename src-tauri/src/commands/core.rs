@@ -1,3 +1,5 @@
+use std::vec;
+
 use tauri::State;
 
 use crate::{
@@ -16,18 +18,17 @@ pub async fn select_node(
 ) -> VResult<()> {
     let mut config = config.lock().await;
 
-    let node = config.rua.subscriptions.as_ref().and_then(|subs| {
-        let sub = subs.iter().find(|sub| sub.name == sub_name);
-        sub.and_then(|s| {
-            s.nodes.as_ref().and_then(|nodes| {
-                nodes
-                    .iter()
-                    .find(|node| node.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id)
-            })
-        })
-    });
-
-    let node = node.ok_or(VError::EmptyError("node is empty"))?;
+    let sub = config
+        .rua
+        .subscriptions
+        .iter()
+        .find(|sub| sub.name == sub_name)
+        .ok_or(VError::EmptyError("Cannot find target subscription"))?;
+    let node = sub
+        .nodes
+        .iter()
+        .find(|node| node.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id)
+        .ok_or(VError::EmptyError("Cannot find target node"))?;
 
     let vmess = Vmess {
         address: node.add.clone(),
@@ -42,9 +43,7 @@ pub async fn select_node(
     let proxy = Outbound {
         tag: "proxy".to_string(),
         protocol: "vmess".to_string(),
-        settings: OutboundSettings {
-            vnext: Some(vec![vmess]),
-        },
+        settings: OutboundSettings { vnext: vec![vmess] },
         stream_settings: Some(stream_settings_builder(node)?),
         proxy_setting: None,
         mux: None,
@@ -52,7 +51,7 @@ pub async fn select_node(
 
     let freedom = Outbound {
         protocol: "freedom".to_owned(),
-        settings: OutboundSettings { vnext: None },
+        settings: OutboundSettings { vnext: vec![] },
         tag: "direct".to_owned(),
         proxy_setting: None,
         stream_settings: None,
@@ -60,7 +59,7 @@ pub async fn select_node(
     };
     let blackhole = Outbound {
         protocol: "blackhole".to_owned(),
-        settings: OutboundSettings { vnext: None },
+        settings: OutboundSettings { vnext: vec![] },
         tag: "blocked".to_owned(),
         proxy_setting: None,
         stream_settings: None,

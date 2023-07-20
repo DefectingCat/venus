@@ -93,6 +93,7 @@ fn main() {
         // Start config and core
         async_runtime::spawn(async move {
             let mut config = init_config.lock().await;
+            info!("Start init config");
             config.init(&resources_path)?;
             info!("Config init sucess");
             // Restore alll window status.

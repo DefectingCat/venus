@@ -18,7 +18,7 @@ use crate::{NAME, VERSION};
 pub struct Subscription {
     pub name: String,
     pub url: String,
-    pub nodes: Option<Vec<Node>>,
+    pub nodes: Vec<Node>,
 }
 
 /// RUA config and frontend global state
@@ -29,7 +29,7 @@ pub struct RConfig {
     /// Save state of all open windows to disk
     pub save_windows: bool,
     pub core_status: CoreStatus,
-    pub subscriptions: Option<Vec<Subscription>>,
+    pub subscriptions: Vec<Subscription>,
 }
 
 /// All config field
@@ -75,7 +75,7 @@ impl VConfig {
             version: VERSION.to_owned(),
             save_windows: true,
             core_status: Stopped,
-            subscriptions: Some(vec![]),
+            subscriptions: vec![],
         };
 
         Self {
@@ -134,7 +134,6 @@ impl VConfig {
         let mut rua_config = toml::from_str::<RConfig>(&buffer)?;
         // Do not read core status from config file
         rua_config.core_status = self.rua.core_status;
-        rua_config.subscriptions = rua_config.subscriptions.or(Some(vec![]));
         rua_config.version = VERSION.to_owned();
         self.rua = rua_config;
         Ok(())
@@ -488,7 +487,8 @@ pub struct Mux {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OutboundSettings {
-    pub vnext: Option<Vec<Vmess>>,
+    #[serde(default)]
+    pub vnext: Vec<Vmess>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
