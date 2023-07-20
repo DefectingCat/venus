@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api/tauri';
 import clsx from 'clsx';
 import useStore from 'store';
 import { MenuType } from 'store/ui-store';
@@ -47,6 +48,16 @@ const ContextMenu = () => {
           Share
         </div>
         <div className={MenuItemClass}>Delete</div>
+        <div
+          className={MenuItemClass}
+          onClick={() => {
+            invoke('node_speed', {
+              nodes: [],
+            });
+          }}
+        >
+          Test speed
+        </div>
       </>
     ),
     global: (

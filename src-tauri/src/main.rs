@@ -22,6 +22,7 @@ use crate::{
     commands::{
         config::{get_config, update_config},
         core::select_node,
+        node_speed,
         subs::{add_subscription, update_all_subs, update_sub},
     },
     config::CoreStatus,
@@ -216,6 +217,7 @@ fn main() {
             // core
             select_node,
             // common commands
+            node_speed
         ])
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {

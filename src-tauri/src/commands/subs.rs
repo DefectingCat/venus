@@ -28,7 +28,7 @@ pub enum NodeType {
 impl From<&str> for NodeType {
     fn from(value: &str) -> Self {
         use NodeType::*;
-        match value {
+        match value.to_lowercase().as_str() {
             "vmess" => VMESS,
             "vless" => VLESS,
             "ss" => SS,

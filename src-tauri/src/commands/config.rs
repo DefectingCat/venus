@@ -18,7 +18,7 @@ pub async fn get_config(
     config_type: &str,
 ) -> VResult<Option<ReturnConfig>> {
     let config = state.lock().await;
-    match config_type {
+    match config_type.to_lowercase().as_str() {
         "core" => {
             let core: Option<ReturnConfig> = config
                 .core
