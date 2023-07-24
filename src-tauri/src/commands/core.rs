@@ -8,13 +8,7 @@ use crate::{
     utils::error::{VError, VResult},
 };
 
-/// Active select node from frontend
-#[tauri::command]
-pub async fn select_node(
-    node_id: String,
-    config: State<'_, ConfigState>,
-    tx: State<'_, MsgSender>,
-) -> VResult<()> {
+pub async fn set_node(node_id: String, config: &ConfigState, tx: &MsgSender) -> VResult<()> {
     let mut config = config.lock().await;
 
     let nodes = config
@@ -73,4 +67,16 @@ pub async fn select_node(
     config.write_core()?;
     tx.send(crate::message::ConfigMsg::RestartCore).await?;
     Ok(())
+}
+
+/// Active select node from frontend
+#[tauri::command]
+pub async fn select_node(
+    node_id: String,
+    config: State<'_, ConfigState>,
+    tx: State<'_, MsgSender>,
+) -> VResult<()> {
+    let config = config.inner();
+    let tx = tx.inner();
+    set_node(node_id, config, tx).await
 }
