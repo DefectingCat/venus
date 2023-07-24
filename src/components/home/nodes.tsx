@@ -121,7 +121,6 @@ const Nodes = () => {
   const handleSelect = useCallback(async (node: Node) => {
     try {
       await invoke('select_node', {
-        subName: node.subs,
         nodeId: node.nodeId,
       });
       updateConfig((config) => {

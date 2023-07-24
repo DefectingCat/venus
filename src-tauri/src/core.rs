@@ -79,7 +79,6 @@ impl VCore {
     pub fn init(&mut self, asset_path: &Path) -> VResult<()> {
         self.asset_path = PathBuf::from(asset_path);
         self.child = Some(start_core(self.tx.clone(), &self.asset_path)?);
-        // self.asset_path = path.into();
         Ok(())
     }
 

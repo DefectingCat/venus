@@ -1,7 +1,8 @@
 use log::info;
+use tauri::State;
 use tokio::time::Instant;
 
-use crate::{config::ConfigState, utils::error::VResult};
+use crate::{config::ConfigState, message::MsgSender, utils::error::VResult};
 
 pub mod config;
 pub mod core;
@@ -30,7 +31,11 @@ async fn speed_test(proxy: String, config: ConfigState) -> VResult<()> {
 }
 
 #[tauri::command]
-pub async fn node_speed(config: tauri::State<'_, ConfigState>, nodes: Vec<String>) -> VResult<()> {
+pub async fn node_speed(
+    config: State<'_, ConfigState>,
+    nodes: Vec<String>,
+    tx: State<'_, MsgSender>,
+) -> VResult<()> {
     let config = config.lock().await;
     let local_nodes = config
         .rua

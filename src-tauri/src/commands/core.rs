@@ -11,21 +11,18 @@ use crate::{
 /// Active select node from frontend
 #[tauri::command]
 pub async fn select_node(
-    sub_name: String,
     node_id: String,
     config: State<'_, ConfigState>,
     tx: State<'_, MsgSender>,
 ) -> VResult<()> {
     let mut config = config.lock().await;
 
-    let sub = config
+    let nodes = config
         .rua
         .subscriptions
         .iter()
-        .find(|sub| sub.name == sub_name)
-        .ok_or(VError::EmptyError("Cannot find target subscription"))?;
-    let node = sub
-        .nodes
+        .fold(vec![], |prev, sub| [&prev[..], &sub.nodes[..]].concat());
+    let node = nodes
         .iter()
         .find(|node| node.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id)
         .ok_or(VError::EmptyError("Cannot find target node"))?;
