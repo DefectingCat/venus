@@ -29,6 +29,7 @@ export interface Node {
   // Subscription group
   subs: string;
   delay: string;
+  connectivity: boolean;
   nodeId: string;
   rawLink: string;
   nodeType: string;

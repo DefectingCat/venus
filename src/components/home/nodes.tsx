@@ -50,7 +50,7 @@ const Nodes = () => {
       width: 300,
       sorter: (a, b) => a.ps.localeCompare(b.ps),
       render: (addr) => (
-        <div className="text-ellipsis overflow-hidden">{addr}</div>
+        <div className="overflow-hidden text-ellipsis">{addr}</div>
       ),
     },
     {
@@ -60,13 +60,34 @@ const Nodes = () => {
       ellipsis: true,
       width: 100,
       render: (addr) => (
-        <div className="text-ellipsis overflow-hidden">{addr}</div>
+        <div className="overflow-hidden text-ellipsis">{addr}</div>
       ),
     },
     {
       title: 'Port',
       dataIndex: 'port',
       key: 'port',
+      width: 80,
+      ellipsis: true,
+    },
+    {
+      title: 'Delay',
+      dataIndex: 'delay',
+      key: 'delay',
+      width: 80,
+      ellipsis: true,
+    },
+    {
+      title: 'Speed',
+      dataIndex: 'delay',
+      key: 'delay',
+      width: 80,
+      ellipsis: true,
+    },
+    {
+      title: 'Connectivity',
+      dataIndex: 'connectivity',
+      key: 'connectivity',
       width: 80,
       ellipsis: true,
     },

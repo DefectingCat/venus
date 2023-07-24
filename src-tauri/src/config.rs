@@ -255,14 +255,24 @@ pub struct Node {
     // Add by manually
     // The subscription group
     pub subs: Option<String>,
+    // Current node speed, upload and download
+    pub speed: Option<NodeSpeed>,
     // Current node delay
     pub delay: Option<String>,
+    // Node connectivity
+    pub connectivity: Option<bool>,
     // Node unique ID
     pub node_id: Option<String>,
     // Node raw link from subcription link
     pub raw_link: Option<String>,
     // Node net type
     pub node_type: Option<NodeType>,
+}
+// Bytes per second
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct NodeSpeed {
+    upload: f32,
+    download: f32,
 }
 
 /// Core config root
