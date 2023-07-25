@@ -8,6 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 **/*/downloads/
 downloads/
+.xwin-cache/
+.cargo/
 
 node_modules
 dist
