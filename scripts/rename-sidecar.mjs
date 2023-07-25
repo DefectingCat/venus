@@ -1,12 +1,9 @@
 import { execa } from 'execa';
 import fs from 'fs';
 
-let extension = '';
-if (process.platform === 'win32') {
-  extension = '.exe';
-}
-
-export async function reanmeFile() {
+export async function reanmeFile(
+  extension = process.platform === 'win32' ? '.exe' : ''
+) {
   const rustInfo = (await execa('rustc', ['-vV'])).stdout;
   const targetTriple = /host: (\S+)/g.exec(rustInfo)[1];
   if (!targetTriple) {

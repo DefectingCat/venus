@@ -23,7 +23,8 @@ const unixCommand = async (filename) => {
   }
   log(
     'Copy v2ary',
-    (await execa('cp', ['downloads/v2ray', 'src-tauri/binaries/core/'])).stdout
+    (await execa('cp', [`downloads/${binName}`, 'src-tauri/binaries/core/']))
+      .stdout
   );
   log(
     'Copy geoip-only-cn-private.dat',
@@ -158,10 +159,12 @@ async function downloadFile(url, filename = '.') {
   );
 }
 
-async function main() {
+async function downloadCore(manual, manualPlat) {
   const { arch, platform } = process;
   log('Current platform: ', platform, 'current arch: ', arch);
-  const targetName = `v2ray-${platformMap[platform]}-${archMap[arch]}.zip`;
+  const targetName = `v2ray-${manual ? manualPlat : platformMap[platform]}-${
+    archMap[arch]
+  }.zip`;
   log('Target file: ', targetName);
 
   try {
@@ -186,9 +189,44 @@ async function main() {
       );
     }
     await command(targetName);
-    await reanmeFile();
+    await (manual ? reanmeFile(renameExt) : reanmeFile());
   } catch (err) {
     error(err);
+  }
+}
+
+let binName = '';
+let renameExt = '';
+async function main() {
+  const args = process.argv.slice(2);
+
+  const manual = args.includes('-m');
+
+  terminal.clear();
+  if (manual) {
+    log('Select platform');
+    terminal.singleColumnMenu(
+      ['macos', 'windows', 'linux'],
+      {},
+      async (err, res) => {
+        switch (res.selectedText) {
+          case 'macos':
+            binName = 'v2ray';
+            break;
+          case 'linux':
+            binName = 'v2ray';
+            break;
+          case 'windows':
+            binName = 'v2ray.exe';
+            renameExt = '.exe';
+            break;
+        }
+        await downloadCore(manual, res.selectedText);
+        process.exit();
+      }
+    );
+  } else {
+    downloadCore();
   }
 }
 
