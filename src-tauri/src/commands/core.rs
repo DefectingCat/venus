@@ -1,16 +1,22 @@
 use std::vec;
 
 use tauri::State;
+use tokio::sync::MutexGuard;
 
 use crate::{
-    config::{stream_settings_builder, ConfigState, CoreUser, Outbound, OutboundSettings, Vmess},
+    config::{
+        stream_settings_builder, ConfigState, CoreUser, Outbound, OutboundSettings, VConfig, Vmess,
+    },
     message::MsgSender,
     utils::error::{VError, VResult},
 };
 
-pub async fn set_node(node_id: String, config: &ConfigState, tx: &MsgSender) -> VResult<()> {
-    let mut config = config.lock().await;
-
+pub async fn set_node(
+    node_id: &str,
+    config: &mut MutexGuard<'_, VConfig>,
+    tx: State<'_, MsgSender>,
+) -> VResult<()> {
+    dbg!(&node_id);
     let nodes = config
         .rua
         .subscriptions
@@ -76,7 +82,6 @@ pub async fn select_node(
     config: State<'_, ConfigState>,
     tx: State<'_, MsgSender>,
 ) -> VResult<()> {
-    let config = config.inner();
-    let tx = tx.inner();
-    set_node(node_id, config, tx).await
+    let mut config = config.lock().await;
+    set_node(node_id.as_str(), &mut config, tx).await
 }

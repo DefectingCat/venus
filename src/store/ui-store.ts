@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { ConfigSlice } from './config-store';
 import { immer } from 'zustand/middleware/immer';
+import { Node } from './config-store';
 import { LogSlice } from './log-store';
 
 export type MenuType = 'global' | 'node';
@@ -17,6 +18,8 @@ export interface UI {
   menus: {
     // node menus
     node: NodeDrawerType | false;
+    // right click node
+    clickNode: Node[];
   };
 
   // loadings
@@ -55,6 +58,7 @@ const createUISlice: StateCreator<
   },
   menus: {
     node: false,
+    clickNode: [],
   },
   loading: {
     updateAll: false,

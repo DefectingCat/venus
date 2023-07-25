@@ -1,15 +1,21 @@
 use log::info;
 use tauri::State;
-use tokio::time::Instant;
+use tokio::{sync::MutexGuard, time::Instant};
 
-use crate::{config::ConfigState, message::MsgSender, utils::error::VResult};
+use crate::{
+    config::{ConfigState, VConfig},
+    message::MsgSender,
+    utils::error::{VError, VResult},
+};
+
+use self::core::set_node;
 
 pub mod config;
 pub mod core;
 pub mod subs;
 
 // async fn calculate_speed() -> VResult<usize> {}
-async fn speed_test(proxy: String, config: ConfigState) -> VResult<()> {
+async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResult<()> {
     let start = Instant::now();
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
@@ -26,6 +32,7 @@ async fn speed_test(proxy: String, config: ConfigState) -> VResult<()> {
         let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000 as f64;
         len += c.len();
         let bytes_per_second = (len as f64 / time).round();
+        dbg!(bytes_per_second);
     }
     Ok(())
 }
@@ -36,18 +43,33 @@ pub async fn node_speed(
     nodes: Vec<String>,
     tx: State<'_, MsgSender>,
 ) -> VResult<()> {
-    let config = config.lock().await;
+    let mut config = config.lock().await;
     let local_nodes = config
         .rua
         .subscriptions
         .iter()
         .fold(vec![], |prev, sub| [&prev[..], &sub.nodes[..]].concat());
 
-    nodes.iter().for_each(|id| {
+    let current_node = config
+        .core
+        .as_ref()
+        .and_then(|core| core.outbounds.first().clone());
+    let proxy = config
+        .core
+        .as_ref()
+        .and_then(|core| core.inbounds.iter().find(|inbound| inbound.tag == "http"))
+        .ok_or(VError::EmptyError("cannot find http inbound"))?;
+    let proxy = format!("http://{}:{}", proxy.listen, proxy.port);
+
+    for id in nodes {
         let target = local_nodes
             .iter()
-            .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == id);
-    });
+            .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id)
+            .unwrap();
+        let node_id = target.node_id.as_ref().unwrap().as_str();
+        set_node(node_id, &mut config, tx.clone()).await?;
+        speed_test(&proxy.as_str(), &mut config).await?;
+    }
 
     Ok(())
 }

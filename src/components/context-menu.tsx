@@ -17,6 +17,7 @@ const MenuItemClass = clsx(
 const ContextMenu = () => {
   const pos = useStore((s) => s.mousePos);
   const type = useStore((s) => s.showMenu);
+  const clickNode = useStore((s) => s.menus.clickNode);
   const { toggleUI, closeMenus } = useStore((s) => ({
     toggleUI: s.toggleUI,
     closeMenus: s.closeMenus,
@@ -52,7 +53,7 @@ const ContextMenu = () => {
           className={MenuItemClass}
           onClick={() => {
             invoke('node_speed', {
-              nodes: [],
+              nodes: clickNode.map((n) => n.nodeId),
             });
           }}
         >
