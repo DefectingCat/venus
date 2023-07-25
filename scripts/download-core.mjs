@@ -189,7 +189,7 @@ async function downloadCore(manual, manualPlat) {
       );
     }
     await command(targetName);
-    await (manual ? reanmeFile(renameExt) : reanmeFile());
+    await (manual ? reanmeFile(renameExt, targetTriple) : reanmeFile());
   } catch (err) {
     error(err);
   }
@@ -197,6 +197,7 @@ async function downloadCore(manual, manualPlat) {
 
 let binName = '';
 let renameExt = '';
+let targetTriple = '';
 async function main() {
   const args = process.argv.slice(2);
 
@@ -219,6 +220,7 @@ async function main() {
           case 'windows':
             binName = 'v2ray.exe';
             renameExt = '.exe';
+            targetTriple = 'x86_64-pc-windows-msvc';
             break;
         }
         await downloadCore(manual, res.selectedText);

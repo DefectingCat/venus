@@ -2,10 +2,11 @@ import { execa } from 'execa';
 import fs from 'fs';
 
 export async function reanmeFile(
-  extension = process.platform === 'win32' ? '.exe' : ''
+  extension = process.platform === 'win32' ? '.exe' : '',
+  targetTriple
 ) {
   const rustInfo = (await execa('rustc', ['-vV'])).stdout;
-  const targetTriple = /host: (\S+)/g.exec(rustInfo)[1];
+  if (!targetTriple) targetTriple = /host: (\S+)/g.exec(rustInfo)[1];
   if (!targetTriple) {
     console.error('Failed to determine platform target triple');
   }
