@@ -195,7 +195,7 @@ async function downloadCore(manual, manualPlat) {
   }
 }
 
-let binName = '';
+let binName = 'v2ray';
 let renameExt = '';
 let targetTriple = '';
 async function main() {
