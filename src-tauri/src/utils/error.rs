@@ -8,6 +8,7 @@ use tokio::sync::mpsc;
 
 use crate::message::ConfigMsg;
 
+#[allow(dead_code)]
 #[derive(Error, Debug)]
 pub enum VError {
     /// Reqwest error
@@ -55,6 +56,9 @@ pub enum VError {
     /// Convert int to string
     #[error("Failed to parse to int: {0}")]
     ParseIntError(#[from] ParseIntError),
+    /// Common error
+    #[error("Someting wrong: {0}")]
+    CommonError(String),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913

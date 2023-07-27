@@ -1,6 +1,11 @@
-use log::info;
-use tauri::State;
-use tokio::{sync::MutexGuard, time::Instant};
+use std::{sync::Arc, thread, time::Duration};
+
+use log::{info, warn};
+use tauri::{async_runtime, State};
+use tokio::{
+    sync::{Mutex, MutexGuard},
+    time::Instant,
+};
 
 use crate::{
     config::{ConfigState, VConfig},
@@ -20,20 +25,55 @@ async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResul
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
     let mut response = client
-        .get("https://speed.hetzner.de/100MB.bin")
+        // .get("https://speed.hetzner.de/100MB.bin")
+        .get("https://sabnzbd.org/tests/internetspeed/20MB.bin")
         .send()
         .await?;
     let latency = start.elapsed().as_millis();
     info!("Latency {}", latency);
 
+    // download length per chunk
+    let len = Arc::new(Mutex::new(0 as usize));
+    let bytes_per_second = Arc::new(Mutex::new(0.0));
+    let done = Arc::new(Mutex::new(false));
+
+    let total: Option<u64> = response.content_length();
+
+    let check_len = len.clone();
+    let bytes = bytes_per_second.clone();
+    let check_done = done.clone();
+    async_runtime::spawn(async move {
+        loop {
+            // update config to frontend per 500ms
+            thread::sleep(Duration::from_millis(500));
+            let check_len = check_len.lock().await;
+            let bytes = bytes.lock().await;
+            let check_done = check_done.lock().await;
+            let percentage = if let Some(t) = total {
+                (*check_len as f64) / (t as f64)
+            } else {
+                warn!("Content-length is empty");
+                0.0
+            };
+            dbg!(&bytes, &check_len, &total, &percentage);
+            if *check_done {
+                break;
+            }
+        }
+    });
+
     let download_start = Instant::now();
-    let mut len = 0;
     while let Some(c) = response.chunk().await? {
         let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000 as f64;
-        len += c.len();
-        let bytes_per_second = (len as f64 / time).round();
-        dbg!(bytes_per_second);
+        let mut len = len.lock().await;
+        let mut bytes_per_second = bytes_per_second.lock().await;
+        *len += c.len();
+        *bytes_per_second = (*len as f64 / time).round();
+        // dbg!(bytes_per_second);
     }
+    let mut done = done.lock().await;
+    *done = true;
+
     Ok(())
 }
 
