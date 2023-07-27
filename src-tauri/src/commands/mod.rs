@@ -9,7 +9,7 @@ use tokio::{
 
 use crate::{
     config::{ConfigState, VConfig},
-    message::{BroadcastState, MsgSender},
+    message::MsgSender,
     utils::error::{VError, VResult},
 };
 
@@ -84,6 +84,7 @@ pub async fn node_speed(
     tx: State<'_, MsgSender>,
 ) -> VResult<()> {
     let mut config = config.lock().await;
+
     let local_nodes = config
         .rua
         .subscriptions
@@ -115,5 +116,6 @@ pub async fn node_speed(
         // }
     }
 
+    tx.send(crate::message::ConfigMsg::NodeSpeedtest);
     Ok(())
 }

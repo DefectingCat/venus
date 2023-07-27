@@ -1,6 +1,6 @@
 use std::{
-    path::{Path, PathBuf},
-    sync::{atomic::Ordering, Arc, Mutex},
+    path::Path,
+    sync::{atomic::Ordering, Arc},
 };
 
 use log::{error, info, warn};
@@ -8,10 +8,10 @@ use tauri::{
     api::process::{Command, CommandChild, CommandEvent},
     async_runtime,
 };
-use tokio::sync::{broadcast, mpsc::Sender};
+use tokio::sync::{mpsc::Sender, Mutex};
 
 use crate::{
-    config::CoreStatus,
+    config::{ConfigState, CoreStatus},
     message::ConfigMsg,
     utils::error::{VError, VResult},
     CORE_SHUTDOWN,
@@ -26,7 +26,7 @@ pub struct VCore {
     // Message sender
     pub tx: Arc<Sender<ConfigMsg>>,
     // Core resource path
-    asset_path: PathBuf,
+    config: Option<ConfigState>,
 }
 
 fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &Path) -> VResult<CommandChild> {
@@ -68,24 +68,35 @@ fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &Path) -> VResult<CommandChild> 
 
 impl VCore {
     /// tx: restart core message
-    /// b_tx: internal core status message
     pub fn build(tx: Arc<Sender<ConfigMsg>>) -> Self {
         Self {
             child: None,
             tx,
-            asset_path: PathBuf::new(),
+            config: None,
         }
     }
 
     /// Init core add assets path and start core
-    pub fn init(&mut self, asset_path: &Path) -> VResult<()> {
-        self.asset_path = PathBuf::from(asset_path);
-        self.child = Some(start_core(self.tx.clone(), &self.asset_path)?);
-        Ok(())
+    pub async fn init(&mut self, config: ConfigState) {
+        self.config = Some(config.clone());
+        let mut config = config.lock().await;
+        // self.child = Some(start_core(self.tx.clone(), &config.core_path)?);
+        match start_core(self.tx.clone(), &config.core_path) {
+            Ok(child) => {
+                config.rua.core_status = CoreStatus::Started;
+                info!("Core started");
+                self.child = Some(child);
+            }
+            Err(err) => {
+                error!("Core start failed {err:?}");
+                CORE_SHUTDOWN.store(false, Ordering::Relaxed);
+                config.rua.core_status = CoreStatus::Stopped;
+            }
+        }
     }
 
     /// Restart core and reload config
-    pub fn restart(&mut self) -> VResult<()> {
+    pub async fn restart(&mut self) -> VResult<()> {
         if let Some(child) = self.child.take() {
             CORE_SHUTDOWN.store(true, Ordering::Relaxed);
             child.kill()?;
@@ -93,8 +104,22 @@ impl VCore {
             warn!("core process not exist");
             return Ok(());
         };
-        let child = start_core(self.tx.clone(), &self.asset_path)?;
-        self.child = Some(child);
+        let mut config = self
+            .config
+            .as_mut()
+            .ok_or(VError::EmptyError("()"))?
+            .lock()
+            .await;
+        // let child = start_core(self.tx.clone(), &config.core_path)?;
+        match start_core(self.tx.clone(), &config.core_path) {
+            Ok(child) => {
+                config.rua.core_status = CoreStatus::Started;
+                self.child = Some(child);
+            }
+            Err(err) => {
+                error!("Core restart failed {err}");
+            }
+        }
         Ok(())
     }
 
@@ -103,6 +128,10 @@ impl VCore {
             info!("Exiting core");
             child.kill()?;
         };
+        Ok(())
+    }
+
+    pub fn speed_test(&mut self) -> VResult<()> {
         Ok(())
     }
 }

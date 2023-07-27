@@ -23,10 +23,14 @@ pub fn handle_tray_click(app: &AppHandle, id: String, core: &AVCore) {
     let item_handle = app.tray_handle().get_item(&id);
     match id.as_str() {
         "quit" => {
-            let mut core = core.lock().expect("");
-            CORE_SHUTDOWN.store(true, Ordering::Relaxed);
-            core.exit().expect("Kill core failed");
-            app.exit(0);
+            let core = core.clone();
+            let app = app.app_handle();
+            async_runtime::spawn(async move {
+                let mut core = core.lock().await;
+                CORE_SHUTDOWN.store(true, Ordering::Relaxed);
+                core.exit().expect("Kill core failed");
+                app.exit(0);
+            });
         }
         "hide" => {
             let windows = app.windows();

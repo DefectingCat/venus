@@ -10,12 +10,13 @@ use std::{
     error::Error,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, Mutex,
+        Arc,
     },
 };
 use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
+use tokio::sync::Mutex;
 use utils::error::VError;
 
 use crate::{
@@ -25,10 +26,9 @@ use crate::{
         node_speed,
         subs::{add_subscription, update_all_subs, update_sub},
     },
-    config::CoreStatus,
     core::VCore,
     logger::init_logger,
-    message::{broad_build, msg_build},
+    message::msg_build,
     tray::{handle_tray_click, new_tray},
     utils::{get_main_window, message_handler},
 };
@@ -63,12 +63,8 @@ fn main() {
     let (tx, rx) = msg_build();
     let tx = Arc::new(tx);
 
-    // Backend internal core state
-    let (b_tx, b_rx) = broad_build();
-    let b_rx = async_runtime::Mutex::new(b_rx);
-
     // Init config.
-    let config = Arc::new(async_runtime::Mutex::new(VConfig::new()));
+    let config = Arc::new(Mutex::new(VConfig::new()));
 
     match init_logger(tx.clone(), config.clone()) {
         Ok(()) => {}
@@ -107,20 +103,10 @@ fn main() {
             }
 
             info!("Start core");
-            let mut core = core.lock().expect("Can not lock core");
+            let mut core = core.lock().await;
             // Set v2ray assert location with environment
             env::set_var("V2RAY_LOCATION_ASSET", &resources_path);
-            match core.init(&config.core_path) {
-                Ok(_) => {
-                    config.rua.core_status = CoreStatus::Started;
-                    info!("Core started")
-                }
-                Err(err) => {
-                    error!("Core start failed {err:?}");
-                    CORE_SHUTDOWN.store(false, Ordering::Relaxed);
-                    config.rua.core_status = CoreStatus::Stopped;
-                }
-            }
+            core.init(init_config.clone()).await;
             Ok::<(), VError>(())
         });
 
@@ -157,9 +143,12 @@ fn main() {
     // Runner handler
     let runner = move |app: &AppHandle, event: RunEvent| match event {
         RunEvent::Exit => {
-            let mut core = core_runner.lock().expect("");
-            CORE_SHUTDOWN.store(true, Ordering::Relaxed);
-            core.exit().expect("Kill core failed");
+            let core_runner = core_runner.clone();
+            async_runtime::spawn(async move {
+                let mut core = core_runner.lock().await;
+                CORE_SHUTDOWN.store(true, Ordering::Relaxed);
+                core.exit().expect("Kill core failed");
+            });
         }
         RunEvent::ExitRequested { api, .. } => {
             let _api = api;
@@ -212,7 +201,6 @@ fn main() {
         })
         .manage(config)
         .manage(tx)
-        .manage(b_rx)
         .invoke_handler(tauri::generate_handler![
             // subs
             add_subscription,

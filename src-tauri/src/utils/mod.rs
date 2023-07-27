@@ -1,13 +1,9 @@
 use log::{error, info};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tauri::{async_runtime, App, Manager, Window};
-use tokio::sync::{self, broadcast, mpsc::Receiver};
+use tokio::sync::{mpsc::Receiver, Mutex};
 
-use crate::{
-    config::{CoreStatus, VConfig},
-    core::VCore,
-    message::ConfigMsg,
-};
+use crate::{config::VConfig, core::VCore, message::ConfigMsg};
 
 use self::error::{VError, VResult};
 
@@ -17,7 +13,7 @@ pub mod error;
 pub fn message_handler(
     window: Window,
     mut rx: Receiver<ConfigMsg>,
-    msg_config: Arc<sync::Mutex<VConfig>>,
+    msg_config: Arc<Mutex<VConfig>>,
     msg_core: Arc<Mutex<VCore>>,
 ) -> VResult<()> {
     let handler = async move {
@@ -31,11 +27,10 @@ pub fn message_handler(
                 }
                 ConfigMsg::RestartCore => {
                     info!("Restarting core");
-                    let mut config = msg_config.lock().await;
-                    let mut core = msg_core.lock()?;
-                    match core.restart() {
+                    let mut core = msg_core.lock().await;
+                    match core.restart().await {
                         Ok(_) => {
-                            config.rua.core_status = CoreStatus::Started;
+                            let config = msg_config.lock().await;
                             window.emit_all("rua://update-rua-config", &config.rua)?;
                             window.emit_all("rua://update-core-config", &config.core)?;
                         }
@@ -47,6 +42,7 @@ pub fn message_handler(
                 ConfigMsg::EmitLog(log) => {
                     window.emit("rua://emit-log", log)?;
                 }
+                ConfigMsg::NodeSpeedtest => {}
             }
         }
         Ok::<(), VError>(())
