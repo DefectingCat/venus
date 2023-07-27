@@ -9,7 +9,7 @@ use tokio::{
 
 use crate::{
     config::{ConfigState, VConfig},
-    message::MsgSender,
+    message::{BroadcastState, MsgSender},
     utils::error::{VError, VResult},
 };
 
@@ -108,7 +108,11 @@ pub async fn node_speed(
             .unwrap();
         let node_id = target.node_id.as_ref().unwrap().as_str();
         set_node(node_id, &mut config, tx.clone()).await?;
-        speed_test(&proxy.as_str(), &mut config).await?;
+
+        // while let Ok(status) = b_rx.lock().await.recv().await {
+        //     dbg!(&status);
+        // speed_test(&proxy.as_str(), &mut config).await?;
+        // }
     }
 
     Ok(())

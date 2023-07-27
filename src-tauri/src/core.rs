@@ -8,7 +8,7 @@ use tauri::{
     api::process::{Command, CommandChild, CommandEvent},
     async_runtime,
 };
-use tokio::sync::mpsc::Sender;
+use tokio::sync::{broadcast, mpsc::Sender};
 
 use crate::{
     config::CoreStatus,
@@ -51,11 +51,11 @@ fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &Path) -> VResult<CommandChild> 
                         info!("Kill core succeed");
                     } else {
                         error!("{line:?}");
-                        tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped)).await?;
+                        tx.send(ConfigMsg::CoreStatus(CoreStatus::Stopped)).await?;
                     }
                 }
                 _ => {
-                    tx.send(ConfigMsg::CoreStatue(CoreStatus::Stopped)).await?;
+                    tx.send(ConfigMsg::CoreStatus(CoreStatus::Stopped)).await?;
                     error!("Core unknown error {event:?}");
                 }
             }
@@ -67,6 +67,8 @@ fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &Path) -> VResult<CommandChild> 
 }
 
 impl VCore {
+    /// tx: restart core message
+    /// b_tx: internal core status message
     pub fn build(tx: Arc<Sender<ConfigMsg>>) -> Self {
         Self {
             child: None,

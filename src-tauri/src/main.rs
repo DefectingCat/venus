@@ -28,7 +28,7 @@ use crate::{
     config::CoreStatus,
     core::VCore,
     logger::init_logger,
-    message::msg_build,
+    message::{broad_build, msg_build},
     tray::{handle_tray_click, new_tray},
     utils::{get_main_window, message_handler},
 };
@@ -62,6 +62,11 @@ fn main() {
     // it will use tx send new state to config
     let (tx, rx) = msg_build();
     let tx = Arc::new(tx);
+
+    // Backend internal core state
+    let (b_tx, b_rx) = broad_build();
+    let b_rx = async_runtime::Mutex::new(b_rx);
+
     // Init config.
     let config = Arc::new(async_runtime::Mutex::new(VConfig::new()));
 
@@ -207,6 +212,7 @@ fn main() {
         })
         .manage(config)
         .manage(tx)
+        .manage(b_rx)
         .invoke_handler(tauri::generate_handler![
             // subs
             add_subscription,

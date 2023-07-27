@@ -1,7 +1,7 @@
 use log::{error, info};
 use std::sync::{Arc, Mutex};
 use tauri::{async_runtime, App, Manager, Window};
-use tokio::sync::{self, mpsc::Receiver};
+use tokio::sync::{self, broadcast, mpsc::Receiver};
 
 use crate::{
     config::{CoreStatus, VConfig},
@@ -23,7 +23,7 @@ pub fn message_handler(
     let handler = async move {
         while let Some(msg) = rx.recv().await {
             match msg {
-                ConfigMsg::CoreStatue(status) => {
+                ConfigMsg::CoreStatus(status) => {
                     info!("Update core status {}", status.as_str());
                     let mut config = msg_config.lock().await;
                     config.rua.core_status = status;
