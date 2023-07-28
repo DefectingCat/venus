@@ -18,6 +18,7 @@ pub fn message_handler(
 ) -> VResult<()> {
     let handler = async move {
         while let Some(msg) = rx.recv().await {
+            let mut core = msg_core.lock().await;
             match msg {
                 ConfigMsg::CoreStatus(status) => {
                     info!("Update core status {}", status.as_str());
@@ -27,7 +28,6 @@ pub fn message_handler(
                 }
                 ConfigMsg::RestartCore => {
                     info!("Restarting core");
-                    let mut core = msg_core.lock().await;
                     match core.restart().await {
                         Ok(_) => {
                             let config = msg_config.lock().await;
@@ -42,7 +42,15 @@ pub fn message_handler(
                 ConfigMsg::EmitLog(log) => {
                     window.emit("rua://emit-log", log)?;
                 }
-                ConfigMsg::NodeSpeedtest => {}
+                ConfigMsg::NodeSpeedtest(node_ids) => {
+                    core.speed_test(node_ids, msg_config.clone()).await?;
+                }
+                ConfigMsg::EmitConfig => {
+                    dbg!("try");
+                    let config = msg_config.lock().await;
+                    window.emit_all("rua://update-rua-config", &config.rua)?;
+                    window.emit_all("rua://update-core-config", &config.core)?;
+                }
             }
         }
         Ok::<(), VError>(())

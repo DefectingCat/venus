@@ -8,19 +8,18 @@ use tokio::{
 };
 
 use crate::{
-    config::{ConfigState, VConfig},
+    config::{ConfigState, Node, VConfig},
     message::MsgSender,
     utils::error::{VError, VResult},
 };
-
-use self::core::set_node;
 
 pub mod config;
 pub mod core;
 pub mod subs;
 
 // async fn calculate_speed() -> VResult<usize> {}
-async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResult<()> {
+// async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResult<()> {
+pub async fn speed_test(proxy: &str, node: &mut Node) -> VResult<()> {
     let start = Instant::now();
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
@@ -31,10 +30,13 @@ async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResul
         .await?;
     let latency = start.elapsed().as_millis();
     info!("Latency {}", latency);
+    node.delay = Some(latency);
 
     // download length per chunk
     let len = Arc::new(Mutex::new(0 as usize));
+    // current download speed per second
     let bytes_per_second = Arc::new(Mutex::new(0.0));
+    // is download complete
     let done = Arc::new(Mutex::new(false));
 
     let total: Option<u64> = response.content_length();
@@ -42,6 +44,7 @@ async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResul
     let check_len = len.clone();
     let bytes = bytes_per_second.clone();
     let check_done = done.clone();
+    let node_host = node.host.clone();
     async_runtime::spawn(async move {
         loop {
             // update config to frontend per 500ms
@@ -56,6 +59,12 @@ async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResul
                 0.0
             };
             dbg!(&bytes, &check_len, &total, &percentage);
+            info!(
+                "Node {} download speed {}, {}",
+                node_host,
+                *bytes / 100_000 as f64,
+                percentage
+            );
             if *check_done {
                 break;
             }
@@ -69,7 +78,6 @@ async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResul
         let mut bytes_per_second = bytes_per_second.lock().await;
         *len += c.len();
         *bytes_per_second = (*len as f64 / time).round();
-        // dbg!(bytes_per_second);
     }
     let mut done = done.lock().await;
     *done = true;
@@ -78,44 +86,8 @@ async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResul
 }
 
 #[tauri::command]
-pub async fn node_speed(
-    config: State<'_, ConfigState>,
-    nodes: Vec<String>,
-    tx: State<'_, MsgSender>,
-) -> VResult<()> {
-    let mut config = config.lock().await;
-
-    let local_nodes = config
-        .rua
-        .subscriptions
-        .iter()
-        .fold(vec![], |prev, sub| [&prev[..], &sub.nodes[..]].concat());
-
-    let current_node = config
-        .core
-        .as_ref()
-        .and_then(|core| core.outbounds.first().clone());
-    let proxy = config
-        .core
-        .as_ref()
-        .and_then(|core| core.inbounds.iter().find(|inbound| inbound.tag == "http"))
-        .ok_or(VError::EmptyError("cannot find http inbound"))?;
-    let proxy = format!("http://{}:{}", proxy.listen, proxy.port);
-
-    for id in nodes {
-        let target = local_nodes
-            .iter()
-            .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id)
-            .unwrap();
-        let node_id = target.node_id.as_ref().unwrap().as_str();
-        set_node(node_id, &mut config, tx.clone()).await?;
-
-        // while let Ok(status) = b_rx.lock().await.recv().await {
-        //     dbg!(&status);
-        // speed_test(&proxy.as_str(), &mut config).await?;
-        // }
-    }
-
-    tx.send(crate::message::ConfigMsg::NodeSpeedtest);
+pub async fn node_speed(nodes: Vec<String>, tx: State<'_, MsgSender>) -> VResult<()> {
+    tx.send(crate::message::ConfigMsg::NodeSpeedtest(nodes))
+        .await?;
     Ok(())
 }

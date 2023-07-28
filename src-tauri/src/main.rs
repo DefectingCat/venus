@@ -26,6 +26,7 @@ use crate::{
         node_speed,
         subs::{add_subscription, update_all_subs, update_sub},
     },
+    config::CoreStatus,
     core::VCore,
     logger::init_logger,
     message::msg_build,
@@ -106,7 +107,18 @@ fn main() {
             let mut core = core.lock().await;
             // Set v2ray assert location with environment
             env::set_var("V2RAY_LOCATION_ASSET", &resources_path);
-            core.init(init_config.clone()).await;
+
+            match core.init(&config.core_path).await {
+                Ok(_) => {
+                    config.rua.core_status = CoreStatus::Started;
+                    info!("Core started");
+                }
+                Err(err) => {
+                    error!("Core start failed {err:?}");
+                    CORE_SHUTDOWN.store(false, Ordering::Relaxed);
+                    config.rua.core_status = CoreStatus::Stopped;
+                }
+            }
             Ok::<(), VError>(())
         });
 

@@ -1,5 +1,5 @@
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     sync::{atomic::Ordering, Arc},
 };
 
@@ -8,11 +8,12 @@ use tauri::{
     api::process::{Command, CommandChild, CommandEvent},
     async_runtime,
 };
-use tokio::sync::{mpsc::Sender, Mutex};
+use tokio::sync::Mutex;
 
 use crate::{
-    config::{ConfigState, CoreStatus},
-    message::ConfigMsg,
+    commands::speed_test,
+    config::{outbouds_builder, ConfigState, CoreStatus},
+    message::{ConfigMsg, MsgSender},
     utils::error::{VError, VResult},
     CORE_SHUTDOWN,
 };
@@ -24,12 +25,12 @@ pub struct VCore {
     // Slidecare process
     pub child: Option<CommandChild>,
     // Message sender
-    pub tx: Arc<Sender<ConfigMsg>>,
+    pub tx: MsgSender,
     // Core resource path
-    config: Option<ConfigState>,
+    asset_path: PathBuf,
 }
 
-fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &Path) -> VResult<CommandChild> {
+fn start_core(tx: MsgSender, path: &Path) -> VResult<CommandChild> {
     // `new_sidecar()` expects just the filename, NOT the whole path like in JavaScript
     let (mut rx, child) = Command::new_sidecar("v2ray")
         .expect("Failed to create `v2ray` binary command")
@@ -68,31 +69,19 @@ fn start_core(tx: Arc<Sender<ConfigMsg>>, path: &Path) -> VResult<CommandChild> 
 
 impl VCore {
     /// tx: restart core message
-    pub fn build(tx: Arc<Sender<ConfigMsg>>) -> Self {
+    pub fn build(tx: MsgSender) -> Self {
         Self {
             child: None,
             tx,
-            config: None,
+            asset_path: PathBuf::new(),
         }
     }
 
     /// Init core add assets path and start core
-    pub async fn init(&mut self, config: ConfigState) {
-        self.config = Some(config.clone());
-        let mut config = config.lock().await;
-        // self.child = Some(start_core(self.tx.clone(), &config.core_path)?);
-        match start_core(self.tx.clone(), &config.core_path) {
-            Ok(child) => {
-                config.rua.core_status = CoreStatus::Started;
-                info!("Core started");
-                self.child = Some(child);
-            }
-            Err(err) => {
-                error!("Core start failed {err:?}");
-                CORE_SHUTDOWN.store(false, Ordering::Relaxed);
-                config.rua.core_status = CoreStatus::Stopped;
-            }
-        }
+    pub async fn init(&mut self, asset_path: &PathBuf) -> VResult<()> {
+        self.asset_path = PathBuf::from(asset_path);
+        self.child = Some(start_core(self.tx.clone(), &self.asset_path)?);
+        Ok(())
     }
 
     /// Restart core and reload config
@@ -104,22 +93,8 @@ impl VCore {
             warn!("core process not exist");
             return Ok(());
         };
-        let mut config = self
-            .config
-            .as_mut()
-            .ok_or(VError::EmptyError("()"))?
-            .lock()
-            .await;
-        // let child = start_core(self.tx.clone(), &config.core_path)?;
-        match start_core(self.tx.clone(), &config.core_path) {
-            Ok(child) => {
-                config.rua.core_status = CoreStatus::Started;
-                self.child = Some(child);
-            }
-            Err(err) => {
-                error!("Core restart failed {err}");
-            }
-        }
+        let child = start_core(self.tx.clone(), &self.asset_path)?;
+        self.child = Some(child);
         Ok(())
     }
 
@@ -131,7 +106,46 @@ impl VCore {
         Ok(())
     }
 
-    pub fn speed_test(&mut self) -> VResult<()> {
+    pub async fn speed_test(&mut self, node_ids: Vec<String>, config: ConfigState) -> VResult<()> {
+        let mut config = config.lock().await;
+
+        let current_node = config
+            .core
+            .as_ref()
+            .and_then(|core| core.outbounds.first().clone());
+        let proxy = config
+            .core
+            .as_ref()
+            .and_then(|core| core.inbounds.iter().find(|inbound| inbound.tag == "http"))
+            .ok_or(VError::EmptyError("cannot find http inbound"))?;
+        let proxy = format!("http://{}:{}", proxy.listen, proxy.port);
+
+        for id in node_ids {
+            let mut target = None;
+            config.rua.subscriptions.iter_mut().for_each(|sub| {
+                target = sub
+                    .nodes
+                    .iter_mut()
+                    .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id)
+            });
+            let target = target.unwrap();
+
+            let outbounds = outbouds_builder(target)?;
+            let core = config
+                .core
+                .as_mut()
+                .ok_or(VError::EmptyError("core config is empty"))?;
+            core.outbounds = outbounds;
+            config.write_core()?;
+
+            target.delay = Some(123);
+            self.restart().await?;
+            // speed_test(&proxy, target).await?;
+            dbg!(&config.rua.subscriptions);
+            dbg!(&target);
+        }
+
+        self.tx.send(ConfigMsg::EmitConfig).await?;
         Ok(())
     }
 }

@@ -185,6 +185,48 @@ fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> VResult<()
     Ok(())
 }
 
+pub fn outbouds_builder(node: &Node) -> VResult<Vec<Outbound>> {
+    let vmess = Vmess {
+        address: node.add.clone(),
+        port: node.port.parse()?,
+        users: vec![CoreUser {
+            id: node.id.clone(),
+            alter_id: node.aid.parse()?,
+            email: "rua@rua.rua".to_string(),
+            security: "auto".to_string(),
+        }],
+    };
+    let proxy = Outbound {
+        tag: "proxy".to_string(),
+        protocol: "vmess".to_string(),
+        settings: OutboundSettings { vnext: vec![vmess] },
+        stream_settings: Some(stream_settings_builder(node)?),
+        proxy_setting: None,
+        mux: None,
+    };
+
+    let freedom = Outbound {
+        protocol: "freedom".to_owned(),
+        settings: OutboundSettings { vnext: vec![] },
+        tag: "direct".to_owned(),
+        proxy_setting: None,
+        stream_settings: None,
+        mux: None,
+    };
+    let blackhole = Outbound {
+        protocol: "blackhole".to_owned(),
+        settings: OutboundSettings { vnext: vec![] },
+        tag: "blocked".to_owned(),
+        proxy_setting: None,
+        stream_settings: None,
+        mux: None,
+    };
+
+    let outbounds = vec![proxy, freedom, blackhole];
+
+    Ok(outbounds)
+}
+
 /// Build outbound stream setting with node in subscription
 pub fn stream_settings_builder(node: &Node) -> VResult<StreamSettings> {
     let setting = StreamSettings {
@@ -258,7 +300,7 @@ pub struct Node {
     // Current node speed, upload and download
     pub speed: Option<NodeSpeed>,
     // Current node delay
-    pub delay: Option<String>,
+    pub delay: Option<u128>,
     // Node connectivity
     pub connectivity: Option<bool>,
     // Node unique ID

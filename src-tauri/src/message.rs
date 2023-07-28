@@ -12,7 +12,8 @@ pub enum ConfigMsg {
     CoreStatus(CoreStatus),
     RestartCore,
     EmitLog(String),
-    NodeSpeedtest,
+    NodeSpeedtest(Vec<String>),
+    EmitConfig,
 }
 // pub struct ConfigMsg {
 //     pub msg: ConfigMsgType,
