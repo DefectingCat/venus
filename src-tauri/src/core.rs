@@ -109,13 +109,16 @@ impl VCore {
     pub async fn speed_test(&mut self, node_ids: Vec<String>, config: ConfigState) -> VResult<()> {
         let loop_config = config.clone();
 
+        #[allow(unused_assignments)]
         let mut proxy = String::new();
+        #[allow(unused_assignments)]
+        let mut current_outbound = None;
         {
             let config = config.lock().await;
-            let current_node = config
+            current_outbound = config
                 .core
                 .as_ref()
-                .and_then(|core| core.outbounds.first().clone());
+                .and_then(|core| Some(core.outbounds.clone()));
             let target_proxy = config
                 .core
                 .as_ref()
@@ -129,7 +132,7 @@ impl VCore {
 
             {
                 let mut config = loop_config.lock().await;
-                let config = &mut *config;
+                // let config = &mut *config;
                 let rua = &mut config.rua;
 
                 let mut target = None;
@@ -152,6 +155,16 @@ impl VCore {
 
             self.restart().await?;
             speed_test(&proxy, write_config.clone(), &id, self.tx.clone()).await?;
+            // restore the outbounds before speed test
+            if let Some(outbounds) = current_outbound.take() {
+                let config = &mut write_config.lock().await;
+                let core = config
+                    .core
+                    .as_mut()
+                    .ok_or(VError::EmptyError("core config is empty"))?;
+                core.outbounds = outbounds;
+                config.write_core()?;
+            }
         }
 
         Ok(())

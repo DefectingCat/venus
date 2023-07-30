@@ -29,9 +29,9 @@ use crate::{
     config::CoreStatus,
     core::VCore,
     logger::init_logger,
-    message::msg_build,
+    message::{message_handler, msg_build},
     tray::{handle_tray_click, new_tray},
-    utils::{get_main_window, message_handler},
+    utils::get_main_window,
 };
 
 mod commands;

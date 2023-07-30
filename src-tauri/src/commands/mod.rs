@@ -47,6 +47,8 @@ pub async fn speed_test(
     let bytes = bytes_per_second.clone();
     let check_done = done.clone();
     let node_id = node_id.clone();
+    let write_config = config.clone();
+    let a_tx = tx.clone();
     async_runtime::spawn(async move {
         let config = config.clone();
         loop {
@@ -60,12 +62,13 @@ pub async fn speed_test(
                         .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &node_id);
                 });
                 let node = node.unwrap();
-                node.delay = Some(latency);
+                node.delay = Some(latency as u64);
                 // update config to frontend per 500ms
                 thread::sleep(Duration::from_millis(500));
                 let check_len = check_len.lock().await;
                 let bytes = bytes.lock().await;
-                node.speed = Some(*bytes);
+                let speed = *bytes / 100_000 as f64;
+                node.speed = Some(speed);
                 let percentage = if let Some(t) = total {
                     (*check_len as f64) / (t as f64)
                 } else {
@@ -74,14 +77,14 @@ pub async fn speed_test(
                 };
                 dbg!(&bytes, &check_len, &total, &percentage);
                 info!(
-                    "Node  download speed {}, {}",
-                    // node.host,
+                    "Node {} download speed {}, {}",
+                    node.host,
                     *bytes / 100_000 as f64,
                     percentage
                 );
             }
 
-            tx.send(ConfigMsg::EmitConfig)
+            a_tx.send(ConfigMsg::EmitConfig)
                 .await
                 .map_err(|err| {
                     VError::CommonError(format!("Send emit-config message failed {}", err))
@@ -104,6 +107,9 @@ pub async fn speed_test(
     }
     let mut done = done.lock().await;
     *done = true;
+    let mut config = write_config.lock().await;
+    config.write_rua()?;
+    tx.send(ConfigMsg::EmitConfig).await?;
 
     Ok(())
 }
@@ -118,7 +124,9 @@ pub async fn node_speed(
     let config = config.inner().clone();
     async_runtime::spawn(async move {
         let mut core = core.lock().await;
-        core.speed_test(nodes, config.clone()).await.unwrap();
+        core.speed_test(nodes, config.clone())
+            .await
+            .expect("Speed test failed");
     });
     Ok(())
 }

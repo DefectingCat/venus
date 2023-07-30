@@ -300,7 +300,7 @@ pub struct Node {
     // Current node speed, upload and download
     pub speed: Option<f64>,
     // Current node delay
-    pub delay: Option<u128>,
+    pub delay: Option<u64>,
     // Node connectivity
     pub connectivity: Option<bool>,
     // Node unique ID
