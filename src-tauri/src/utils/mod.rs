@@ -1,9 +1,13 @@
 use log::{error, info};
 use std::sync::Arc;
 use tauri::{async_runtime, App, Manager, Window};
-use tokio::sync::{mpsc::Receiver, Mutex};
+use tokio::sync::Mutex;
 
-use crate::{config::VConfig, core::VCore, message::ConfigMsg};
+use crate::{
+    config::{CoreStatus, VConfig},
+    core::VCore,
+    message::{ConfigMsg, MsgReceiver},
+};
 
 use self::error::{VError, VResult};
 
@@ -12,13 +16,13 @@ pub mod error;
 /// Handle core message and emit log to frontend
 pub fn message_handler(
     window: Window,
-    mut rx: Receiver<ConfigMsg>,
+    mut rx: MsgReceiver,
     msg_config: Arc<Mutex<VConfig>>,
     msg_core: Arc<Mutex<VCore>>,
 ) -> VResult<()> {
     let handler = async move {
         while let Some(msg) = rx.recv().await {
-            let mut core = msg_core.lock().await;
+            dbg!("try core");
             match msg {
                 ConfigMsg::CoreStatus(status) => {
                     info!("Update core status {}", status.as_str());
@@ -28,9 +32,11 @@ pub fn message_handler(
                 }
                 ConfigMsg::RestartCore => {
                     info!("Restarting core");
+                    let mut core = msg_core.lock().await;
                     match core.restart().await {
                         Ok(_) => {
-                            let config = msg_config.lock().await;
+                            let mut config = msg_config.lock().await;
+                            config.rua.core_status = CoreStatus::Started;
                             window.emit_all("rua://update-rua-config", &config.rua)?;
                             window.emit_all("rua://update-core-config", &config.core)?;
                         }
@@ -41,9 +47,6 @@ pub fn message_handler(
                 }
                 ConfigMsg::EmitLog(log) => {
                     window.emit("rua://emit-log", log)?;
-                }
-                ConfigMsg::NodeSpeedtest(node_ids) => {
-                    core.speed_test(node_ids, msg_config.clone()).await?;
                 }
                 ConfigMsg::EmitConfig => {
                     dbg!("try");

@@ -12,7 +12,6 @@ pub enum ConfigMsg {
     CoreStatus(CoreStatus),
     RestartCore,
     EmitLog(String),
-    NodeSpeedtest(Vec<String>),
     EmitConfig,
 }
 // pub struct ConfigMsg {
@@ -20,6 +19,7 @@ pub enum ConfigMsg {
 // }
 
 pub type MsgSender = Arc<Sender<ConfigMsg>>;
+pub type MsgReceiver = Receiver<ConfigMsg>;
 
 pub fn msg_build() -> (Sender<ConfigMsg>, Receiver<ConfigMsg>) {
     mpsc::channel::<ConfigMsg>(128)

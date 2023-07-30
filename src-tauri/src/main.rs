@@ -193,6 +193,7 @@ fn main() {
         _ => {}
     };
 
+    let core_tray = core.clone();
     tauri::Builder::default()
         .system_tray(tray)
         .on_system_tray_event(move |app, event| match event {
@@ -208,10 +209,11 @@ fn main() {
                 };
                 async_runtime::spawn(task);
             }
-            SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core),
+            SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core_tray),
             _ => {}
         })
         .manage(config)
+        .manage(core)
         .manage(tx)
         .invoke_handler(tauri::generate_handler![
             // subs

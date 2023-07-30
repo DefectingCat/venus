@@ -107,45 +107,53 @@ impl VCore {
     }
 
     pub async fn speed_test(&mut self, node_ids: Vec<String>, config: ConfigState) -> VResult<()> {
-        let mut config = config.lock().await;
+        let loop_config = config.clone();
 
-        let current_node = config
-            .core
-            .as_ref()
-            .and_then(|core| core.outbounds.first().clone());
-        let proxy = config
-            .core
-            .as_ref()
-            .and_then(|core| core.inbounds.iter().find(|inbound| inbound.tag == "http"))
-            .ok_or(VError::EmptyError("cannot find http inbound"))?;
-        let proxy = format!("http://{}:{}", proxy.listen, proxy.port);
-
-        for id in node_ids {
-            let mut target = None;
-            config.rua.subscriptions.iter_mut().for_each(|sub| {
-                target = sub
-                    .nodes
-                    .iter_mut()
-                    .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id)
-            });
-            let target = target.unwrap();
-
-            let outbounds = outbouds_builder(target)?;
-            let core = config
+        let mut proxy = String::new();
+        {
+            let config = config.lock().await;
+            let current_node = config
                 .core
-                .as_mut()
-                .ok_or(VError::EmptyError("core config is empty"))?;
-            core.outbounds = outbounds;
-            config.write_core()?;
-
-            target.delay = Some(123);
-            self.restart().await?;
-            // speed_test(&proxy, target).await?;
-            dbg!(&config.rua.subscriptions);
-            dbg!(&target);
+                .as_ref()
+                .and_then(|core| core.outbounds.first().clone());
+            let target_proxy = config
+                .core
+                .as_ref()
+                .and_then(|core| core.inbounds.iter().find(|inbound| inbound.tag == "http"))
+                .ok_or(VError::EmptyError("cannot find http inbound"))?;
+            proxy = format!("http://{}:{}", target_proxy.listen, target_proxy.port);
         }
 
-        self.tx.send(ConfigMsg::EmitConfig).await?;
+        for id in node_ids {
+            let write_config = loop_config.clone();
+
+            {
+                let mut config = loop_config.lock().await;
+                let config = &mut *config;
+                let rua = &mut config.rua;
+
+                let mut target = None;
+                rua.subscriptions.iter_mut().for_each(|sub| {
+                    target = sub
+                        .nodes
+                        .iter_mut()
+                        .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id);
+                });
+                let target = target.unwrap();
+
+                let outbounds = outbouds_builder(target)?;
+                let core = config
+                    .core
+                    .as_mut()
+                    .ok_or(VError::EmptyError("core config is empty"))?;
+                core.outbounds = outbounds;
+                config.write_core()?;
+            }
+
+            self.restart().await?;
+            speed_test(&proxy, write_config.clone(), &id, self.tx.clone()).await?;
+        }
+
         Ok(())
     }
 }

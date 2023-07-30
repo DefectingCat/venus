@@ -2,14 +2,12 @@ use std::{sync::Arc, thread, time::Duration};
 
 use log::{info, warn};
 use tauri::{async_runtime, State};
-use tokio::{
-    sync::{Mutex, MutexGuard},
-    time::Instant,
-};
+use tokio::{sync::Mutex, time::Instant};
 
 use crate::{
-    config::{ConfigState, Node, VConfig},
-    message::MsgSender,
+    config::ConfigState,
+    core::AVCore,
+    message::{ConfigMsg, MsgSender},
     utils::error::{VError, VResult},
 };
 
@@ -19,7 +17,12 @@ pub mod subs;
 
 // async fn calculate_speed() -> VResult<usize> {}
 // async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResult<()> {
-pub async fn speed_test(proxy: &str, node: &mut Node) -> VResult<()> {
+pub async fn speed_test(
+    proxy: &str,
+    config: ConfigState,
+    node_id: &String,
+    tx: MsgSender,
+) -> VResult<()> {
     let start = Instant::now();
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
@@ -30,7 +33,6 @@ pub async fn speed_test(proxy: &str, node: &mut Node) -> VResult<()> {
         .await?;
     let latency = start.elapsed().as_millis();
     info!("Latency {}", latency);
-    node.delay = Some(latency);
 
     // download length per chunk
     let len = Arc::new(Mutex::new(0 as usize));
@@ -44,27 +46,48 @@ pub async fn speed_test(proxy: &str, node: &mut Node) -> VResult<()> {
     let check_len = len.clone();
     let bytes = bytes_per_second.clone();
     let check_done = done.clone();
-    let node_host = node.host.clone();
+    let node_id = node_id.clone();
     async_runtime::spawn(async move {
+        let config = config.clone();
         loop {
-            // update config to frontend per 500ms
-            thread::sleep(Duration::from_millis(500));
-            let check_len = check_len.lock().await;
-            let bytes = bytes.lock().await;
+            {
+                let mut config = config.lock().await;
+                let mut node = None;
+                config.rua.subscriptions.iter_mut().for_each(|sub| {
+                    node = sub
+                        .nodes
+                        .iter_mut()
+                        .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &node_id);
+                });
+                let node = node.unwrap();
+                node.delay = Some(latency);
+                // update config to frontend per 500ms
+                thread::sleep(Duration::from_millis(500));
+                let check_len = check_len.lock().await;
+                let bytes = bytes.lock().await;
+                node.speed = Some(*bytes);
+                let percentage = if let Some(t) = total {
+                    (*check_len as f64) / (t as f64)
+                } else {
+                    warn!("Content-length is empty");
+                    0.0
+                };
+                dbg!(&bytes, &check_len, &total, &percentage);
+                info!(
+                    "Node  download speed {}, {}",
+                    // node.host,
+                    *bytes / 100_000 as f64,
+                    percentage
+                );
+            }
+
+            tx.send(ConfigMsg::EmitConfig)
+                .await
+                .map_err(|err| {
+                    VError::CommonError(format!("Send emit-config message failed {}", err))
+                })
+                .unwrap();
             let check_done = check_done.lock().await;
-            let percentage = if let Some(t) = total {
-                (*check_len as f64) / (t as f64)
-            } else {
-                warn!("Content-length is empty");
-                0.0
-            };
-            dbg!(&bytes, &check_len, &total, &percentage);
-            info!(
-                "Node {} download speed {}, {}",
-                node_host,
-                *bytes / 100_000 as f64,
-                percentage
-            );
             if *check_done {
                 break;
             }
@@ -86,8 +109,16 @@ pub async fn speed_test(proxy: &str, node: &mut Node) -> VResult<()> {
 }
 
 #[tauri::command]
-pub async fn node_speed(nodes: Vec<String>, tx: State<'_, MsgSender>) -> VResult<()> {
-    tx.send(crate::message::ConfigMsg::NodeSpeedtest(nodes))
-        .await?;
+pub async fn node_speed(
+    nodes: Vec<String>,
+    config: State<'_, ConfigState>,
+    core: State<'_, AVCore>,
+) -> VResult<()> {
+    let core = core.inner().clone();
+    let config = config.inner().clone();
+    async_runtime::spawn(async move {
+        let mut core = core.lock().await;
+        core.speed_test(nodes, config.clone()).await.unwrap();
+    });
     Ok(())
 }

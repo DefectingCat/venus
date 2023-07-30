@@ -79,7 +79,7 @@ const Nodes = () => {
     },
     {
       title: 'Speed',
-      dataIndex: 'delay',
+      dataIndex: 'speed',
       key: 'delay',
       width: 80,
       ellipsis: true,

@@ -1,18 +1,17 @@
 use chrono::Local;
 use std::io::Write;
-use std::sync::Arc;
 use tauri::async_runtime;
 
 use env_logger::{Builder, Env};
 
 use crate::config::ConfigState;
+use crate::message::MsgSender;
 use crate::{
     message::ConfigMsg,
     utils::error::{VError, VResult},
 };
-use tokio::sync::mpsc::Sender;
 
-pub fn init_logger(tx: Arc<Sender<ConfigMsg>>, config: ConfigState) -> VResult<()> {
+pub fn init_logger(tx: MsgSender, config: ConfigState) -> VResult<()> {
     let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
     let mut builder = Builder::from_env(env);
 
