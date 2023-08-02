@@ -20,7 +20,7 @@ pub mod subs;
 pub async fn speed_test(
     proxy: &str,
     config: ConfigState,
-    node_id: &String,
+    node_id: String,
     tx: MsgSender,
 ) -> VResult<()> {
     let start = Instant::now();
@@ -35,7 +35,7 @@ pub async fn speed_test(
     info!("Latency {}", latency);
 
     // download length per chunk
-    let len = Arc::new(Mutex::new(0 as usize));
+    let len = Arc::new(Mutex::new(0_usize));
     // current download speed per second
     let bytes_per_second = Arc::new(Mutex::new(0.0));
     // is download complete
@@ -46,7 +46,6 @@ pub async fn speed_test(
     let check_len = len.clone();
     let bytes = bytes_per_second.clone();
     let check_done = done.clone();
-    let node_id = node_id.clone();
     let write_config = config.clone();
     let a_tx = tx.clone();
     async_runtime::spawn(async move {
@@ -67,7 +66,7 @@ pub async fn speed_test(
                 thread::sleep(Duration::from_millis(500));
                 let check_len = check_len.lock().await;
                 let bytes = bytes.lock().await;
-                let speed = *bytes / 100_000 as f64;
+                let speed = *bytes / 100_000_f64;
                 node.speed = Some(speed);
                 let percentage = if let Some(t) = total {
                     (*check_len as f64) / (t as f64)
@@ -79,7 +78,7 @@ pub async fn speed_test(
                 info!(
                     "Node {} download speed {}, {}",
                     node.host,
-                    *bytes / 100_000 as f64,
+                    *bytes / 100_000_f64,
                     percentage
                 );
             }
@@ -99,7 +98,7 @@ pub async fn speed_test(
 
     let download_start = Instant::now();
     while let Some(c) = response.chunk().await? {
-        let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000 as f64;
+        let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000_f64;
         let mut len = len.lock().await;
         let mut bytes_per_second = bytes_per_second.lock().await;
         *len += c.len();

@@ -115,10 +115,7 @@ impl VCore {
         let mut current_outbound = None;
         {
             let config = config.lock().await;
-            current_outbound = config
-                .core
-                .as_ref()
-                .and_then(|core| Some(core.outbounds.clone()));
+            current_outbound = config.core.as_ref().map(|core| core.outbounds.clone());
             let target_proxy = config
                 .core
                 .as_ref()
@@ -154,7 +151,7 @@ impl VCore {
             }
 
             self.restart().await?;
-            speed_test(&proxy, write_config.clone(), &id, self.tx.clone()).await?;
+            speed_test(&proxy, write_config.clone(), id, self.tx.clone()).await?;
             // restore the outbounds before speed test
             if let Some(outbounds) = current_outbound.take() {
                 let config = &mut write_config.lock().await;
