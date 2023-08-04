@@ -8,8 +8,8 @@ use crate::utils::error::VResult;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ReturnConfig {
-    Core(CoreConfig),
-    Rua(RConfig),
+    Core(Box<CoreConfig>),
+    Rua(Box<RConfig>),
 }
 /// Return specify config field
 #[tauri::command]
@@ -23,14 +23,14 @@ pub async fn get_config(
             let core: Option<ReturnConfig> = config
                 .core
                 .clone()
-                .and_then(|core| Some(ReturnConfig::Core(core)));
-            return Ok(core);
+                .map(|core| ReturnConfig::Core(Box::new(core)));
+            Ok(core)
         }
         "rua" => {
             let rua = config.rua.clone();
-            return Ok(Some(ReturnConfig::Rua(rua)));
+            Ok(Some(ReturnConfig::Rua(Box::new(rua))))
         }
-        _ => return Ok(None),
+        _ => Ok(None),
     }
 }
 

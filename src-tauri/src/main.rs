@@ -51,6 +51,9 @@ struct Payload {
 /// Determine the core is manual killed or it's got killed by not expected.
 /// if manual killed will be true, otherwise false.
 static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
+/// Is logging to frontend
+static LOGGING: AtomicBool = AtomicBool::new(false);
+/// info from package
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 static NAME: &str = env!("CARGO_PKG_NAME");
 

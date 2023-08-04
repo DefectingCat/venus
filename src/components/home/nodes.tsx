@@ -8,6 +8,7 @@ import { ResizeCallbackData } from 'react-resizable';
 import useStore from 'store';
 import styles from 'styles/index.module.scss';
 import dynamic from 'next/dynamic';
+import { BsFillDashCircleFill, BsCheckCircleFill } from 'react-icons/bs';
 
 const ResizableTitle = dynamic(
   () => import('components/pages/resizable-title')
@@ -76,13 +77,23 @@ const Nodes = () => {
       key: 'delay',
       width: 80,
       ellipsis: true,
+      render: (delay) => (
+        <div className="overflow-hidden text-ellipsis">
+          {delay != null && `${delay}ms`}
+        </div>
+      ),
     },
     {
       title: 'Speed',
       dataIndex: 'speed',
-      key: 'delay',
+      key: 'speed',
       width: 80,
       ellipsis: true,
+      render: (speed) => (
+        <div className="overflow-hidden text-ellipsis">
+          {speed != null && `${speed}MB/s`}
+        </div>
+      ),
     },
     {
       title: 'Connectivity',
@@ -92,7 +103,13 @@ const Nodes = () => {
       ellipsis: true,
       render: (connectivity) => (
         <div className="overflow-hidden text-ellipsis">
-          {connectivity == null ? '' : connectivity ? 1 : 0}
+          {connectivity == null ? (
+            ''
+          ) : connectivity ? (
+            <BsCheckCircleFill />
+          ) : (
+            <BsFillDashCircleFill />
+          )}
         </div>
       ),
     },

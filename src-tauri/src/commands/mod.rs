@@ -99,6 +99,7 @@ pub async fn speed_test(
     });
 
     let download_start = Instant::now();
+    tx.send(ConfigMsg::EmitConfig).await?;
     while let Some(c) = response.chunk().await? {
         // milliseconds
         let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000_f64;
