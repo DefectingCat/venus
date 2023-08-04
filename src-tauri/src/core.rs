@@ -12,7 +12,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     commands::speed_test,
-    config::{outbouds_builder, ConfigState, CoreStatus},
+    config::{change_connectivity, outbouds_builder, ConfigState, CoreStatus},
     message::{ConfigMsg, MsgSender},
     utils::error::{VError, VResult},
     CORE_SHUTDOWN,
@@ -109,52 +109,58 @@ impl VCore {
     pub async fn speed_test(&mut self, node_ids: Vec<String>, config: ConfigState) -> VResult<()> {
         let loop_config = config.clone();
 
-        #[allow(unused_assignments)]
-        let mut proxy = String::new();
-        #[allow(unused_assignments)]
-        let mut current_outbound = None;
-        {
-            let config = config.lock().await;
-            current_outbound = config.core.as_ref().map(|core| core.outbounds.clone());
-            let target_proxy = config
-                .core
-                .as_ref()
-                .and_then(|core| core.inbounds.iter().find(|inbound| inbound.tag == "http"))
-                .ok_or(VError::EmptyError("cannot find http inbound"))?;
-            proxy = format!("http://{}:{}", target_proxy.listen, target_proxy.port);
-        }
+        let config = config.lock().await;
+        let mut current_outbound = config.core.as_ref().map(|core| core.outbounds.clone());
+        let target_proxy = config
+            .core
+            .as_ref()
+            .and_then(|core| core.inbounds.iter().find(|inbound| inbound.tag == "http"))
+            .ok_or(VError::EmptyError("cannot find http inbound"))?;
+        let proxy = format!("http://{}:{}", target_proxy.listen, target_proxy.port);
+        drop(config);
 
         for id in node_ids {
             let write_config = loop_config.clone();
 
-            {
-                let mut config = loop_config.lock().await;
-                // let config = &mut *config;
-                let rua = &mut config.rua;
+            let mut config = loop_config.lock().await;
+            let rua = &mut config.rua;
 
-                let mut target = None;
-                rua.subscriptions.iter_mut().for_each(|sub| {
-                    target = sub
-                        .nodes
-                        .iter_mut()
-                        .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id);
-                });
-                let target = target.unwrap();
+            let mut target = None;
+            rua.subscriptions.iter_mut().for_each(|sub| {
+                target = sub
+                    .nodes
+                    .iter_mut()
+                    .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id);
+            });
+            let target = target.unwrap();
 
-                let outbounds = outbouds_builder(target)?;
-                let core = config
-                    .core
-                    .as_mut()
-                    .ok_or(VError::EmptyError("core config is empty"))?;
-                core.outbounds = outbounds;
-                config.write_core()?;
-            }
+            let outbounds = outbouds_builder(target)?;
+            let core = config
+                .core
+                .as_mut()
+                .ok_or(VError::EmptyError("core config is empty"))?;
+            core.outbounds = outbounds;
+            config.write_core()?;
+            drop(config);
 
             self.restart().await?;
-            speed_test(&proxy, write_config.clone(), id, self.tx.clone()).await?;
+            match speed_test(&proxy, write_config.clone(), id.clone(), self.tx.clone()).await {
+                Ok(_) => {
+                    change_connectivity(write_config.clone(), &id, true)
+                        .await
+                        .unwrap();
+                }
+                Err(_) => {
+                    change_connectivity(write_config.clone(), &id, false)
+                        .await
+                        .unwrap();
+                }
+            }
+
+            // speed_test(&proxy, write_config.clone(), id, self.tx.clone()).await?;
             // restore the outbounds before speed test
+            let mut config = write_config.lock().await;
             if let Some(outbounds) = current_outbound.take() {
-                let config = &mut write_config.lock().await;
                 let core = config
                     .core
                     .as_mut()
@@ -162,6 +168,8 @@ impl VCore {
                 core.outbounds = outbounds;
                 config.write_core()?;
             }
+            config.write_rua()?;
+            self.tx.send(ConfigMsg::EmitConfig).await?;
         }
 
         Ok(())

@@ -90,6 +90,11 @@ const Nodes = () => {
       key: 'connectivity',
       width: 80,
       ellipsis: true,
+      render: (connectivity) => (
+        <div className="overflow-hidden text-ellipsis">
+          {connectivity == null ? '' : connectivity ? 1 : 0}
+        </div>
+      ),
     },
     {
       title: 'Net Type',

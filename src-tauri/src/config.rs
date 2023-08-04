@@ -268,6 +268,20 @@ pub fn stream_settings_builder(node: &Node) -> VResult<StreamSettings> {
     Ok(setting)
 }
 
+pub async fn change_connectivity(config: ConfigState, id: &str, connectivity: bool) -> VResult<()> {
+    let mut config = config.lock().await;
+    let mut node = None;
+    config.rua.subscriptions.iter_mut().for_each(|sub| {
+        node = sub
+            .nodes
+            .iter_mut()
+            .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == id);
+    });
+    let node = node.ok_or(VError::EmptyError("()"))?;
+    node.connectivity = Some(connectivity);
+    Ok(())
+}
+
 /// Subscription nodes
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

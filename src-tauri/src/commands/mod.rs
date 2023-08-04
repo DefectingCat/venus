@@ -51,37 +51,39 @@ pub async fn speed_test(
     async_runtime::spawn(async move {
         let config = config.clone();
         loop {
-            {
-                let mut config = config.lock().await;
-                let mut node = None;
-                config.rua.subscriptions.iter_mut().for_each(|sub| {
-                    node = sub
-                        .nodes
-                        .iter_mut()
-                        .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &node_id);
-                });
-                let node = node.unwrap();
-                node.delay = Some(latency as u64);
-                // update config to frontend per 500ms
-                thread::sleep(Duration::from_millis(500));
-                let check_len = check_len.lock().await;
-                let bytes = bytes.lock().await;
-                let speed = *bytes / 100_000_f64;
-                node.speed = Some(speed);
-                let percentage = if let Some(t) = total {
-                    (*check_len as f64) / (t as f64)
-                } else {
-                    warn!("Content-length is empty");
-                    0.0
-                };
-                dbg!(&bytes, &check_len, &total, &percentage);
-                info!(
-                    "Node {} download speed {}, {}",
-                    node.host,
-                    *bytes / 100_000_f64,
-                    percentage
-                );
-            }
+            let mut config = config.lock().await;
+            let mut node = None;
+            config.rua.subscriptions.iter_mut().for_each(|sub| {
+                node = sub
+                    .nodes
+                    .iter_mut()
+                    .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &node_id);
+            });
+            let node = match node {
+                Some(n) => n,
+                None => break,
+            };
+            node.delay = Some(latency as u64);
+            // update config to frontend per 500ms
+            thread::sleep(Duration::from_millis(500));
+            let check_len = check_len.lock().await;
+            let bytes = bytes.lock().await;
+            let speed = *bytes / 100_000_f64;
+            node.speed = Some(speed);
+            let percentage = if let Some(t) = total {
+                (*check_len as f64) / (t as f64)
+            } else {
+                warn!("Content-length is empty");
+                0.0
+            };
+            dbg!(&bytes, &check_len, &total, &percentage);
+            info!(
+                "Node {} download speed {}, {}",
+                node.host,
+                *bytes / 100_000_f64,
+                percentage
+            );
+            drop(config);
 
             a_tx.send(ConfigMsg::EmitConfig)
                 .await
@@ -98,6 +100,7 @@ pub async fn speed_test(
 
     let download_start = Instant::now();
     while let Some(c) = response.chunk().await? {
+        // milliseconds
         let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000_f64;
         let mut len = len.lock().await;
         let mut bytes_per_second = bytes_per_second.lock().await;
@@ -109,7 +112,6 @@ pub async fn speed_test(
     let mut config = write_config.lock().await;
     config.write_rua()?;
     tx.send(ConfigMsg::EmitConfig).await?;
-
     Ok(())
 }
 
