@@ -4,14 +4,14 @@ use tauri::async_runtime;
 
 use env_logger::{Builder, Env};
 
-use crate::config::ConfigState;
 use crate::message::MsgSender;
+use crate::LOGGING;
 use crate::{
     message::ConfigMsg,
     utils::error::{VError, VResult},
 };
 
-pub fn init_logger(tx: MsgSender, config: ConfigState) -> VResult<()> {
+pub fn init_logger(tx: MsgSender) -> VResult<()> {
     let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");
     let mut builder = Builder::from_env(env);
 
@@ -23,10 +23,8 @@ pub fn init_logger(tx: MsgSender, config: ConfigState) -> VResult<()> {
 
             let emit_log = log.clone();
             let tx = tx.clone();
-            let config = config.clone();
             async_runtime::spawn(async move {
-                let config = config.lock().await;
-                if config.rua.logging {
+                if LOGGING.load(std::sync::atomic::Ordering::Relaxed) {
                     tx.send(ConfigMsg::EmitLog(emit_log)).await?;
                 }
                 Ok::<(), VError>(())

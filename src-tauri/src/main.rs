@@ -70,7 +70,7 @@ fn main() {
     // Init config.
     let config = Arc::new(Mutex::new(VConfig::new()));
 
-    match init_logger(tx.clone(), config.clone()) {
+    match init_logger(tx.clone()) {
         Ok(()) => {}
         Err(e) => {
             eprintln!("Logger init failed {e}");

@@ -5,6 +5,7 @@ use tauri::State;
 use crate::config::{ConfigState, CoreConfig, RConfig};
 use crate::message::{ConfigMsg, MsgSender};
 use crate::utils::error::VResult;
+use crate::LOGGING;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ReturnConfig {
@@ -54,6 +55,11 @@ pub async fn update_config(
     if let Some(r) = rua_config {
         info!("Updating rua config");
         let mut config = state.lock().await;
+        if r.logging {
+            LOGGING.store(true, std::sync::atomic::Ordering::Relaxed);
+        } else {
+            LOGGING.store(false, std::sync::atomic::Ordering::Relaxed);
+        }
         config.rua = r;
         config.write_rua()?;
         tx.send(ConfigMsg::RestartCore).await?;
