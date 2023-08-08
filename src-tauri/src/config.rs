@@ -2,6 +2,7 @@ use std::fs::{self, OpenOptions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
 use std::{fs::File, io::Write};
 
 use log::error;
@@ -11,7 +12,7 @@ use tokio::sync::Mutex;
 
 use crate::commands::subs::NodeType;
 use crate::utils::error::{VError, VResult};
-use crate::{NAME, VERSION};
+use crate::{NAME, VERSION, LOGGING};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -88,7 +89,6 @@ impl VConfig {
 
     /// Re-read config from file
     pub fn init(&mut self, resource_path: &Path) -> VResult<()> {
-        // let resource_path = resource_path.ok_or(VError::ResourceError("resource path is empty"))?;
         let mut core_default = PathBuf::from(resource_path);
         core_default.push("config.json");
 
@@ -114,6 +114,9 @@ impl VConfig {
         detect_and_create(&core_path, core_default)?;
         if !rua_path.exists() {
             self.write_rua()?;
+        }
+        if self.rua.logging {
+            LOGGING.store(true, Ordering::Relaxed);
         }
 
         self.reload()?;
