@@ -109,7 +109,8 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
     let subscription = subscription
         .split('\n')
         .filter(|line| !line.is_empty())
-        .map(|line| {
+        .enumerate()
+        .map(|(index, line)| {
             let (node_type, link) = line
                 .split_once("://")
                 .ok_or(VError::EmptyError("Cannot serialize node link"))?;
@@ -119,7 +120,8 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
 
             node.subs = Some(name.to_string());
             // Add unique id
-            let id = md5::compute(format!("{}-{}-{}", node.ps, node.add, node.port));
+            let id = md5::compute(format!("{}-{}-{}-{}", node.ps, node.add, node.port, index));
+            dbg!(id);
             node.node_id = Some(format!("{:?}", id));
             node.raw_link = Some(line.to_owned());
             node.node_type = Some(NodeType::from(node_type));

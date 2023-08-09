@@ -29,6 +29,8 @@ pub struct RConfig {
     pub version: String,
     /// Save state of all open windows to disk
     pub save_windows: bool,
+    /// Current selected node id
+    pub current_id: String,
     pub core_status: CoreStatus,
     pub subscriptions: Vec<Subscription>,
 }
@@ -75,6 +77,7 @@ impl VConfig {
             logging: false,
             version: VERSION.to_owned(),
             save_windows: true,
+            current_id: String::new(),
             core_status: Stopped,
             subscriptions: vec![],
         };

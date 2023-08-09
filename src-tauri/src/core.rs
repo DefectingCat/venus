@@ -132,7 +132,7 @@ impl VCore {
                     .iter_mut()
                     .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id);
             });
-            let target = target.unwrap();
+            let target = target.ok_or(VError::EmptyError("cannot find target node"))?;
 
             let outbounds = outbouds_builder(target)?;
             let core = config
