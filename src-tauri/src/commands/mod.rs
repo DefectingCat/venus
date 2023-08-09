@@ -76,7 +76,6 @@ pub async fn speed_test(
                 warn!("Content-length is empty");
                 0.0
             };
-            dbg!(&bytes, &check_len, &total, &percentage);
             info!(
                 "Node {} download speed {}, {}",
                 node.host,
@@ -100,7 +99,7 @@ pub async fn speed_test(
 
     let download_start = Instant::now();
     tx.send(ConfigMsg::EmitConfig).await?;
-    while let Some(c) = response.chunk().await? {
+    while let Ok(Some(c)) = response.chunk().await {
         // milliseconds
         let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000_f64;
         let mut len = len.lock().await;

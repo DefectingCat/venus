@@ -13,33 +13,33 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeType {
-    VMESS,
-    VLESS,
+    Vmess,
+    Vless,
     SS,
-    SSR,
-    TROJAN,
-    TROJANGO,
-    HTTPPROXY,
-    HTTPSPROXY,
+    Ssr,
+    Trojan,
+    Trojango,
+    HttpProxy,
+    HttpsProxy,
     SOCKS5,
     HTTP2,
-    UNKNOWN,
+    Unknown,
 }
 impl From<&str> for NodeType {
     fn from(value: &str) -> Self {
         use NodeType::*;
         match value.to_lowercase().as_str() {
-            "vmess" => VMESS,
-            "vless" => VLESS,
+            "vmess" => Vmess,
+            "vless" => Vless,
             "ss" => SS,
-            "ssr" => SSR,
-            "trojan" => TROJAN,
-            "trojan-go" => TROJANGO,
-            "http-proxy" => HTTPPROXY,
-            "https-proxy" => HTTPSPROXY,
+            "ssr" => Ssr,
+            "trojan" => Trojan,
+            "trojan-go" => Trojango,
+            "http-proxy" => HttpProxy,
+            "https-proxy" => HttpsProxy,
             "socks5" => SOCKS5,
             "http2" => HTTP2,
-            _ => UNKNOWN,
+            _ => Unknown,
         }
     }
 }
@@ -47,17 +47,17 @@ impl NodeType {
     pub fn as_str(&self) -> &str {
         use NodeType::*;
         match self {
-            VMESS => "vmess",
-            VLESS => "vless",
+            Vmess => "vmess",
+            Vless => "vless",
             SS => "ss",
-            SSR => "ssr",
-            TROJAN => "trojan",
-            TROJANGO => "trojan-go",
-            HTTPPROXY => "http-proxy",
-            HTTPSPROXY => "https-proxy",
+            Ssr => "ssr",
+            Trojan => "trojan",
+            Trojango => "trojan-go",
+            HttpProxy => "http-proxy",
+            HttpsProxy => "https-proxy",
             SOCKS5 => "socks5",
             HTTP2 => "http2",
-            UNKNOWN => "unknown",
+            Unknown => "unknown",
         }
     }
 }
@@ -109,7 +109,8 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
     let subscription = subscription
         .split('\n')
         .filter(|line| !line.is_empty())
-        .map(|line| {
+        .enumerate()
+        .map(|(index, line)| {
             let (node_type, link) = line
                 .split_once("://")
                 .ok_or(VError::EmptyError("Cannot serialize node link"))?;
@@ -119,7 +120,8 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
 
             node.subs = Some(name.to_string());
             // Add unique id
-            let id = md5::compute(format!("{}-{}-{}", node.ps, node.add, node.port));
+            let id = md5::compute(format!("{}-{}-{}-{}", node.ps, node.add, node.port, index));
+            dbg!(id);
             node.node_id = Some(format!("{:?}", id));
             node.raw_link = Some(line.to_owned());
             node.node_type = Some(NodeType::from(node_type));

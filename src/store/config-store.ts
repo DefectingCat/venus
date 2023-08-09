@@ -157,6 +157,7 @@ export interface RConfig {
   version: string;
   save_windows: boolean;
   core_status?: 'Started' | 'Restarting' | 'Stopped';
+  current_id: string;
   subscriptions: Subscription[] | null;
 }
 
@@ -197,6 +198,7 @@ const createConfigSlice: StateCreator<
     logging: false,
     version: '',
     save_windows: true,
+    current_id: '',
     core_status: 'Stopped',
     subscriptions: [],
   },

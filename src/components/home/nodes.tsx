@@ -154,12 +154,16 @@ const Nodes = () => {
   }));
 
   // Select node
-  const selected = useMemo(() => {
-    const target = nodes.find(
-      (n) => `${n.add}${n.port}` === `${outbound?.address}${outbound?.port}`
-    );
-    return `${target?.add}${target?.port}`;
-  }, [nodes, outbound]);
+  const rua = useStore((s) => s.rua);
+  // const selected = useMemo(() => {
+  //   const target = nodes.find((n) => {
+  //     const host =
+  //       `${n.add}${n.port}` === `${outbound?.address}${outbound?.port}`;
+  //     const id = n.nodeId === rua.current_id;
+  //     return host && id;
+  //   });
+  //   return `${target?.add}${target?.port}`;
+  // }, [nodes, outbound?.address, outbound?.port, rua.current_id]);
   const updateConfig = useStore((s) => s.updateConfig);
   const handleSelect = useCallback(async (node: Node) => {
     try {
@@ -214,7 +218,7 @@ const Nodes = () => {
           },
           className: clsx(
             'cursor-pointer select-none',
-            `${record.add}${record.port}` === selected
+            record.nodeId === rua.current_id
               ? 'bg-gray-300 dark:bg-gray-900'
               : 'hover:bg-[#fafafa] hover:dark:bg-gray-800',
             'transition-all duration-300'

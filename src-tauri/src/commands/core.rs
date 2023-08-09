@@ -1,5 +1,3 @@
-use std::vec;
-
 use tauri::State;
 
 use crate::{
@@ -16,17 +14,15 @@ pub async fn select_node(
     tx: State<'_, MsgSender>,
 ) -> VResult<()> {
     let mut config = config.lock().await;
-    // set_node(node_id.as_str(), &mut config, tx).await
 
-    let nodes = config
-        .rua
-        .subscriptions
-        .iter()
-        .fold(vec![], |prev, sub| [&prev[..], &sub.nodes[..]].concat());
-    let node = nodes
-        .iter()
-        .find(|node| node.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id)
-        .ok_or(VError::EmptyError("Cannot find target node"))?;
+    let mut node = None;
+    config.rua.subscriptions.iter().for_each(|sub| {
+        node = sub
+            .nodes
+            .iter()
+            .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id);
+    });
+    let node = node.ok_or(VError::EmptyError("cannot find target node"))?;
 
     let outbounds = outbouds_builder(node)?;
 
@@ -36,6 +32,9 @@ pub async fn select_node(
         .ok_or(VError::EmptyError("core config is empty"))?;
     core.outbounds = outbounds;
     config.write_core()?;
+
+    config.rua.current_id = node_id;
+    config.write_rua()?;
     tx.send(crate::message::ConfigMsg::RestartCore).await?;
     Ok(())
 }
