@@ -1,8 +1,8 @@
 use std::fs::{self, OpenOptions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 use std::{fs::File, io::Write};
 
 use log::error;
@@ -12,7 +12,7 @@ use tokio::sync::Mutex;
 
 use crate::commands::subs::NodeType;
 use crate::utils::error::{VError, VResult};
-use crate::{NAME, VERSION, LOGGING};
+use crate::{LOGGING, NAME, VERSION};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -115,11 +115,12 @@ impl VConfig {
         if !rua_path.exists() {
             self.write_rua()?;
         }
+
+        self.reload()?;
+
         if self.rua.logging {
             LOGGING.store(true, Ordering::Relaxed);
         }
-
-        self.reload()?;
         Ok(())
     }
 
