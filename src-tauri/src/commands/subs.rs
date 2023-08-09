@@ -13,33 +13,33 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeType {
-    VMESS,
-    VLESS,
+    Vmess,
+    Vless,
     SS,
-    SSR,
-    TROJAN,
-    TROJANGO,
-    HTTPPROXY,
-    HTTPSPROXY,
+    Ssr,
+    Trojan,
+    Trojango,
+    HttpProxy,
+    HttpsProxy,
     SOCKS5,
     HTTP2,
-    UNKNOWN,
+    Unknown,
 }
 impl From<&str> for NodeType {
     fn from(value: &str) -> Self {
         use NodeType::*;
         match value.to_lowercase().as_str() {
-            "vmess" => VMESS,
-            "vless" => VLESS,
+            "vmess" => Vmess,
+            "vless" => Vless,
             "ss" => SS,
-            "ssr" => SSR,
-            "trojan" => TROJAN,
-            "trojan-go" => TROJANGO,
-            "http-proxy" => HTTPPROXY,
-            "https-proxy" => HTTPSPROXY,
+            "ssr" => Ssr,
+            "trojan" => Trojan,
+            "trojan-go" => Trojango,
+            "http-proxy" => HttpProxy,
+            "https-proxy" => HttpsProxy,
             "socks5" => SOCKS5,
             "http2" => HTTP2,
-            _ => UNKNOWN,
+            _ => Unknown,
         }
     }
 }
@@ -47,17 +47,17 @@ impl NodeType {
     pub fn as_str(&self) -> &str {
         use NodeType::*;
         match self {
-            VMESS => "vmess",
-            VLESS => "vless",
+            Vmess => "vmess",
+            Vless => "vless",
             SS => "ss",
-            SSR => "ssr",
-            TROJAN => "trojan",
-            TROJANGO => "trojan-go",
-            HTTPPROXY => "http-proxy",
-            HTTPSPROXY => "https-proxy",
+            Ssr => "ssr",
+            Trojan => "trojan",
+            Trojango => "trojan-go",
+            HttpProxy => "http-proxy",
+            HttpsProxy => "https-proxy",
             SOCKS5 => "socks5",
             HTTP2 => "http2",
-            UNKNOWN => "unknown",
+            Unknown => "unknown",
         }
     }
 }
