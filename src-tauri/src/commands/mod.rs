@@ -68,19 +68,19 @@ pub async fn speed_test(
             thread::sleep(Duration::from_millis(500));
             let check_len = check_len.lock().await;
             let bytes = bytes.lock().await;
-            let speed = *bytes / 100_000_f64;
+            let speed = *bytes / 1_000_000_f64;
+            let speed = format!("{:.2}", speed).parse().unwrap_or(speed);
             node.speed = Some(speed);
             let percentage = if let Some(t) = total {
-                (*check_len as f64) / (t as f64)
+                let p = (*check_len as f64) / (t as f64) * 100.0;
+                p.round() as u8
             } else {
                 warn!("Content-length is empty");
-                0.0
+                0
             };
             info!(
-                "Node {} download speed {}, {}",
-                node.host,
-                *bytes / 100_000_f64,
-                percentage
+                "Node {} download speed {}MB/s, {}%",
+                node.host, speed, percentage
             );
             drop(config);
 
@@ -105,7 +105,7 @@ pub async fn speed_test(
         let mut len = len.lock().await;
         let mut bytes_per_second = bytes_per_second.lock().await;
         *len += c.len();
-        *bytes_per_second = (*len as f64 / time).round();
+        *bytes_per_second = *len as f64 / time;
     }
     let mut done = done.lock().await;
     *done = true;
