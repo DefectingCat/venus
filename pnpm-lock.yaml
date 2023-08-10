@@ -20,6 +20,9 @@ dependencies:
   execa:
     specifier: ^7.2.0
     version: 7.2.0
+  husky:
+    specifier: ^8.0.3
+    version: 8.0.3
   immer:
     specifier: ^10.0.2
     version: 10.0.2
@@ -2726,6 +2729,12 @@ packages:
   /human-signals@4.3.1:
     resolution: {integrity: sha512-nZXjEF2nbo7lIw3mgYjItAfgQXog3OjJogSbKa2CQIIvSGWcKgeJnQlNXip6NglNzYH45nSRiEVimMvYL8DDqQ==}
     engines: {node: '>=14.18.0'}
+
+  /husky@8.0.3:
+    resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: false
 
   /iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
