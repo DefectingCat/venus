@@ -10,6 +10,7 @@ lerna-debug.log*
 downloads/
 .xwin-cache/
 .cargo/
+out
 
 node_modules
 dist
