@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic';
 import { BsFillDashCircleFill, BsCheckCircleFill } from 'react-icons/bs';
 
 const ResizableTitle = dynamic(
-  () => import('components/pages/resizable-title')
+  () => import('components/pages/resizable-title'),
 );
 const NodeDrawer = dynamic(() => import('components/home/node-drawer'));
 
@@ -22,12 +22,12 @@ const Nodes = () => {
 
   const nodes = useMemo(
     () => subscriptions.flatMap((sub) => sub.nodes),
-    [subscriptions]
+    [subscriptions],
   );
 
   // current outbound in config file
   const outbound = useStore(
-    (s) => s.core?.outbounds?.[0]?.settings?.vnext?.[0]
+    (s) => s.core?.outbounds?.[0]?.settings?.vnext?.[0],
   );
 
   // nodes table
@@ -221,7 +221,7 @@ const Nodes = () => {
             record.nodeId === rua.current_id
               ? 'bg-gray-300 dark:bg-gray-900'
               : 'hover:bg-[#fafafa] hover:dark:bg-gray-800',
-            'transition-all duration-300'
+            'transition-all duration-300',
           ),
         })}
       />

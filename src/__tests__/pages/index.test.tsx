@@ -8,6 +8,6 @@ test('Index page', async () => {
   await screen.findByRole('heading');
 
   expect(
-    screen.getByRole('heading', { level: 1, name: /Proxies/i })
+    screen.getByRole('heading', { level: 1, name: /Proxies/i }),
   ).toBeDefined();
 });

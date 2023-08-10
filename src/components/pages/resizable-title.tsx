@@ -7,7 +7,7 @@ const ResizableTitle = ({
 }: {
   onResize: (
     e: React.SyntheticEvent<Element>,
-    data: ResizeCallbackData
+    data: ResizeCallbackData,
   ) => void;
   width: number;
 }) => {

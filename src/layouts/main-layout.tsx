@@ -18,14 +18,14 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         className={clsx(
           'flex w-[100vw] h-[100vh]',
           'bg-bluish-gray dark:bg-rua-gray-900',
-          'relative'
+          'relative',
         )}
       >
         <div
           data-tauri-drag-region
           className={clsx(
             'h-7 bg-transparent fixed',
-            'top-0 left-0 right-0 z-[1000]'
+            'top-0 left-0 right-0 z-[1000]',
           )}
         ></div>
 

@@ -42,7 +42,7 @@ const SubsModal = ({
   status?: '' | 'error';
   loading?: boolean;
   onChange?: (
-    type: 'name' | 'url'
+    type: 'name' | 'url',
   ) => (e: ChangeEvent<HTMLInputElement>) => void;
 }) => {
   return (
@@ -51,7 +51,7 @@ const SubsModal = ({
         className={clsx(
           'grid grid-cols-[3em_1fr]',
           'items-center gap-4',
-          'py-4'
+          'py-4',
         )}
       >
         <div>Name: </div>

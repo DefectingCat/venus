@@ -22,7 +22,7 @@ const NaviItem = ({ active, children, ...rest }: NaviItemProps) => {
         'select-none border-none',
         active ? 'bg-white dark:bg-black' : 'bg-transparent',
         active || 'hover:bg-gray-200 dark:hover:bg-gray-700',
-        className
+        className,
       )}
       {...props}
     >

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import useStore from 'store';
 
 const BasicSettings = dynamic(
-  () => import('components/settings/basic-settings')
+  () => import('components/settings/basic-settings'),
 );
 const VenusSetting = dynamic(() => import('components/settings/venus-setting'));
 

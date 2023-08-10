@@ -25,7 +25,7 @@ const DrawerItem = ({
         className={clsx(
           'absolute left-2 top-[-8px]',
           'text-gray-600 dark:text-gray-400',
-          'text-xs'
+          'text-xs',
         )}
         style={{
           background: token.token.colorBgElevated,

@@ -36,7 +36,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
       updateSubs: s.updateSubs,
       updateConfig: s.updateConfig,
     }),
-    shallow
+    shallow,
   );
 
   const { writeConfig } = useBackend();
@@ -123,7 +123,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
           'p-4 cursor-pointer dark:bg-rua-gray-700',
           'hover:shadow-lg transition-all',
           'duration-300 select-none w-56',
-          'flex flex-col mr-4 mb-4'
+          'flex flex-col mr-4 mb-4',
         )}
       >
         <div
@@ -134,7 +134,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
         <div
           className={clsx(
             'text-ellipsis overflow-hidden break-keep',
-            'text-sm text-gray-600'
+            'text-sm text-gray-600',
           )}
         >
           {sub.url}

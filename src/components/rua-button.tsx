@@ -24,7 +24,7 @@ const Button = ({ children, ...rest }: ButtonProps) => {
         'dark:focus:ring-gray-700 text-sm px-5 py-2.5',
         'dark:border-gray-600 focus:ring-4',
         'transition-all active:bg-gray-200',
-        className
+        className,
       )}
       {...props}
     >

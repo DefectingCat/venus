@@ -25,7 +25,7 @@ const useLoading = (key: keyof UI['loading'], subUrl?: string) => {
   const loading = useMemo(() => {
     if (key === 'subCrad') {
       const target = (_loading as UI['loading']['subCrad']).find(
-        (sub) => sub.url === subUrl
+        (sub) => sub.url === subUrl,
       );
       if (!target) {
         // throw new Error(`Cannot find target subscription ${subUrl}`);
@@ -55,7 +55,7 @@ const useLoading = (key: keyof UI['loading'], subUrl?: string) => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
   const setLoading = useMemo(
     () => ({
@@ -67,7 +67,7 @@ const useLoading = (key: keyof UI['loading'], subUrl?: string) => {
       },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   return [loading, setLoading] as const;

@@ -8,8 +8,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  transpilePackages: ['ahooks']
+  transpilePackages: ['ahooks'],
 };
 
-
-module.exports = nextConfig
+module.exports = nextConfig;

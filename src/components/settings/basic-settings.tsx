@@ -11,13 +11,13 @@ const BasicSettings = () => {
   const updateSocksInbound = useStore((s) => s.updateSocksInbound);
   const socksInbound = useMemo(
     () => core?.inbounds.find((i) => i.tag === 'socks'),
-    [core?.inbounds]
+    [core?.inbounds],
   );
 
   const updateHttpInbound = useStore((s) => s.updateHttpInbound);
   const httpInbound = useMemo(
     () => core?.inbounds.find((i) => i.tag === 'http'),
-    [core?.inbounds]
+    [core?.inbounds],
   );
 
   /**
@@ -26,7 +26,7 @@ const BasicSettings = () => {
   const changeTarget =
     (
       value: string | number | boolean,
-      target: (keyof Inbound | keyof InboundSettings | keyof Sniffing)[]
+      target: (keyof Inbound | keyof InboundSettings | keyof Sniffing)[],
     ) =>
     (inbound: Inbound) => {
       const len = target.length;
@@ -81,7 +81,7 @@ const BasicSettings = () => {
             value={socksInbound?.port}
             onChange={(e) => {
               updateSocksInbound(
-                changeTarget(Number(e.target.value.trimEnd()), ['port'])
+                changeTarget(Number(e.target.value.trimEnd()), ['port']),
               );
             }}
           />
@@ -92,7 +92,7 @@ const BasicSettings = () => {
             value={httpInbound?.port}
             onChange={(e) => {
               updateHttpInbound(
-                changeTarget(Number(e.target.value.trimEnd()), ['port'])
+                changeTarget(Number(e.target.value.trimEnd()), ['port']),
               );
             }}
           />
@@ -114,10 +114,10 @@ const BasicSettings = () => {
               checked={socksInbound?.sniffing?.enabled}
               onChange={(checked) => {
                 updateSocksInbound(
-                  changeTarget(checked, ['sniffing', 'enabled'])
+                  changeTarget(checked, ['sniffing', 'enabled']),
                 );
                 updateHttpInbound(
-                  changeTarget(checked, ['sniffing', 'enabled'])
+                  changeTarget(checked, ['sniffing', 'enabled']),
                 );
               }}
             />
@@ -129,10 +129,10 @@ const BasicSettings = () => {
               checked={socksInbound?.sniffing?.routeOnly}
               onChange={(checked) => {
                 updateSocksInbound(
-                  changeTarget(checked, ['sniffing', 'routeOnly'])
+                  changeTarget(checked, ['sniffing', 'routeOnly']),
                 );
                 updateHttpInbound(
-                  changeTarget(checked, ['sniffing', 'routeOnly'])
+                  changeTarget(checked, ['sniffing', 'routeOnly']),
                 );
               }}
             />

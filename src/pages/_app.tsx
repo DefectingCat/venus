@@ -30,12 +30,12 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             }));
           });
           updateRConfig(rua);
-        })
+        }),
       );
       listeners.push(
         await listen<CoreConfig>('rua://update-core-config', (e) => {
           updateCoreConfig(e.payload);
-        })
+        }),
       );
 
       listeners.push(
@@ -46,7 +46,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             }
             log.logs.push(e.payload);
           });
-        })
+        }),
       );
 
       emit('ready');

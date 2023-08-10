@@ -7,10 +7,10 @@ import dynamic from 'next/dynamic';
 import useStore from 'store';
 
 const SubscriptionAdder = dynamic(
-  () => import('components/pages/subscription-adder')
+  () => import('components/pages/subscription-adder'),
 );
 const SubscriptionCard = dynamic(
-  () => import('components/pages/subscription-card')
+  () => import('components/pages/subscription-card'),
 );
 
 const Subscriptions = () => {
