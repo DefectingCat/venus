@@ -79,7 +79,7 @@ pub async fn speed_test(
                 0
             };
             info!(
-                "Node {} download speed {}MB/s, {}%",
+                "Node {} download speed {} MB/s, {}%",
                 node.host, speed, percentage
             );
             drop(config);
