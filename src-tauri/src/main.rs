@@ -31,7 +31,7 @@ use crate::{
     logger::init_logger,
     message::{message_handler, msg_build},
     tray::{handle_tray_click, new_tray},
-    utils::get_main_window,
+    utils::{get_main_window, toggle_windows},
 };
 
 mod commands;
@@ -61,7 +61,7 @@ fn main() {
     #[cfg(debug_assertions)]
     use utils::debug_process;
     #[cfg(debug_assertions)]
-    debug_process().unwrap();
+    debug_process();
 
     let tray = new_tray();
 
@@ -71,9 +71,6 @@ fn main() {
     // it will use tx send new state to config
     let (tx, rx) = msg_build();
     let tx = Arc::new(tx);
-
-    // Init config.
-    let config = Arc::new(Mutex::new(VConfig::new()));
 
     match init_logger(tx.clone()) {
         Ok(()) => {}
@@ -85,7 +82,10 @@ fn main() {
     info!("Starting up.");
     info!("Venus - {}", VERSION);
 
+    // V2ray core
     let core = Arc::new(Mutex::new(VCore::build(tx.clone())));
+    // Init config.
+    let config = Arc::new(Mutex::new(VConfig::new()));
 
     let core_app = core.clone();
     let config_app = config.clone();
@@ -213,14 +213,12 @@ fn main() {
             SystemTrayEvent::LeftClick { .. } => {}
             SystemTrayEvent::DoubleClick { .. } => {
                 let windows = app.windows();
-                let task = async move {
-                    for (_, window) in windows {
-                        window.show()?;
-                        window.set_focus()?;
+                match toggle_windows(windows, true) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        error!("cannot show all window {}", err);
                     }
-                    Ok::<(), VError>(())
-                };
-                async_runtime::spawn(task);
+                }
             }
             SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core_tray),
             _ => {}

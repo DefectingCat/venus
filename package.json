@@ -13,7 +13,7 @@
     "test": "vitest",
     "lint": "next lint",
     "prepare": "husky install",
-    "fmt": "cd src-tauri/ && cargo clippy --fix --allow-staged --all-features && cargo fmt",
+    "fmt": "cd src-tauri/ && cargo clippy --fix --allow-dirty --allow-staged --all-features && cargo fmt",
     "fmt-check": "cd src-tauri/ && cargo fmt --check"
   },
   "dependencies": {
