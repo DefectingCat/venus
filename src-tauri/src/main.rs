@@ -31,7 +31,7 @@ use crate::{
     logger::init_logger,
     message::{message_handler, msg_build},
     tray::{handle_tray_click, new_tray},
-    utils::{debug_process, get_main_window},
+    utils::get_main_window,
 };
 
 mod commands;
@@ -58,6 +58,8 @@ static VERSION: &str = env!("CARGO_PKG_VERSION");
 static NAME: &str = env!("CARGO_PKG_NAME");
 
 fn main() {
+    #[cfg(debug_assertions)]
+    use utils::debug_process;
     #[cfg(debug_assertions)]
     debug_process().unwrap();
 
