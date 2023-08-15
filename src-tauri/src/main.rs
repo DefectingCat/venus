@@ -30,8 +30,8 @@ use crate::{
     core::VCore,
     logger::init_logger,
     message::{message_handler, msg_build},
-    tray::{handle_tray_click, new_tray},
-    utils::{get_main_window, toggle_windows},
+    tray::{handle_tray_click, handle_tray_left_click, new_tray},
+    utils::get_main_window,
 };
 
 mod commands;
@@ -213,24 +213,8 @@ fn main() {
     tauri::Builder::default()
         .system_tray(tray)
         .on_system_tray_event(move |app, event| match event {
-            SystemTrayEvent::LeftClick { .. } => {
-                let windows = app.windows();
-                match toggle_windows(windows, true) {
-                    Ok(_) => {}
-                    Err(err) => {
-                        error!("cannot show all window {}", err);
-                    }
-                }
-            }
-            SystemTrayEvent::DoubleClick { .. } => {
-                let windows = app.windows();
-                match toggle_windows(windows, true) {
-                    Ok(_) => {}
-                    Err(err) => {
-                        error!("cannot show all window {}", err);
-                    }
-                }
-            }
+            SystemTrayEvent::LeftClick { .. } => handle_tray_left_click(app),
+            SystemTrayEvent::DoubleClick { .. } => {}
             SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core_tray),
             _ => {}
         })

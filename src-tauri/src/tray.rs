@@ -26,7 +26,17 @@ pub fn new_tray() -> SystemTray {
     SystemTray::new().with_menu(tray_menu)
 }
 
-/// Handle system tray menu item click.
+pub fn handle_tray_left_click(app: &AppHandle) {
+    let show_handle = app.tray_handle().get_item("hide");
+    match handle_visible(app, &show_handle, Some(true)) {
+        Ok(_) => {}
+        Err(err) => {
+            error!("handle windows visible failed {}", err)
+        }
+    }
+}
+
+/// Handle system tray menu item right-click.
 pub fn handle_tray_click(app: &AppHandle, id: String, core: &AVCore) {
     let item_handle = app.tray_handle().get_item(&id);
     match id.as_str() {
@@ -40,29 +50,42 @@ pub fn handle_tray_click(app: &AppHandle, id: String, core: &AVCore) {
                 app.exit(0);
             });
         }
-        "hide" => match hide_windows(app, &item_handle) {
+        "hide" => match handle_visible(app, &item_handle, None) {
             Ok(_) => {}
             Err(err) => {
-                error!("hide windows failed {}", err)
+                error!("handle windows visible failed {}", err)
             }
         },
         _ => {}
     }
 }
 
-fn hide_windows(app: &AppHandle, item_handle: &SystemTrayMenuItemHandle) -> VResult<()> {
+// For right click "hide" menu
+fn handle_visible(
+    app: &AppHandle,
+    item_handle: &SystemTrayMenuItemHandle,
+    overide: Option<bool>,
+) -> VResult<()> {
     use VError::CommonError;
 
     let windows = app.windows();
     let main_window = app
         .get_window("main")
         .ok_or(CommonError("cannot get main window".to_owned()))?;
+
     let main_visible = main_window.is_visible()?;
-    toggle_windows(windows, !main_visible)?;
-    if main_visible {
-        item_handle.set_title("Show")?;
-    } else {
+    let show = if let Some(s) = overide {
         item_handle.set_title("Hide")?;
-    }
+        !s
+    } else {
+        if main_visible {
+            item_handle.set_title("Show")?;
+        } else {
+            item_handle.set_title("Hide")?;
+        }
+        main_visible
+    };
+    toggle_windows(windows, !show)?;
+
     Ok(())
 }
