@@ -13,6 +13,8 @@ pub fn get_main_window(app: &App) -> VResult<Window> {
     Ok(window)
 }
 
+/// Use for close previous core process
+/// when tauri auto reload.
 #[cfg(debug_assertions)]
 pub fn debug_process() -> VResult<()> {
     use sysinfo::{ProcessExt, System, SystemExt};

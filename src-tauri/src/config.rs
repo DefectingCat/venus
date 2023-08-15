@@ -1,6 +1,7 @@
 use std::fs::{self, OpenOptions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::{fs::File, io::Write};
@@ -22,6 +23,19 @@ pub struct Subscription {
     pub nodes: Vec<Node>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct RUABasicSetting {
+    pub speed_url: String,
+}
+impl Default for RUABasicSetting {
+    fn default() -> Self {
+        Self {
+            speed_url: "https://sabnzbd.org/tests/internetspeed/20MB.bin".to_owned(),
+        }
+    }
+}
+
 /// RUA config and frontend global state
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RConfig {
@@ -31,8 +45,26 @@ pub struct RConfig {
     pub save_windows: bool,
     /// Current selected node id
     pub current_id: String,
+    /// V2ray core status
     pub core_status: CoreStatus,
+    /// Subscriptions
     pub subscriptions: Vec<Subscription>,
+    pub settings: RUABasicSetting,
+}
+impl Default for RConfig {
+    fn default() -> Self {
+        use CoreStatus::*;
+
+        RConfig {
+            logging: false,
+            version: VERSION.to_owned(),
+            save_windows: true,
+            current_id: String::new(),
+            core_status: Stopped,
+            subscriptions: vec![],
+            settings: RUABasicSetting::default(),
+        }
+    }
 }
 
 /// All config field
@@ -71,16 +103,7 @@ pub type ConfigState = Arc<Mutex<VConfig>>;
 /// notify frontend to update global state.
 impl VConfig {
     pub fn new() -> Self {
-        use CoreStatus::*;
-
-        let r_config = RConfig {
-            logging: false,
-            version: VERSION.to_owned(),
-            save_windows: true,
-            current_id: String::new(),
-            core_status: Stopped,
-            subscriptions: vec![],
-        };
+        let r_config = RConfig::default();
 
         Self {
             core: None,
