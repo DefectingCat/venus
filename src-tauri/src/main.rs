@@ -31,7 +31,7 @@ use crate::{
     logger::init_logger,
     message::{message_handler, msg_build},
     tray::{handle_tray_click, new_tray},
-    utils::get_main_window,
+    utils::{debug_process, get_main_window},
 };
 
 mod commands;
@@ -59,7 +59,7 @@ static NAME: &str = env!("CARGO_PKG_NAME");
 
 fn main() {
     #[cfg(debug_assertions)]
-    dbg!("test");
+    debug_process().unwrap();
 
     let tray = new_tray();
 
