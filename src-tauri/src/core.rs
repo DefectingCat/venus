@@ -146,14 +146,10 @@ impl VCore {
             self.restart().await?;
             match speed_test(&proxy, write_config.clone(), id.clone(), self.tx.clone()).await {
                 Ok(_) => {
-                    change_connectivity(write_config.clone(), &id, true)
-                        .await
-                        .unwrap();
+                    change_connectivity(write_config.clone(), &id, true).await?;
                 }
                 Err(_) => {
-                    change_connectivity(write_config.clone(), &id, false)
-                        .await
-                        .unwrap();
+                    change_connectivity(write_config.clone(), &id, false).await?;
                 }
             }
 

@@ -44,6 +44,7 @@ tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-wo
 tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 pluto = { git = "https://github.com/DefectingCat/pluto", branch = 'master' }
 chrono = "0.4.26"
+sysinfo = "0.29.8"
 
 [features]
 # by default Tauri runs in production mode

@@ -58,6 +58,9 @@ static VERSION: &str = env!("CARGO_PKG_VERSION");
 static NAME: &str = env!("CARGO_PKG_NAME");
 
 fn main() {
+    #[cfg(debug_assertions)]
+    dbg!("test");
+
     let tray = new_tray();
 
     // Init message
