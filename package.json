@@ -8,11 +8,13 @@
     "dev:web": "next dev -p 1420",
     "build:web": "next build",
     "tauri": "tauri",
+    "pretty-check": "prettier --write \"./**/*.{js,jsx,ts,tsx,json,md,mdx,css}\" --ignore-unknown --check",
     "pretty": "prettier --write \"./**/*.{js,jsx,ts,tsx,json,md,mdx,css}\" --ignore-unknown",
     "test": "vitest",
     "lint": "next lint",
     "prepare": "husky install",
-    "fmt": "cd src-tauri/ && cargo clippy --fix --allow-staged --all-features && cargo fmt"
+    "fmt": "cd src-tauri/ && cargo clippy --fix --allow-staged --all-features && cargo fmt",
+    "fmt-check": "cd src-tauri/ && cargo fmt --check"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.4.0",
