@@ -11,7 +11,8 @@
     "pretty": "prettier --write \"./**/*.{js,jsx,ts,tsx,json,md,mdx,css}\" --ignore-unknown",
     "test": "vitest",
     "lint": "next lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "fmt": "cd src-tauri/ && cargo clippy --fix --allow-dirty --allow-staged --all-features && cargo fmt"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.4.0",
