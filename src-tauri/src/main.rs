@@ -91,6 +91,9 @@ fn main() {
     let config_app = config.clone();
     // App handler
     let handle_app = move |app: &mut App| -> Result<(), Box<dyn Error>> {
+        #[cfg(target_os = "macos")]
+        app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
         let resources_path = app
             .handle()
             .path_resolver()
