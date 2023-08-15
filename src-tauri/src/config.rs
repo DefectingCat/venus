@@ -1,7 +1,6 @@
 use std::fs::{self, OpenOptions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
-
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::{fs::File, io::Write};
@@ -38,6 +37,7 @@ impl Default for RUABasicSetting {
 
 /// RUA config and frontend global state
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct RConfig {
     pub logging: bool,
     pub version: String,

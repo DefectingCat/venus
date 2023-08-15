@@ -102,8 +102,13 @@ fn main() {
         async_runtime::spawn(async move {
             let mut config = init_config.lock().await;
             info!("Start init config");
-            config.init(&resources_path)?;
-            info!("Config init sucess");
+            match config.init(&resources_path) {
+                Ok(_) => info!("Config init sucess"),
+                Err(err) => {
+                    error!("Init config failed {}", err);
+                    return Ok::<(), VError>(());
+                }
+            }
             // Restore alll window status.
             if config.rua.save_windows {
                 window.restore_state(StateFlags::all())?;

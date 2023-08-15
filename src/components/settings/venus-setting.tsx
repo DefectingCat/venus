@@ -1,5 +1,5 @@
 import { useBoolean, useMount } from 'ahooks';
-import { App, Button, Checkbox, Select, Tooltip } from 'antd';
+import { App, Button, Checkbox, Input, Select, Tooltip } from 'antd';
 import clsx from 'clsx';
 import useBackend from 'hooks/use-backend';
 import { useTheme } from 'next-themes';
@@ -16,12 +16,12 @@ const VenusSetting = () => {
 
   const { writeConfig } = useBackend();
   const rua = useStore((s) => s.rua);
-  const coreStatus = useStore((s) => s.rua.core_status);
+  const coreStatus = useStore((s) => s.rua.coreStatus);
   const updateConfig = useStore((s) => s.updateConfig);
   const handleApply = async () => {
     try {
       updateConfig((config) => {
-        config.rua.core_status = 'Restarting';
+        config.rua.coreStatus = 'Restarting';
       });
       writeConfig('rua');
     } catch (err) {
@@ -56,10 +56,10 @@ const VenusSetting = () => {
 
         <div>Rember window size</div>
         <Checkbox
-          checked={rua.save_windows}
+          checked={rua.saveWindows}
           onChange={(e) =>
             updateConfig((config) => {
-              config.rua.save_windows = e.target.checked;
+              config.rua.saveWindows = e.target.checked;
             })
           }
         />
@@ -70,6 +70,17 @@ const VenusSetting = () => {
           onClick={async () => {
             isAuto ? await disable() : await enable();
             await updateAuto();
+          }}
+        />
+
+        <div>Speed test url</div>
+        <Input
+          value={rua.settings.speedUrl}
+          className="w-60"
+          onChange={(e) => {
+            updateConfig((config) => {
+              config.rua.settings.speedUrl = e.target.value;
+            });
           }}
         />
 

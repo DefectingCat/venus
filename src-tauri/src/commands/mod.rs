@@ -26,13 +26,16 @@ pub async fn speed_test(
     let start = Instant::now();
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
+    let c_config = config.lock().await;
     let mut response = client
         // .get("https://speed.hetzner.de/100MB.bin")
-        .get("https://sabnzbd.org/tests/internetspeed/20MB.bin")
+        // .get("https://sabnzbd.org/tests/internetspeed/20MB.bin")
+        .get(&c_config.rua.settings.speed_url)
         .send()
         .await?;
     let latency = start.elapsed().as_millis();
     info!("Latency {}", latency);
+    drop(c_config);
 
     // download length per chunk
     let len = Arc::new(Mutex::new(0_usize));

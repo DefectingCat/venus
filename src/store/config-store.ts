@@ -152,13 +152,17 @@ export interface Rule {
   domain: string[];
 }
 
+export interface RUABasicSetting {
+  speedUrl: string;
+}
 export interface RConfig {
   logging: boolean;
   version: string;
-  save_windows: boolean;
-  core_status?: 'Started' | 'Restarting' | 'Stopped';
-  current_id: string;
+  saveWindows: boolean;
+  coreStatus?: 'Started' | 'Restarting' | 'Stopped';
+  currentId: string;
   subscriptions: Subscription[] | null;
+  settings: RUABasicSetting;
 }
 
 export interface VConfig {
@@ -197,10 +201,13 @@ const createConfigSlice: StateCreator<
   rua: {
     logging: false,
     version: '',
-    save_windows: true,
-    current_id: '',
-    core_status: 'Stopped',
+    saveWindows: true,
+    currentId: '',
+    coreStatus: 'Stopped',
     subscriptions: [],
+    settings: {
+      speedUrl: '',
+    },
   },
   core: null,
   updateRConfig: (rua) => {

@@ -40,12 +40,12 @@ const BasicSettings = () => {
 
   // Apply settings
   const { writeConfig } = useBackend();
-  const coreStatus = useStore((s) => s.rua.core_status);
+  const coreStatus = useStore((s) => s.rua.coreStatus);
   const updateConfig = useStore((s) => s.updateConfig);
   const handleApply = async () => {
     try {
       updateConfig((config) => {
-        config.rua.core_status = 'Restarting';
+        config.rua.coreStatus = 'Restarting';
       });
       writeConfig('core');
     } catch (err) {

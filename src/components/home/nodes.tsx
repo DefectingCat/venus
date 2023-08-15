@@ -171,7 +171,7 @@ const Nodes = () => {
         nodeId: node.nodeId,
       });
       updateConfig((config) => {
-        config.rua.core_status = 'Restarting';
+        config.rua.coreStatus = 'Restarting';
       });
     } catch (err) {
       message.error(err);
@@ -218,7 +218,7 @@ const Nodes = () => {
           },
           className: clsx(
             'cursor-pointer select-none',
-            record.nodeId === rua.current_id
+            record.nodeId === rua.currentId
               ? 'bg-gray-300 dark:bg-gray-900'
               : 'hover:bg-[#fafafa] hover:dark:bg-gray-800',
             'transition-all duration-300',

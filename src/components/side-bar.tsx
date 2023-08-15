@@ -28,7 +28,7 @@ const navi = [
 
 export default function SideBar() {
   const router = useRouter();
-  const coreStatus = useStore((s) => s.rua.core_status);
+  const coreStatus = useStore((s) => s.rua.coreStatus);
 
   const handleRoute = (item: SingleNavi) => {
     router.push(item.path);

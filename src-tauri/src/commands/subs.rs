@@ -121,7 +121,6 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
             node.subs = Some(name.to_string());
             // Add unique id
             let id = md5::compute(format!("{}-{}-{}-{}", node.ps, node.add, node.port, index));
-            dbg!(id);
             node.node_id = Some(format!("{:?}", id));
             node.raw_link = Some(line.to_owned());
             node.node_type = Some(NodeType::from(node_type));
