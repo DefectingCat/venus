@@ -213,7 +213,15 @@ fn main() {
     tauri::Builder::default()
         .system_tray(tray)
         .on_system_tray_event(move |app, event| match event {
-            SystemTrayEvent::LeftClick { .. } => {}
+            SystemTrayEvent::LeftClick { .. } => {
+                let windows = app.windows();
+                match toggle_windows(windows, true) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        error!("cannot show all window {}", err);
+                    }
+                }
+            }
             SystemTrayEvent::DoubleClick { .. } => {
                 let windows = app.windows();
                 match toggle_windows(windows, true) {
