@@ -1,3 +1,4 @@
+use anyhow::Result;
 use std::{sync::Arc, thread, time::Duration};
 
 use log::{info, warn};
@@ -22,7 +23,7 @@ pub async fn speed_test(
     config: ConfigState,
     node_id: String,
     tx: MsgSender,
-) -> VResult<()> {
+) -> Result<()> {
     let start = Instant::now();
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;

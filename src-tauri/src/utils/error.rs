@@ -8,7 +8,7 @@ use tokio::sync::mpsc;
 
 use crate::message::ConfigMsg;
 
-#[allow(dead_code)]
+// #[allow(dead_code)]
 #[derive(Error, Debug)]
 pub enum VError {
     /// Reqwest error

@@ -14,9 +14,10 @@ use crate::{
     commands::speed_test,
     config::{change_connectivity, outbouds_builder, ConfigState, CoreStatus},
     message::{ConfigMsg, MsgSender},
-    utils::error::{VError, VResult},
+    utils::error::VError,
     CORE_SHUTDOWN,
 };
+use anyhow::Result;
 
 pub type AVCore = Arc<Mutex<VCore>>;
 
@@ -30,7 +31,7 @@ pub struct VCore {
     asset_path: PathBuf,
 }
 
-fn start_core(tx: MsgSender, path: &Path) -> VResult<CommandChild> {
+fn start_core(tx: MsgSender, path: &Path) -> Result<CommandChild> {
     // `new_sidecar()` expects just the filename, NOT the whole path like in JavaScript
     let (mut rx, child) = Command::new_sidecar("v2ray")
         .expect("Failed to create `v2ray` binary command")
@@ -78,14 +79,14 @@ impl VCore {
     }
 
     /// Init core add assets path and start core
-    pub async fn init(&mut self, asset_path: &PathBuf) -> VResult<()> {
+    pub async fn init(&mut self, asset_path: &PathBuf) -> Result<()> {
         self.asset_path = PathBuf::from(asset_path);
         self.child = Some(start_core(self.tx.clone(), &self.asset_path)?);
         Ok(())
     }
 
     /// Restart core and reload config
-    pub async fn restart(&mut self) -> VResult<()> {
+    pub async fn restart(&mut self) -> Result<()> {
         if let Some(child) = self.child.take() {
             CORE_SHUTDOWN.store(true, Ordering::Relaxed);
             child.kill()?;
@@ -98,7 +99,7 @@ impl VCore {
         Ok(())
     }
 
-    pub fn exit(&mut self) -> VResult<()> {
+    pub fn exit(&mut self) -> Result<()> {
         if let Some(child) = self.child.take() {
             info!("Exiting core");
             child.kill()?;
@@ -106,7 +107,7 @@ impl VCore {
         Ok(())
     }
 
-    pub async fn speed_test(&mut self, node_ids: Vec<String>, config: ConfigState) -> VResult<()> {
+    pub async fn speed_test(&mut self, node_ids: Vec<String>, config: ConfigState) -> Result<()> {
         let loop_config = config.clone();
 
         let config = config.lock().await;
