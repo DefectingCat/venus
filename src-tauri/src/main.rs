@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+use anyhow::{anyhow, Ok as AOk};
 use config::VConfig;
 use log::{error, info};
 use std::{
@@ -17,7 +18,6 @@ use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, W
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tokio::sync::Mutex;
-use utils::error::VError;
 
 use crate::{
     commands::{
@@ -98,7 +98,7 @@ fn main() {
             .handle()
             .path_resolver()
             .resolve_resource("resources/")
-            .ok_or(VError::ResourceError("resource path is empty"))?;
+            .ok_or(anyhow!("resource path is empty"))?;
         // Init config and core
         let init_config = config_app.clone();
         let window = get_main_window(app)?;
@@ -111,7 +111,7 @@ fn main() {
                 Ok(_) => info!("Config init sucess"),
                 Err(err) => {
                     error!("Init config failed {}", err);
-                    return Ok::<(), VError>(());
+                    return AOk(());
                 }
             }
             // Restore alll window status.
@@ -135,7 +135,7 @@ fn main() {
                     config.rua.core_status = CoreStatus::Stopped;
                 }
             }
-            Ok::<(), VError>(())
+            AOk(())
         });
 
         let window = get_main_window(app)?;
@@ -149,7 +149,7 @@ fn main() {
                 window.emit_all("rua://update-rua-config", &config.rua)?;
                 window.emit_all("rua://update-core-config", &config.core)?;
                 info!("Reload config succeeded");
-                Ok::<(), VError>(())
+                AOk(())
             };
             async_runtime::spawn(task);
         });
@@ -201,9 +201,9 @@ fn main() {
                 if config.rua.save_windows {
                     app_handler
                         .save_window_state(StateFlags::all())
-                        .map_err(|_e| VError::WindowError("Save window status failed"))?;
+                        .map_err(|_e| anyhow!("Save window status failed"))?;
                 }
-                Ok::<(), VError>(())
+                AOk(())
             });
         }
         _ => {}
