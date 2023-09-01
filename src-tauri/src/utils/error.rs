@@ -8,7 +8,6 @@ use tokio::sync::mpsc;
 
 use crate::message::ConfigMsg;
 
-// #[allow(dead_code)]
 #[derive(Error, Debug)]
 pub enum VError {
     /// Reqwest error
@@ -44,8 +43,6 @@ pub enum VError {
     /// Target is None
     #[error("Target is empty: {0}")]
     EmptyError(&'static str),
-    /// Some serve start error
-    // #[error("Target init failed: {0}")]
     // InitError(&'static str),
     /// WindowError
     #[error("Cannot get taget window: {0}")]
@@ -53,9 +50,9 @@ pub enum VError {
     /// Convert int to string
     #[error("Failed to parse to int: {0}")]
     ParseIntError(#[from] ParseIntError),
-    /// Common error
+    /// Common error from anyhow error
     #[error("Someting wrong: {0}")]
-    CommonError(String),
+    CommonError(#[from] anyhow::Error),
 }
 
 // https://github.com/tauri-apps/tauri/discussions/3913
