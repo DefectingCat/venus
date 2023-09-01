@@ -1,17 +1,16 @@
 use std::collections::HashMap;
 
+use anyhow::{anyhow, Result};
 use tauri::Manager;
 use tauri::{App, Window};
-
-use self::error::{VError, VResult};
 
 pub mod error;
 
 /// Get main window by app
-pub fn get_main_window(app: &App) -> VResult<Window> {
+pub fn get_main_window(app: &App) -> Result<Window> {
     let window = app
         .get_window("main")
-        .ok_or(VError::WindowError("Can not get main window"))?;
+        .ok_or(anyhow!("Can not get main window"))?;
     Ok(window)
 }
 
@@ -21,7 +20,7 @@ pub fn get_main_window(app: &App) -> VResult<Window> {
 ///
 /// - `windows` - tauri windows, get from `app.windows()`.
 /// - `show` - Show or hide all windows.
-pub fn toggle_windows(windows: HashMap<String, Window>, show: bool) -> VResult<()> {
+pub fn toggle_windows(windows: HashMap<String, Window>, show: bool) -> Result<()> {
     if show {
         for (_, window) in windows {
             window.show()?;

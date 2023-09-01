@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use base64::{engine::general_purpose, Engine};
 use log::{debug, info};
 use reqwest::header::USER_AGENT;
@@ -7,7 +8,7 @@ use tauri::State;
 use crate::{
     config::{ConfigState, Node, Subscription},
     message::MsgSender,
-    utils::error::{VError, VResult},
+    utils::error::VResult,
     NAME, VERSION,
 };
 
@@ -113,7 +114,7 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
         .map(|(index, line)| {
             let (node_type, link) = line
                 .split_once("://")
-                .ok_or(VError::EmptyError("Cannot serialize node link"))?;
+                .ok_or(anyhow!("Cannot serialize node link"))?;
             let link = general_purpose::STANDARD.decode(link)?;
             let link = String::from_utf8_lossy(&link).to_string();
             let mut node = serde_json::from_str::<Node>(&link)?;
@@ -184,7 +185,7 @@ pub async fn update_sub(
         .subscriptions
         .iter_mut()
         .find(|s| s.url == url)
-        .ok_or(VError::EmptyError("Cannot find target subscription"))?;
+        .ok_or(anyhow!("Cannot find target subscription"))?;
     let new_nodes = request_subs(&sub.name, &sub.url).await?;
     sub.nodes = new_nodes;
     config.write_rua()?;

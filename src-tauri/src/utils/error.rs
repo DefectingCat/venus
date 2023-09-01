@@ -25,7 +25,7 @@ pub enum VError {
     /// Tauri API error
     #[error("API error: {0}")]
     ApiError(#[from] api::Error),
-    ///
+
     #[error("Poison error: {0}")]
     PoisonError(String),
     /// Toml serialize error
@@ -43,10 +43,6 @@ pub enum VError {
     /// Target is None
     #[error("Target is empty: {0}")]
     EmptyError(&'static str),
-    // InitError(&'static str),
-    /// WindowError
-    #[error("Cannot get taget window: {0}")]
-    WindowError(&'static str),
     /// Convert int to string
     #[error("Failed to parse to int: {0}")]
     ParseIntError(#[from] ParseIntError),

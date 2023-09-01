@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use tauri::State;
 
 use crate::{
@@ -22,7 +23,7 @@ pub async fn select_node(
             .iter()
             .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id);
     });
-    let node = node.ok_or(VError::EmptyError("cannot find target node"))?;
+    let node = node.ok_or(anyhow!("node {} not found", node_id))?;
 
     let outbounds = outbouds_builder(node)?;
 

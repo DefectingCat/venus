@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Ok as AOk, Result};
 use std::{sync::Arc, thread, time::Duration};
 
 use log::{info, warn};
@@ -9,7 +9,7 @@ use crate::{
     config::ConfigState,
     core::AVCore,
     message::{ConfigMsg, MsgSender},
-    utils::error::{VError, VResult},
+    utils::error::VResult,
 };
 
 pub mod config;
@@ -88,17 +88,13 @@ pub async fn speed_test(
             );
             drop(config);
 
-            a_tx.send(ConfigMsg::EmitConfig)
-                .await
-                .map_err(|err| {
-                    VError::CommonError(format!("Send emit-config message failed {}", err))
-                })
-                .unwrap();
+            a_tx.send(ConfigMsg::EmitConfig).await?;
             let check_done = check_done.lock().await;
             if *check_done {
                 break;
             }
         }
+        AOk(())
     });
 
     let download_start = Instant::now();
