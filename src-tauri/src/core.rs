@@ -3,6 +3,7 @@ use std::{
     sync::{atomic::Ordering, Arc},
 };
 
+use anyhow::Ok as AOk;
 use log::{error, info, warn};
 use tauri::{
     api::process::{Command, CommandChild, CommandEvent},
@@ -14,10 +15,9 @@ use crate::{
     commands::speed_test,
     config::{change_connectivity, outbouds_builder, ConfigState, CoreStatus},
     message::{ConfigMsg, MsgSender},
-    utils::error::VError,
     CORE_SHUTDOWN,
 };
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 pub type AVCore = Arc<Mutex<VCore>>;
 
@@ -62,7 +62,7 @@ fn start_core(tx: MsgSender, path: &Path) -> Result<CommandChild> {
                 }
             }
         }
-        Ok::<(), VError>(())
+        AOk(())
     });
 
     Ok(child)
@@ -116,7 +116,7 @@ impl VCore {
             .core
             .as_ref()
             .and_then(|core| core.inbounds.iter().find(|inbound| inbound.tag == "http"))
-            .ok_or(VError::EmptyError("cannot find http inbound"))?;
+            .ok_or(anyhow!("cannot find http inbound"))?;
         let proxy = format!("http://{}:{}", target_proxy.listen, target_proxy.port);
         drop(config);
 
@@ -133,13 +133,14 @@ impl VCore {
                     .iter_mut()
                     .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id);
             });
-            let target = target.ok_or(VError::EmptyError("cannot find target node"))?;
+            let target = target.ok_or(anyhow!("cannot find target node"))?;
 
             let outbounds = outbouds_builder(target)?;
             let core = config
                 .core
                 .as_mut()
-                .ok_or(VError::EmptyError("core config is empty"))?;
+                .ok_or(anyhow!("core config is empty"))?;
+
             core.outbounds = outbounds;
             config.write_core()?;
             drop(config);
@@ -161,7 +162,7 @@ impl VCore {
                 let core = config
                     .core
                     .as_mut()
-                    .ok_or(VError::EmptyError("core config is empty"))?;
+                    .ok_or(anyhow!("core config is empty"))?;
                 core.outbounds = outbounds;
                 config.write_core()?;
             }

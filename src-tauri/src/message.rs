@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use anyhow::{Ok as AOk, Result};
 use log::{error, info};
 use tauri::{async_runtime, Manager, Window};
 use tokio::sync::Mutex;
@@ -7,7 +8,6 @@ use tokio::sync::Mutex;
 use crate::{
     config::{CoreStatus, VConfig},
     core::VCore,
-    utils::error::{VError, VResult},
 };
 
 use tokio::sync::{
@@ -39,7 +39,7 @@ pub fn message_handler(
     mut rx: MsgReceiver,
     msg_config: Arc<Mutex<VConfig>>,
     msg_core: Arc<Mutex<VCore>>,
-) -> VResult<()> {
+) -> Result<()> {
     let handler = async move {
         while let Some(msg) = rx.recv().await {
             match msg {
@@ -74,7 +74,7 @@ pub fn message_handler(
                 }
             }
         }
-        Ok::<(), VError>(())
+        AOk(())
     };
     async_runtime::spawn(handler);
     Ok(())

@@ -5,13 +5,13 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::{fs::File, io::Write};
 
+use anyhow::{anyhow, Result};
 use log::error;
 use serde::Deserialize;
 use serde_derive::Serialize;
 use tokio::sync::Mutex;
 
 use crate::commands::subs::NodeType;
-use crate::utils::error::{VError, VResult};
 use crate::{LOGGING, NAME, VERSION};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -114,7 +114,7 @@ impl VConfig {
     }
 
     /// Re-read config from file
-    pub fn init(&mut self, resource_path: &Path) -> VResult<()> {
+    pub fn init(&mut self, resource_path: &Path) -> Result<()> {
         let mut core_default = PathBuf::from(resource_path);
         core_default.push("config.json");
 
@@ -151,13 +151,13 @@ impl VConfig {
     }
 
     /// Reload core and rua config from file
-    pub fn reload(&mut self) -> VResult<()> {
+    pub fn reload(&mut self) -> Result<()> {
         self.reload_core()?;
         self.reload_rua()?;
         Ok(())
     }
 
-    pub fn reload_rua(&mut self) -> VResult<()> {
+    pub fn reload_rua(&mut self) -> Result<()> {
         let mut config_file = File::open(&self.rua_path)?;
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
@@ -170,7 +170,7 @@ impl VConfig {
     }
 
     /// Reload core config file to VConfig
-    pub fn reload_core(&mut self) -> VResult<()> {
+    pub fn reload_core(&mut self) -> Result<()> {
         let core_file = File::open(&self.core_path)?;
         let core_config: CoreConfig = serde_json::from_reader(core_file)?;
         self.core = Some(core_config);
@@ -178,18 +178,15 @@ impl VConfig {
     }
 
     ///  Write core config to config file
-    pub fn write_core(&mut self) -> VResult<()> {
-        let config = self
-            .core
-            .as_ref()
-            .ok_or(VError::EmptyError("core config is empty"))?;
+    pub fn write_core(&mut self) -> Result<()> {
+        let config = self.core.as_ref().ok_or(anyhow!("core config is empty"))?;
         let core_file = OpenOptions::new().write(true).open(&self.core_path)?;
         core_file.set_len(0)?;
         serde_json::to_writer(&core_file, &config)?;
         Ok(())
     }
 
-    pub fn write_rua(&mut self) -> VResult<()> {
+    pub fn write_rua(&mut self) -> Result<()> {
         let mut rua_file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -204,18 +201,18 @@ impl VConfig {
 /// Detect target config path exists
 /// If not exists, create all parent folders
 /// and copy default config file to target path.
-fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> VResult<()> {
+fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> Result<()> {
     if !target_path.exists() {
         let parent = target_path
             .parent()
-            .ok_or(VError::EmptyError("Core path parent is empty"))?;
+            .ok_or(anyhow!("Core path parent is empty"))?;
         fs::create_dir_all(parent)?;
         fs::copy(default_path, target_path)?;
     }
     Ok(())
 }
 
-pub fn outbouds_builder(node: &Node) -> VResult<Vec<Outbound>> {
+pub fn outbouds_builder(node: &Node) -> Result<Vec<Outbound>> {
     let vmess = Vmess {
         address: node.add.clone(),
         port: node.port.parse()?,
@@ -258,7 +255,7 @@ pub fn outbouds_builder(node: &Node) -> VResult<Vec<Outbound>> {
 }
 
 /// Build outbound stream setting with node in subscription
-pub fn stream_settings_builder(node: &Node) -> VResult<StreamSettings> {
+pub fn stream_settings_builder(node: &Node) -> Result<StreamSettings> {
     let setting = StreamSettings {
         network: node.net.clone(),
         security: if !node.tls.is_empty() {
@@ -298,7 +295,8 @@ pub fn stream_settings_builder(node: &Node) -> VResult<StreamSettings> {
     Ok(setting)
 }
 
-pub async fn change_connectivity(config: ConfigState, id: &str, connectivity: bool) -> VResult<()> {
+/// Change node's connectivity field in config
+pub async fn change_connectivity(config: ConfigState, id: &str, connectivity: bool) -> Result<()> {
     let mut config = config.lock().await;
     let mut node = None;
     config.rua.subscriptions.iter_mut().for_each(|sub| {
@@ -307,7 +305,7 @@ pub async fn change_connectivity(config: ConfigState, id: &str, connectivity: bo
             .iter_mut()
             .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == id);
     });
-    let node = node.ok_or(VError::EmptyError("()"))?;
+    let node = node.ok_or(anyhow!("node {} not found", &id))?;
     node.connectivity = Some(connectivity);
     Ok(())
 }

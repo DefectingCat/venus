@@ -1,19 +1,13 @@
 use std::sync::atomic::Ordering;
 
+use anyhow::{anyhow, Result};
 use log::error;
 use tauri::{
     async_runtime, AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayMenu,
     SystemTrayMenuItem, SystemTrayMenuItemHandle,
 };
 
-use crate::{
-    core::AVCore,
-    utils::{
-        error::{VError, VResult},
-        toggle_windows,
-    },
-    CORE_SHUTDOWN,
-};
+use crate::{core::AVCore, utils::toggle_windows, CORE_SHUTDOWN};
 
 /// Build new system tray.
 pub fn new_tray() -> SystemTray {
@@ -65,13 +59,11 @@ fn handle_visible(
     app: &AppHandle,
     item_handle: &SystemTrayMenuItemHandle,
     overide: Option<bool>,
-) -> VResult<()> {
-    use VError::CommonError;
-
+) -> Result<()> {
     let windows = app.windows();
     let main_window = app
         .get_window("main")
-        .ok_or(CommonError("cannot get main window".to_owned()))?;
+        .ok_or(anyhow!("cannot get main window".to_owned()))?;
 
     let main_visible = main_window.is_visible()?;
     let show = if let Some(s) = overide {
