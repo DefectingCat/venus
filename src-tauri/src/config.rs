@@ -35,6 +35,12 @@ impl Default for RUABasicSetting {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RUAState {
+    pub speed_loading: bool,
+}
+
 /// RUA config and frontend global state
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -50,6 +56,8 @@ pub struct RConfig {
     /// Subscriptions
     pub subscriptions: Vec<Subscription>,
     pub settings: RUABasicSetting,
+    // Global state for frontend
+    pub state: RUAState,
 }
 impl Default for RConfig {
     fn default() -> Self {
@@ -63,6 +71,7 @@ impl Default for RConfig {
             core_status: Stopped,
             subscriptions: vec![],
             settings: RUABasicSetting::default(),
+            state: RUAState::default(),
         }
     }
 }
