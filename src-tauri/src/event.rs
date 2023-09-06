@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 pub enum RUAEvents {
     UpdateRuaConfig,
     UpdateCoreConfig,
@@ -14,4 +16,11 @@ impl RUAEvents {
             SpeedTest => "rua://speed-test",
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SpeedTestPayload<'a> {
+    pub id: &'a str,
+    pub loading: bool,
 }

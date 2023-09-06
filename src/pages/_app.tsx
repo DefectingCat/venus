@@ -57,9 +57,19 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
       // ui state
       listeners.push(
-        await listen<boolean>('rua://speed-test', (e) => {
+        await listen<{
+          id: string;
+          loading: boolean;
+        }>('rua://speed-test', (e) => {
           toggleUI((ui) => {
-            // ui.loading.node.speedTest = e.payload;
+            const target = ui.loading.node.speedTest.find(
+              (n) => n.id === e.payload.id,
+            );
+            if (target) {
+              target.loading = e.payload.loading;
+            } else {
+              ui.loading.node.speedTest.push(e.payload);
+            }
           });
         }),
       );

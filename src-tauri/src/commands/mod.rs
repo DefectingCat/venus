@@ -8,7 +8,6 @@ use tokio::{sync::Mutex, time::Instant};
 use crate::{
     config::ConfigState,
     core::AVCore,
-    event::RUAEvents,
     message::{ConfigMsg, MsgSender},
     utils::error::VResult,
 };
@@ -116,17 +115,17 @@ pub async fn node_speed(
     core: State<'_, AVCore>,
     window: Window,
 ) -> VResult<()> {
-    let ev = RUAEvents::SpeedTest;
-    window.emit(ev.as_str(), true)?;
+    // let ev = RUAEvents::SpeedTest;
+    // window.emit(ev.as_str(), true)?;
 
     let core = core.inner().clone();
     let config = config.inner().clone();
     async_runtime::spawn(async move {
         let mut core = core.lock().await;
-        core.speed_test(nodes, config.clone())
+        core.speed_test(nodes, config.clone(), window)
             .await
             .expect("Speed test failed");
-        window.emit(ev.as_str(), false).unwrap();
+        // window.emit(ev.as_str(), false).unwrap();
     });
     Ok(())
 }

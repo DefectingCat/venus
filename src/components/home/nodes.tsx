@@ -141,24 +141,28 @@ const Nodes = () => {
         key: 'connectivity',
         width: 80,
         ellipsis: true,
-        render: (connectivity) => (
-          <div
-            className={clsx(
-              'overflow-hidden text-ellipsis flex',
-              'items-center',
-            )}
-          >
-            {nodeLoading ? (
-              <LoadingIcon />
-            ) : connectivity == null ? (
-              ''
-            ) : connectivity ? (
-              <BsCheckCircleFill />
-            ) : (
-              <BsFillDashCircleFill />
-            )}
-          </div>
-        ),
+        render: (connectivity: boolean, record: Node) => {
+          const current = nodeLoading.find((n) => n.id === record.nodeId)
+            ?.loading;
+          return (
+            <div
+              className={clsx(
+                'overflow-hidden text-ellipsis flex',
+                'items-center',
+              )}
+            >
+              {current ? (
+                <LoadingIcon />
+              ) : connectivity == null ? (
+                ''
+              ) : connectivity ? (
+                <BsCheckCircleFill />
+              ) : (
+                <BsFillDashCircleFill />
+              )}
+            </div>
+          );
+        },
       },
       {
         title: 'Net Type',
