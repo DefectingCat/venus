@@ -7,13 +7,14 @@ use anyhow::Ok as AOk;
 use log::{error, info, warn};
 use tauri::{
     api::process::{Command, CommandChild, CommandEvent},
-    async_runtime,
+    async_runtime, Window,
 };
 use tokio::sync::Mutex;
 
 use crate::{
     commands::speed_test,
     config::{change_connectivity, outbouds_builder, ConfigState, CoreStatus},
+    event::{RUAEvents, SpeedTestPayload},
     message::{ConfigMsg, MsgSender},
     CORE_SHUTDOWN,
 };
@@ -107,9 +108,13 @@ impl VCore {
         Ok(())
     }
 
-    pub async fn speed_test(&mut self, node_ids: Vec<String>, config: ConfigState) -> Result<()> {
+    pub async fn speed_test(
+        &mut self,
+        node_ids: Vec<String>,
+        config: ConfigState,
+        window: Window,
+    ) -> Result<()> {
         let loop_config = config.clone();
-
         let config = config.lock().await;
         let mut current_outbound = config.core.as_ref().map(|core| core.outbounds.clone());
         let target_proxy = config
@@ -121,6 +126,13 @@ impl VCore {
         drop(config);
 
         for id in node_ids {
+            let ev = RUAEvents::SpeedTest;
+            let mut payload = SpeedTestPayload {
+                id: &id,
+                loading: true,
+            };
+            window.emit(ev.as_str(), &payload)?;
+
             let write_config = loop_config.clone();
 
             let mut config = loop_config.lock().await;
@@ -166,6 +178,9 @@ impl VCore {
                 core.outbounds = outbounds;
                 config.write_core()?;
             }
+
+            payload.loading = false;
+            window.emit(ev.as_str(), payload)?;
             config.write_rua()?;
             self.tx.send(ConfigMsg::EmitConfig).await?;
         }

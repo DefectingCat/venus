@@ -2,7 +2,7 @@ use anyhow::{Ok as AOk, Result};
 use std::{sync::Arc, thread, time::Duration};
 
 use log::{info, warn};
-use tauri::{async_runtime, State};
+use tauri::{async_runtime, State, Window};
 use tokio::{sync::Mutex, time::Instant};
 
 use crate::{
@@ -16,8 +16,6 @@ pub mod config;
 pub mod core;
 pub mod subs;
 
-// async fn calculate_speed() -> VResult<usize> {}
-// async fn speed_test(proxy: &str, config: &mut MutexGuard<'_, VConfig>) -> VResult<()> {
 pub async fn speed_test(
     proxy: &str,
     config: ConfigState,
@@ -28,12 +26,7 @@ pub async fn speed_test(
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
     let c_config = config.lock().await;
-    let mut response = client
-        // .get("https://speed.hetzner.de/100MB.bin")
-        // .get("https://sabnzbd.org/tests/internetspeed/20MB.bin")
-        .get(&c_config.rua.settings.speed_url)
-        .send()
-        .await?;
+    let mut response = client.get(&c_config.rua.settings.speed_url).send().await?;
     let latency = start.elapsed().as_millis();
     info!("Latency {}", latency);
     drop(c_config);
@@ -120,14 +113,19 @@ pub async fn node_speed(
     nodes: Vec<String>,
     config: State<'_, ConfigState>,
     core: State<'_, AVCore>,
+    window: Window,
 ) -> VResult<()> {
+    // let ev = RUAEvents::SpeedTest;
+    // window.emit(ev.as_str(), true)?;
+
     let core = core.inner().clone();
     let config = config.inner().clone();
     async_runtime::spawn(async move {
         let mut core = core.lock().await;
-        core.speed_test(nodes, config.clone())
+        core.speed_test(nodes, config.clone(), window)
             .await
             .expect("Speed test failed");
+        // window.emit(ev.as_str(), false).unwrap();
     });
     Ok(())
 }

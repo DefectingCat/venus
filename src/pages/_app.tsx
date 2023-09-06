@@ -11,15 +11,20 @@ import 'styles/global.css';
 
 // This default export is required in a new `pages/_app.js` file.
 export default function MyApp({ Component, pageProps }: AppProps) {
-  const updateRConfig = useStore((s) => s.updateRConfig);
-  const updateCoreConfig = useStore((s) => s.updateCoreConfig);
-  const updateLogging = useStore((s) => s.updateLogging);
-  const toggleUI = useStore((s) => s.toggleUI);
+  const { updateRConfig, updateCoreConfig, updateLogging, toggleUI } = useStore(
+    (s) => ({
+      updateRConfig: s.updateRConfig,
+      updateCoreConfig: s.updateCoreConfig,
+      updateLogging: s.updateLogging,
+      toggleUI: s.toggleUI,
+    }),
+  );
 
   // Update configs
   useEffect(() => {
     const listeners: UnlistenFn[] = [];
     (async () => {
+      // Update configs
       listeners.push(
         await listen<RConfig>('rua://update-rua-config', (e) => {
           const rua = e.payload;
@@ -38,6 +43,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         }),
       );
 
+      // logs
       listeners.push(
         await listen<string>('rua://emit-log', (e) => {
           updateLogging((log) => {
@@ -45,6 +51,25 @@ export default function MyApp({ Component, pageProps }: AppProps) {
               log.logs.shift();
             }
             log.logs.push(e.payload);
+          });
+        }),
+      );
+
+      // ui state
+      listeners.push(
+        await listen<{
+          id: string;
+          loading: boolean;
+        }>('rua://speed-test', (e) => {
+          toggleUI((ui) => {
+            const target = ui.loading.node.speedTest.find(
+              (n) => n.id === e.payload.id,
+            );
+            if (target) {
+              target.loading = e.payload.loading;
+            } else {
+              ui.loading.node.speedTest.push(e.payload);
+            }
           });
         }),
       );

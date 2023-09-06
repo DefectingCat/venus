@@ -3,6 +3,63 @@ import { immer } from 'zustand/middleware/immer';
 import { LogSlice } from './log-store';
 import { UISlice } from './ui-store';
 
+export type ConfigSlice = VConfig & Actions;
+const createConfigSlice: StateCreator<
+  ConfigSlice & LogSlice & UISlice,
+  [],
+  [['zustand/immer', never]],
+  ConfigSlice
+> = immer<ConfigSlice>((set) => ({
+  rua: {
+    logging: false,
+    version: '',
+    saveWindows: true,
+    currentId: '',
+    coreStatus: 'Stopped',
+    subscriptions: [],
+    settings: {
+      speedUrl: '',
+    },
+  },
+  core: null,
+  updateRConfig: (rua) => {
+    set(() => ({
+      rua,
+    }));
+  },
+  updateCoreConfig: (core) => {
+    set(() => ({
+      core,
+    }));
+  },
+  updateConfig: (callback) => {
+    set(callback);
+  },
+  updateSubs: (callback) => {
+    set((config) => {
+      const subs = config.rua.subscriptions;
+      callback(subs);
+    });
+  },
+  /**
+   * Only update socks inbound with immer.
+   */
+  updateSocksInbound: (callback) => {
+    set((config) => {
+      const socks = config.core.inbounds.find((i) => i.tag === 'socks');
+      if (!socks) throw new Error('Cannot find socks inbound');
+      callback(socks);
+    });
+  },
+  updateHttpInbound: (callback) => {
+    set((config) => {
+      const http = config.core.inbounds.find((i) => i.tag === 'http');
+      if (!http) throw new Error('Cannot find http inbound');
+      callback(http);
+    });
+  },
+}));
+
 export interface Subscription {
   name: string;
   url: string;
@@ -155,6 +212,7 @@ export interface Rule {
 export interface RUABasicSetting {
   speedUrl: string;
 }
+
 export interface RConfig {
   logging: boolean;
   version: string;
@@ -191,60 +249,4 @@ export interface Actions {
   updateHttpInbound: (callback: (socksInbound: Inbound) => void) => void;
 }
 
-export type ConfigSlice = VConfig & Actions;
-const createConfigSlice: StateCreator<
-  ConfigSlice & LogSlice & UISlice,
-  [],
-  [['zustand/immer', never]],
-  ConfigSlice
-> = immer<ConfigSlice>((set) => ({
-  rua: {
-    logging: false,
-    version: '',
-    saveWindows: true,
-    currentId: '',
-    coreStatus: 'Stopped',
-    subscriptions: [],
-    settings: {
-      speedUrl: '',
-    },
-  },
-  core: null,
-  updateRConfig: (rua) => {
-    set(() => ({
-      rua,
-    }));
-  },
-  updateCoreConfig: (core) => {
-    set(() => ({
-      core,
-    }));
-  },
-  updateConfig: (callback) => {
-    set(callback);
-  },
-  updateSubs: (callback) => {
-    set((config) => {
-      const subs = config.rua.subscriptions;
-      callback(subs);
-    });
-  },
-  /**
-   * Only update socks inbound with immer.
-   */
-  updateSocksInbound: (callback) => {
-    set((config) => {
-      const socks = config.core.inbounds.find((i) => i.tag === 'socks');
-      if (!socks) throw new Error('Cannot find socks inbound');
-      callback(socks);
-    });
-  },
-  updateHttpInbound: (callback) => {
-    set((config) => {
-      const http = config.core.inbounds.find((i) => i.tag === 'http');
-      if (!http) throw new Error('Cannot find http inbound');
-      callback(http);
-    });
-  },
-}));
 export default createConfigSlice;
