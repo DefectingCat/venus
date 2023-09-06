@@ -14,10 +14,12 @@ const ResizableTitle = dynamic(
   () => import('components/pages/resizable-title'),
 );
 const NodeDrawer = dynamic(() => import('components/home/node-drawer'));
+const LoadingIcon = dynamic(() => import('components/common/loading-icon'));
 
 const Nodes = () => {
   const { message } = App.useApp();
   const subscriptions = useStore((s) => s.rua.subscriptions);
+  const nodeLoading = useStore((s) => s.loading.node.speedTest);
   const toggleUI = useStore((s) => s.toggleUI);
 
   const nodes = useMemo(
@@ -25,125 +27,182 @@ const Nodes = () => {
     [subscriptions],
   );
 
-  // current outbound in config file
-  const outbound = useStore(
-    (s) => s.core?.outbounds?.[0]?.settings?.vnext?.[0],
-  );
-
-  // nodes table
-  const [columns, setColumns] = useState<ColumnsType<Node>>([
+  const [colWidth, setColWdith] = useState([
     {
-      title: 'ID',
-      ellipsis: true,
       key: 'nodeId',
       width: 50,
-      render: (_, _node, i) => (
-        <div className={clsx('text-ellipsis', 'break-keep overflow-hidden')}>
-          {i + 1}
-        </div>
-      ),
     },
     {
-      title: 'Name',
-      dataIndex: 'ps',
-      ellipsis: true,
       key: 'ps',
       width: 300,
-      sorter: (a, b) => a.ps.localeCompare(b.ps),
-      render: (addr) => (
-        <div className="overflow-hidden text-ellipsis">{addr}</div>
-      ),
     },
     {
-      title: 'Address',
-      dataIndex: 'add',
       key: 'add',
-      ellipsis: true,
       width: 100,
-      render: (addr) => (
-        <div className="overflow-hidden text-ellipsis">{addr}</div>
-      ),
     },
     {
-      title: 'Port',
-      dataIndex: 'port',
       key: 'port',
       width: 80,
-      ellipsis: true,
     },
     {
-      title: 'Delay',
-      dataIndex: 'delay',
       key: 'delay',
       width: 80,
-      ellipsis: true,
-      render: (delay) => (
-        <div className="overflow-hidden text-ellipsis">
-          {delay != null && `${delay}ms`}
-        </div>
-      ),
     },
     {
-      title: 'Speed',
-      dataIndex: 'speed',
       key: 'speed',
       width: 80,
-      ellipsis: true,
-      render: (speed) => (
-        <div className="overflow-hidden text-ellipsis">
-          {speed != null && `${speed}MB/s`}
-        </div>
-      ),
     },
     {
-      title: 'Connectivity',
-      dataIndex: 'connectivity',
       key: 'connectivity',
       width: 80,
-      ellipsis: true,
-      render: (connectivity) => (
-        <div className="overflow-hidden text-ellipsis">
-          {connectivity == null ? (
-            ''
-          ) : connectivity ? (
-            <BsCheckCircleFill />
-          ) : (
-            <BsFillDashCircleFill />
-          )}
-        </div>
-      ),
     },
     {
-      title: 'Net Type',
-      dataIndex: 'net',
       key: 'net',
       width: 80,
-      ellipsis: true,
     },
     {
-      title: 'TLS',
-      dataIndex: 'tls',
       key: 'tls',
       width: 80,
-      ellipsis: true,
     },
     {
-      title: 'Subscription',
-      dataIndex: 'subs',
       key: 'subs',
       width: 100,
-      ellipsis: true,
     },
   ]);
+  // nodes table
+  const columns = useMemo<ColumnsType<Node>>(() => {
+    const tableCols: ColumnsType<Node> = [
+      {
+        title: 'ID',
+        ellipsis: true,
+        key: 'nodeId',
+        width: 50,
+        render: (_, _node, i) => (
+          <div className={clsx('text-ellipsis', 'break-keep overflow-hidden')}>
+            {i + 1}
+          </div>
+        ),
+      },
+      {
+        title: 'Name',
+        dataIndex: 'ps',
+        ellipsis: true,
+        key: 'ps',
+        width: 300,
+        sorter: (a, b) => a.ps.localeCompare(b.ps),
+        render: (addr) => (
+          <div className="overflow-hidden text-ellipsis">{addr}</div>
+        ),
+      },
+      {
+        title: 'Address',
+        dataIndex: 'add',
+        key: 'add',
+        ellipsis: true,
+        width: 100,
+        render: (addr) => (
+          <div className="overflow-hidden text-ellipsis">{addr}</div>
+        ),
+      },
+      {
+        title: 'Port',
+        dataIndex: 'port',
+        key: 'port',
+        width: 80,
+        ellipsis: true,
+      },
+      {
+        title: 'Delay',
+        dataIndex: 'delay',
+        key: 'delay',
+        width: 80,
+        ellipsis: true,
+        render: (delay) => (
+          <div className="overflow-hidden text-ellipsis">
+            {delay != null && `${delay}ms`}
+          </div>
+        ),
+      },
+      {
+        title: 'Speed',
+        dataIndex: 'speed',
+        key: 'speed',
+        width: 80,
+        ellipsis: true,
+        render: (speed) => (
+          <div className="overflow-hidden text-ellipsis">
+            {speed != null && `${speed}MB/s`}
+          </div>
+        ),
+      },
+      {
+        title: 'Connectivity',
+        dataIndex: 'connectivity',
+        key: 'connectivity',
+        width: 80,
+        ellipsis: true,
+        render: (connectivity) => (
+          <div
+            className={clsx(
+              'overflow-hidden text-ellipsis flex',
+              'items-center',
+            )}
+          >
+            {nodeLoading ? (
+              <LoadingIcon />
+            ) : connectivity == null ? (
+              ''
+            ) : connectivity ? (
+              <BsCheckCircleFill />
+            ) : (
+              <BsFillDashCircleFill />
+            )}
+          </div>
+        ),
+      },
+      {
+        title: 'Net Type',
+        dataIndex: 'net',
+        key: 'net',
+        width: 80,
+        ellipsis: true,
+      },
+      {
+        title: 'TLS',
+        dataIndex: 'tls',
+        key: 'tls',
+        width: 80,
+        ellipsis: true,
+      },
+      {
+        title: 'Subscription',
+        dataIndex: 'subs',
+        key: 'subs',
+        width: 100,
+        ellipsis: true,
+      },
+    ];
+    return tableCols.map((col) => {
+      const target = colWidth.find((item) => item.key === col.key);
+      if (!target) {
+        console.error('connot find target column');
+        return col;
+      }
+      return {
+        ...col,
+        width: target.width,
+      };
+    });
+  }, [colWidth, nodeLoading]);
   const handleResize: Function =
     (index: number) =>
     (_: React.SyntheticEvent<Element>, { size }: ResizeCallbackData) => {
-      const newColumns = [...columns];
-      newColumns[index] = {
-        ...newColumns[index],
+      const newWidth = [...colWidth];
+      newWidth[index] = {
+        ...newWidth[index],
         width: size.width,
       };
-      setColumns(newColumns);
+      setColWdith(newWidth);
     };
   const mergeColumns: ColumnsType<Node> = columns.map((col, index) => ({
     ...col,
@@ -155,15 +214,6 @@ const Nodes = () => {
 
   // Select node
   const rua = useStore((s) => s.rua);
-  // const selected = useMemo(() => {
-  //   const target = nodes.find((n) => {
-  //     const host =
-  //       `${n.add}${n.port}` === `${outbound?.address}${outbound?.port}`;
-  //     const id = n.nodeId === rua.current_id;
-  //     return host && id;
-  //   });
-  //   return `${target?.add}${target?.port}`;
-  // }, [nodes, outbound?.address, outbound?.port, rua.current_id]);
   const updateConfig = useStore((s) => s.updateConfig);
   const handleSelect = useCallback(async (node: Node) => {
     try {
