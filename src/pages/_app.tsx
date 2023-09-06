@@ -58,9 +58,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       // ui state
       listeners.push(
         await listen<boolean>('rua://speed-test', (e) => {
-          console.log(e.payload);
           toggleUI((ui) => {
-            ui.loading.node.speedTest = e.payload;
+            // ui.loading.node.speedTest = e.payload;
           });
         }),
       );

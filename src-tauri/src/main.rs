@@ -28,6 +28,7 @@ use crate::{
     },
     config::CoreStatus,
     core::VCore,
+    event::RUAEvents,
     logger::init_logger,
     message::{message_handler, msg_build},
     tray::{handle_tray_click, handle_tray_left_click, new_tray},
@@ -37,6 +38,7 @@ use crate::{
 mod commands;
 mod config;
 mod core;
+mod event;
 mod logger;
 mod message;
 mod tray;
@@ -141,13 +143,17 @@ fn main() {
         let window = get_main_window(app)?;
         let event_config = config_app.clone();
         app.listen_global("ready", move |_e| {
+            use RUAEvents::*;
+
             info!("Frontend ready");
             let window = window.get_window("main").unwrap();
             let event_config = event_config.clone();
             let task = async move {
                 let config = event_config.lock().await;
-                window.emit_all("rua://update-rua-config", &config.rua)?;
-                window.emit_all("rua://update-core-config", &config.core)?;
+                let core_ev = UpdateCoreConfig;
+                let rua_ev = UpdateRuaConfig;
+                window.emit_all(rua_ev.as_str(), &config.rua)?;
+                window.emit_all(core_ev.as_str(), &config.core)?;
                 info!("Reload config succeeded");
                 AOk(())
             };
