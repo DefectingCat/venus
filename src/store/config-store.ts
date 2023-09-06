@@ -20,9 +20,6 @@ const createConfigSlice: StateCreator<
     settings: {
       speedUrl: '',
     },
-    state: {
-      speedLoading: false,
-    },
   },
   core: null,
   updateRConfig: (rua) => {
@@ -215,9 +212,7 @@ export interface Rule {
 export interface RUABasicSetting {
   speedUrl: string;
 }
-export interface RUAState {
-  speedLoading: boolean;
-}
+
 export interface RConfig {
   logging: boolean;
   version: string;
@@ -226,7 +221,6 @@ export interface RConfig {
   currentId: string;
   subscriptions: Subscription[] | null;
   settings: RUABasicSetting;
-  state: RUAState;
 }
 
 export interface VConfig {

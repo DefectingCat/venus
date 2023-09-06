@@ -31,6 +31,10 @@ export interface UI {
       url: string;
       loading: boolean;
     }[];
+    // node list loading
+    node: {
+      speedTest: boolean;
+    };
   };
   // current selected tabs
   tabs: {
@@ -63,6 +67,9 @@ const createUISlice: StateCreator<
   loading: {
     updateAll: false,
     subCrad: [],
+    node: {
+      speedTest: false,
+    },
   },
   tabs: {
     index: '1',

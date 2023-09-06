@@ -2,7 +2,7 @@ use anyhow::{Ok as AOk, Result};
 use std::{sync::Arc, thread, time::Duration};
 
 use log::{info, warn};
-use tauri::{async_runtime, State};
+use tauri::{async_runtime, State, Window};
 use tokio::{sync::Mutex, time::Instant};
 
 use crate::{
@@ -120,7 +120,10 @@ pub async fn node_speed(
     nodes: Vec<String>,
     config: State<'_, ConfigState>,
     core: State<'_, AVCore>,
+    window: Window,
 ) -> VResult<()> {
+    window.emit("rua://speed-test", true)?;
+
     let core = core.inner().clone();
     let config = config.inner().clone();
     async_runtime::spawn(async move {
@@ -128,6 +131,7 @@ pub async fn node_speed(
         core.speed_test(nodes, config.clone())
             .await
             .expect("Speed test failed");
+        window.emit("rua://speed-test", false).unwrap();
     });
     Ok(())
 }
