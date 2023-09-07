@@ -2,6 +2,8 @@ import { useCallback, useMemo } from 'react';
 import useStore from 'store';
 import { UI } from 'store/ui-store';
 
+const NOT_INCLUDE = ['node'] as const;
+
 /**
  * Use global loading state
  *
@@ -40,6 +42,8 @@ const useLoading = (key: keyof UI['loading'], subUrl?: string) => {
   const toggleUI = useStore((s) => s.toggleUI);
   const _setLoading = useCallback(
     (key: keyof UI['loading'], value: boolean) => {
+      // if (NOT_INCLUDE.includes(key)) return;
+      if (key === 'node') return;
       if (key === 'subCrad') {
         toggleUI((ui) => {
           const target = ui.loading[key].find((sub) => sub.url === subUrl);
