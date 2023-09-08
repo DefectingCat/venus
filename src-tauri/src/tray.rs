@@ -4,7 +4,7 @@ use anyhow::{anyhow, Result};
 use log::error;
 use tauri::{
     async_runtime, AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayMenu,
-    SystemTrayMenuItem, SystemTrayMenuItemHandle,
+    SystemTrayMenuItem, SystemTrayMenuItemHandle, WindowBuilder, WindowUrl,
 };
 
 use crate::{core::AVCore, utils::toggle_windows, CORE_SHUTDOWN};
@@ -20,14 +20,21 @@ pub fn new_tray() -> SystemTray {
     SystemTray::new().with_menu(tray_menu)
 }
 
-pub fn handle_tray_left_click(app: &AppHandle) {
-    let show_handle = app.tray_handle().get_item("hide");
-    match handle_visible(app, &show_handle, Some(true)) {
-        Ok(_) => {}
-        Err(err) => {
-            error!("handle windows visible failed {}", err)
-        }
-    }
+pub fn handle_tray_left_click(app: &AppHandle) -> Result<()> {
+    use tauri_plugin_positioner::{Position, WindowExt};
+
+    let menu = WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into())).build()?;
+    menu.set_always_on_top(true)?;
+    menu.set_decorations(false)?;
+    menu.move_window(Position::TrayCenter)?;
+    Ok(())
+    // let show_handle = app.tray_handle().get_item("hide");
+    // match handle_visible(app, &show_handle, Some(true)) {
+    //     Ok(_) => {}
+    //     Err(err) => {
+    //         error!("handle windows visible failed {}", err)
+    //     }
+    // }
 }
 
 /// Handle system tray menu item right-click.

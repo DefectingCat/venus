@@ -3627,6 +3627,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-positioner"
+version = "1.0.4"
+source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v1#5b814f56e6368fdec46c4ddb04a07e0923ff995a"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "tauri",
+ "thiserror",
+]
+
+[[package]]
 name = "tauri-plugin-single-instance"
 version = "0.0.0"
 source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v1#7e58dc8502f654b99d51c087421f84ccc0e03119"
@@ -4154,6 +4167,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-autostart",
+ "tauri-plugin-positioner",
  "tauri-plugin-single-instance",
  "tauri-plugin-window-state",
  "thiserror",

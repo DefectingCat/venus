@@ -218,11 +218,25 @@ fn main() {
     let core_tray = core.clone();
     tauri::Builder::default()
         .system_tray(tray)
-        .on_system_tray_event(move |app, event| match event {
-            SystemTrayEvent::LeftClick { .. } => handle_tray_left_click(app),
-            SystemTrayEvent::DoubleClick { .. } => {}
-            SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core_tray),
-            _ => {}
+        .on_system_tray_event(move |app, event| {
+            tauri_plugin_positioner::on_tray_event(app, &event);
+            match event {
+                SystemTrayEvent::LeftClick { .. } => {
+                    let app_handle = app.app_handle();
+                    async_runtime::spawn(async move {
+                        match handle_tray_left_click(&app_handle) {
+                            Ok(_) => {}
+                            Err(err) => {
+                                error!("Create system tray menu failed {}", err)
+                            }
+                        }
+                    });
+                    // handle_tray_left_click(app)
+                }
+                SystemTrayEvent::DoubleClick { .. } => {}
+                SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core_tray),
+                _ => {}
+            }
         })
         .manage(config)
         .manage(core)
@@ -240,6 +254,7 @@ fn main() {
             // common commands
             node_speed
         ])
+        .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             info!("{}, {argv:?}, {cwd}", app.package_info().name);
