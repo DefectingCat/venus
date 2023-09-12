@@ -265,6 +265,14 @@ fn main() {
             MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::Focused(is_focused) = event.event() {
+                let name = event.window().label();
+                if !is_focused && name == "menu" {
+                    event.window().hide().unwrap();
+                }
+            }
+        })
         .setup(handle_app)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

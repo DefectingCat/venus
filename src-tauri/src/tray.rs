@@ -36,25 +36,28 @@ pub fn tray_menu(app: &AppHandle) {
 pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
     use tauri_plugin_positioner::{Position, WindowExt};
 
-    let menu = {
+    // get or create a new menu window
+    let (menu, is_build) = {
         let window = app.get_window("menu");
         if let Some(win) = window {
-            win
+            (win, false)
         } else {
-            WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into())).build()?
+            let win =
+                WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into())).build()?;
+            (win, true)
         }
     };
-    menu.set_always_on_top(true)?;
     menu.set_decorations(false)?;
     menu.move_window(Position::TrayCenter)?;
+
+    if menu.is_visible()? && !is_build {
+        menu.hide()?;
+    } else {
+        menu.show()?;
+        menu.set_always_on_top(true)?;
+    }
+
     Ok(())
-    // let show_handle = app.tray_handle().get_item("hide");
-    // match handle_visible(app, &show_handle, Some(true)) {
-    //     Ok(_) => {}
-    //     Err(err) => {
-    //         error!("handle windows visible failed {}", err)
-    //     }
-    // }
 }
 
 /// Handle system tray menu item right-click.
