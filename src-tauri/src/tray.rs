@@ -20,10 +20,30 @@ pub fn new_tray() -> SystemTray {
     SystemTray::new().with_menu(tray_menu)
 }
 
-pub fn handle_tray_left_click(app: &AppHandle) -> Result<()> {
+/// Handle system tray window create
+pub fn tray_menu(app: &AppHandle) {
+    let app_handle = app.app_handle();
+    async_runtime::spawn(async move {
+        match handle_tray_menu(&app_handle) {
+            Ok(_) => {}
+            Err(err) => {
+                error!("Create system tray menu failed {}", err)
+            }
+        }
+    });
+}
+/// Create new system tray window
+pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
     use tauri_plugin_positioner::{Position, WindowExt};
 
-    let menu = WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into())).build()?;
+    let menu = {
+        let window = app.get_window("menu");
+        if let Some(win) = window {
+            win
+        } else {
+            WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into())).build()?
+        }
+    };
     menu.set_always_on_top(true)?;
     menu.set_decorations(false)?;
     menu.move_window(Position::TrayCenter)?;

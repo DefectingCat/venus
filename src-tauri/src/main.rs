@@ -31,7 +31,7 @@ use crate::{
     event::RUAEvents,
     logger::init_logger,
     message::{message_handler, msg_build},
-    tray::{handle_tray_click, handle_tray_left_click, new_tray},
+    tray::{handle_tray_click, new_tray, tray_menu},
     utils::get_main_window,
 };
 
@@ -221,18 +221,8 @@ fn main() {
         .on_system_tray_event(move |app, event| {
             tauri_plugin_positioner::on_tray_event(app, &event);
             match event {
-                SystemTrayEvent::LeftClick { .. } => {
-                    let app_handle = app.app_handle();
-                    async_runtime::spawn(async move {
-                        match handle_tray_left_click(&app_handle) {
-                            Ok(_) => {}
-                            Err(err) => {
-                                error!("Create system tray menu failed {}", err)
-                            }
-                        }
-                    });
-                    // handle_tray_left_click(app)
-                }
+                SystemTrayEvent::LeftClick { .. } => tray_menu(app),
+                SystemTrayEvent::RightClick { .. } => tray_menu(app),
                 SystemTrayEvent::DoubleClick { .. } => {}
                 SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core_tray),
                 _ => {}
