@@ -4,8 +4,7 @@ use tauri::async_runtime;
 
 use env_logger::{Builder, Env};
 
-use crate::message::get_tx;
-use crate::message::ConfigMsg;
+use crate::message::{ConfigMsg, MSG_TX};
 use crate::LOGGING;
 use anyhow::{Ok, Result};
 
@@ -21,9 +20,8 @@ pub fn init_logger() -> Result<()> {
 
             let emit_log = log.clone();
             async_runtime::spawn(async move {
-                let tx = get_tx()?;
                 if LOGGING.load(std::sync::atomic::Ordering::Relaxed) {
-                    tx.send(ConfigMsg::EmitLog(emit_log)).await?;
+                    MSG_TX.send(ConfigMsg::EmitLog(emit_log)).await?;
                 }
                 Ok(())
             });

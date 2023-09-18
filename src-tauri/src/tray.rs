@@ -7,7 +7,7 @@ use tauri::{
     SystemTrayMenu, SystemTrayMenuItem, SystemTrayMenuItemHandle, WindowBuilder, WindowUrl,
 };
 
-use crate::{core::AVCore, utils::toggle_windows, CORE_SHUTDOWN};
+use crate::{utils::toggle_windows, CORE, CORE_SHUTDOWN};
 
 /// Build new system tray.
 pub fn new_tray() -> SystemTray {
@@ -65,14 +65,13 @@ pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
 }
 
 /// Handle system tray menu item right-click.
-pub fn handle_tray_click(app: &AppHandle, id: String, core: &AVCore) {
+pub fn handle_tray_click(app: &AppHandle, id: String) {
     let item_handle = app.tray_handle().get_item(&id);
     match id.as_str() {
         "quit" => {
-            let core = core.clone();
             let app = app.app_handle();
             async_runtime::spawn(async move {
-                let mut core = core.lock().await;
+                let mut core = CORE.lock().await;
                 CORE_SHUTDOWN.store(true, Ordering::Relaxed);
                 core.exit().expect("Kill core failed");
                 app.exit(0);

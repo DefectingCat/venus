@@ -1,6 +1,6 @@
 use std::{
     path::{Path, PathBuf},
-    sync::{atomic::Ordering, Arc},
+    sync::atomic::Ordering,
 };
 
 use anyhow::Ok as AOk;
@@ -9,18 +9,15 @@ use tauri::{
     api::process::{Command, CommandChild, CommandEvent},
     async_runtime, Window,
 };
-use tokio::sync::Mutex;
 
 use crate::{
     commands::speed_test,
-    config::{change_connectivity, outbouds_builder, ConfigState, CoreStatus},
+    config::{change_connectivity, outbouds_builder, CoreStatus},
     event::{RUAEvents, SpeedTestPayload},
-    message::{get_tx, ConfigMsg},
-    CORE_SHUTDOWN,
+    message::{ConfigMsg, MSG_TX},
+    CONFIG, CORE_SHUTDOWN,
 };
 use anyhow::{anyhow, Result};
-
-pub type AVCore = Arc<Mutex<VCore>>;
 
 #[derive(Debug)]
 pub struct VCore {
@@ -40,7 +37,6 @@ fn start_core(path: &Path) -> Result<CommandChild> {
 
     async_runtime::spawn(async move {
         while let Some(event) = rx.recv().await {
-            let tx = get_tx()?;
             match event {
                 CommandEvent::Stdout(line) => {
                     info!("{line}");
@@ -53,11 +49,15 @@ fn start_core(path: &Path) -> Result<CommandChild> {
                         info!("Kill core succeed");
                     } else {
                         error!("{line:?}");
-                        tx.send(ConfigMsg::CoreStatus(CoreStatus::Stopped)).await?;
+                        MSG_TX
+                            .send(ConfigMsg::CoreStatus(CoreStatus::Stopped))
+                            .await?;
                     }
                 }
                 _ => {
-                    tx.send(ConfigMsg::CoreStatus(CoreStatus::Stopped)).await?;
+                    MSG_TX
+                        .send(ConfigMsg::CoreStatus(CoreStatus::Stopped))
+                        .await?;
                     error!("Core unknown error {event:?}");
                 }
             }
@@ -69,7 +69,6 @@ fn start_core(path: &Path) -> Result<CommandChild> {
 }
 
 impl VCore {
-    /// tx: restart core message
     pub fn build() -> Self {
         Self {
             child: None,
@@ -106,14 +105,8 @@ impl VCore {
         Ok(())
     }
 
-    pub async fn speed_test(
-        &mut self,
-        node_ids: Vec<String>,
-        config: ConfigState,
-        window: Window,
-    ) -> Result<()> {
-        let loop_config = config.clone();
-        let config = config.lock().await;
+    pub async fn speed_test(&mut self, node_ids: Vec<String>, window: Window) -> Result<()> {
+        let config = CONFIG.lock().await;
         let mut current_outbound = config.core.as_ref().map(|core| core.outbounds.clone());
         let target_proxy = config
             .core
@@ -131,9 +124,7 @@ impl VCore {
             };
             window.emit(ev.as_str(), &payload)?;
 
-            let write_config = loop_config.clone();
-
-            let mut config = loop_config.lock().await;
+            let mut config = CONFIG.lock().await;
             let rua = &mut config.rua;
 
             let mut target = None;
@@ -156,18 +147,18 @@ impl VCore {
             drop(config);
 
             self.restart().await?;
-            match speed_test(&proxy, write_config.clone(), id.clone()).await {
+            match speed_test(&proxy, id.clone()).await {
                 Ok(_) => {
-                    change_connectivity(write_config.clone(), &id, true).await?;
+                    change_connectivity(&id, true).await?;
                 }
                 Err(_) => {
-                    change_connectivity(write_config.clone(), &id, false).await?;
+                    change_connectivity(&id, false).await?;
                 }
             }
 
             // speed_test(&proxy, write_config.clone(), id, ).await?;
             // restore the outbounds before speed test
-            let mut config = write_config.lock().await;
+            let mut config = CONFIG.lock().await;
             if let Some(outbounds) = current_outbound.take() {
                 let core = config
                     .core
@@ -180,8 +171,7 @@ impl VCore {
             payload.loading = false;
             window.emit(ev.as_str(), payload)?;
             config.write_rua()?;
-            let tx = get_tx()?;
-            tx.send(ConfigMsg::EmitConfig).await?;
+            MSG_TX.send(ConfigMsg::EmitConfig).await?;
         }
 
         Ok(())

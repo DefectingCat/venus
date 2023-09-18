@@ -6,13 +6,11 @@
 use anyhow::{anyhow, Ok as AOk};
 use config::VConfig;
 use log::{error, info};
+use once_cell::sync::Lazy;
 use std::{
     env,
     error::Error,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
+    sync::atomic::{AtomicBool, Ordering},
 };
 use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
@@ -30,7 +28,7 @@ use crate::{
     core::VCore,
     event::RUAEvents,
     logger::init_logger,
-    message::{message_handler, msg_build, MSG},
+    message::message_handler,
     tray::{handle_tray_click, new_tray, tray_menu},
     utils::get_main_window,
 };
@@ -59,6 +57,11 @@ static LOGGING: AtomicBool = AtomicBool::new(false);
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 static NAME: &str = env!("CARGO_PKG_NAME");
 
+/// Control v2ray-core
+pub static CORE: Lazy<Mutex<VCore>> = Lazy::new(|| Mutex::new(VCore::build()));
+/// Global config and v2ray-core config
+pub static CONFIG: Lazy<Mutex<VConfig>> = Lazy::new(|| Mutex::new(VConfig::new()));
+
 fn main() {
     #[cfg(debug_assertions)]
     use utils::debug_process;
@@ -66,14 +69,6 @@ fn main() {
     debug_process();
 
     let tray = new_tray();
-
-    // Init message
-    // Create a mpsc channel for config and other stuff,
-    // when other stuff change state and need to update config
-    // it will use tx send new state to config
-    unsafe {
-        MSG.get_or_init(msg_build);
-    }
 
     match init_logger() {
         Ok(()) => {}
@@ -85,13 +80,6 @@ fn main() {
     info!("Starting up.");
     info!("Venus - {}", VERSION);
 
-    // V2ray core
-    let core = Arc::new(Mutex::new(VCore::build()));
-    // Init config.
-    let config = Arc::new(Mutex::new(VConfig::new()));
-
-    let core_app = core.clone();
-    let config_app = config.clone();
     // App handler
     let handle_app = move |app: &mut App| -> Result<(), Box<dyn Error>> {
         #[cfg(target_os = "macos")]
@@ -103,12 +91,10 @@ fn main() {
             .resolve_resource("resources/")
             .ok_or(anyhow!("resource path is empty"))?;
         // Init config and core
-        let init_config = config_app.clone();
         let window = get_main_window(app)?;
-        let core = core_app.clone();
         // Start config and core
         async_runtime::spawn(async move {
-            let mut config = init_config.lock().await;
+            let mut config = CONFIG.lock().await;
             info!("Start init config");
             match config.init(&resources_path) {
                 Ok(_) => info!("Config init sucess"),
@@ -123,7 +109,7 @@ fn main() {
             }
 
             info!("Start core");
-            let mut core = core.lock().await;
+            let mut core = CORE.lock().await;
             // Set v2ray assert location with environment
             env::set_var("V2RAY_LOCATION_ASSET", &resources_path);
 
@@ -142,15 +128,13 @@ fn main() {
         });
 
         let window = get_main_window(app)?;
-        let event_config = config_app.clone();
         app.listen_global("ready", move |_e| {
             use RUAEvents::*;
 
             info!("Frontend ready");
             let window = window.get_window("main").unwrap();
-            let event_config = event_config.clone();
             let task = async move {
-                let config = event_config.lock().await;
+                let config = CONFIG.lock().await;
                 let core_ev = UpdateCoreConfig;
                 let rua_ev = UpdateRuaConfig;
                 window.emit_all(rua_ev.as_str(), &config.rua)?;
@@ -161,26 +145,22 @@ fn main() {
             async_runtime::spawn(task);
         });
 
-        let msg_config = config_app.clone();
-        // Receive message for core
-        let msg_core = core_app.clone();
         let window = get_main_window(app)?;
         // The config will use receiver here
         // when got a message, config will update and
         // emit a event to notify frontend to update global state
-        message_handler(window, msg_config, msg_core)?;
+        unsafe {
+            message_handler(window)?;
+        }
         Ok(())
     };
 
     // Used to runner to manage core process
-    let core_runner = core.clone();
-    let config_runner = config.clone();
     // Runner handler
     let runner = move |app: &AppHandle, event: RunEvent| match event {
         RunEvent::Exit => {
-            let core_runner = core_runner.clone();
             async_runtime::spawn(async move {
-                let mut core = core_runner.lock().await;
+                let mut core = CORE.lock().await;
                 CORE_SHUTDOWN.store(true, Ordering::Relaxed);
                 core.exit().expect("Kill core failed");
             });
@@ -201,10 +181,9 @@ fn main() {
                 .set_title("Show")
                 .expect("Can not set tray title");
 
-            let config = config_runner.clone();
             let app_handler = app.app_handle();
             async_runtime::spawn(async move {
-                let config = config.lock().await;
+                let config = CONFIG.lock().await;
                 if config.rua.save_windows {
                     app_handler
                         .save_window_state(StateFlags::all())
@@ -216,7 +195,6 @@ fn main() {
         _ => {}
     };
 
-    let core_tray = core.clone();
     tauri::Builder::default()
         .system_tray(tray)
         .on_system_tray_event(move |app, event| {
@@ -225,12 +203,10 @@ fn main() {
                 SystemTrayEvent::LeftClick { .. } => tray_menu(app),
                 SystemTrayEvent::RightClick { .. } => tray_menu(app),
                 SystemTrayEvent::DoubleClick { .. } => {}
-                SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id, &core_tray),
+                SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id),
                 _ => {}
             }
         })
-        .manage(config)
-        .manage(core)
         .invoke_handler(tauri::generate_handler![
             // subs
             add_subscription,

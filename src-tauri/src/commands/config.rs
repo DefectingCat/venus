@@ -1,11 +1,10 @@
 use log::info;
 use serde::{Deserialize, Serialize};
-use tauri::State;
 
-use crate::config::{ConfigState, CoreConfig, RConfig};
-use crate::message::{get_tx, ConfigMsg};
+use crate::config::{CoreConfig, RConfig};
+use crate::message::{ConfigMsg, MSG_TX};
 use crate::utils::error::VResult;
-use crate::LOGGING;
+use crate::{CONFIG, LOGGING};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ReturnConfig {
@@ -14,11 +13,8 @@ pub enum ReturnConfig {
 }
 /// Return specify config field
 #[tauri::command]
-pub async fn get_config(
-    state: State<'_, ConfigState>,
-    config_type: &str,
-) -> VResult<Option<ReturnConfig>> {
-    let config = state.lock().await;
+pub async fn get_config(config_type: &str) -> VResult<Option<ReturnConfig>> {
+    let config = CONFIG.lock().await;
     match config_type.to_lowercase().as_str() {
         "core" => {
             let core: Option<ReturnConfig> = config
@@ -39,22 +35,20 @@ pub async fn get_config(
 /// Core will restart alfter write config to file
 #[tauri::command]
 pub async fn update_config(
-    state: State<'_, ConfigState>,
     core_config: Option<CoreConfig>,
     rua_config: Option<RConfig>,
 ) -> VResult<()> {
-    let tx = get_tx()?;
     if let Some(c) = core_config {
         info!("Updating core config");
-        let mut config = state.lock().await;
+        let mut config = CONFIG.lock().await;
         config.core = Some(c);
         config.write_core()?;
-        tx.send(ConfigMsg::RestartCore).await?;
+        MSG_TX.send(ConfigMsg::RestartCore).await?;
     }
 
     if let Some(r) = rua_config {
         info!("Updating rua config");
-        let mut config = state.lock().await;
+        let mut config = CONFIG.lock().await;
         if r.logging {
             LOGGING.store(true, std::sync::atomic::Ordering::Relaxed);
         } else {
@@ -62,7 +56,7 @@ pub async fn update_config(
         }
         config.rua = r;
         config.write_rua()?;
-        tx.send(ConfigMsg::RestartCore).await?;
+        MSG_TX.send(ConfigMsg::RestartCore).await?;
     }
     Ok(())
 }

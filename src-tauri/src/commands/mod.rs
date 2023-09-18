@@ -2,25 +2,24 @@ use anyhow::{Ok as AOk, Result};
 use std::{sync::Arc, thread, time::Duration};
 
 use log::{info, warn};
-use tauri::{async_runtime, State, Window};
+use tauri::{async_runtime, Window};
 use tokio::{sync::Mutex, time::Instant};
 
 use crate::{
-    config::ConfigState,
-    core::AVCore,
-    message::{get_tx, ConfigMsg},
+    message::{ConfigMsg, MSG_TX},
     utils::error::VResult,
+    CONFIG, CORE,
 };
 
 pub mod config;
 pub mod core;
 pub mod subs;
 
-pub async fn speed_test(proxy: &str, config: ConfigState, node_id: String) -> Result<()> {
+pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     let start = Instant::now();
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
-    let c_config = config.lock().await;
+    let c_config = CONFIG.lock().await;
     let mut response = client.get(&c_config.rua.settings.speed_url).send().await?;
     let latency = start.elapsed().as_millis();
     info!("Latency {}", latency);
@@ -38,11 +37,9 @@ pub async fn speed_test(proxy: &str, config: ConfigState, node_id: String) -> Re
     let check_len = len.clone();
     let bytes = bytes_per_second.clone();
     let check_done = done.clone();
-    let write_config = config.clone();
     async_runtime::spawn(async move {
-        let config = config.clone();
         loop {
-            let mut config = config.lock().await;
+            let mut config = CONFIG.lock().await;
             let mut node = None;
             config.rua.subscriptions.iter_mut().for_each(|sub| {
                 node = sub
@@ -75,8 +72,7 @@ pub async fn speed_test(proxy: &str, config: ConfigState, node_id: String) -> Re
             );
             drop(config);
 
-            let tx = get_tx()?;
-            tx.send(ConfigMsg::EmitConfig).await?;
+            MSG_TX.send(ConfigMsg::EmitConfig).await?;
             let check_done = check_done.lock().await;
             if *check_done {
                 break;
@@ -85,9 +81,8 @@ pub async fn speed_test(proxy: &str, config: ConfigState, node_id: String) -> Re
         AOk(())
     });
 
-    let tx = get_tx()?;
     let download_start = Instant::now();
-    tx.send(ConfigMsg::EmitConfig).await?;
+    MSG_TX.send(ConfigMsg::EmitConfig).await?;
     while let Ok(Some(c)) = response.chunk().await {
         // milliseconds
         let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000_f64;
@@ -98,30 +93,22 @@ pub async fn speed_test(proxy: &str, config: ConfigState, node_id: String) -> Re
     }
     let mut done = done.lock().await;
     *done = true;
-    let mut config = write_config.lock().await;
+    let mut config = CONFIG.lock().await;
     config.write_rua()?;
-    tx.send(ConfigMsg::EmitConfig).await?;
+    MSG_TX.send(ConfigMsg::EmitConfig).await?;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn node_speed(
-    nodes: Vec<String>,
-    config: State<'_, ConfigState>,
-    core: State<'_, AVCore>,
-    window: Window,
-) -> VResult<()> {
+pub async fn node_speed(nodes: Vec<String>, window: Window) -> VResult<()> {
     // let ev = RUAEvents::SpeedTest;
     // window.emit(ev.as_str(), true)?;
 
-    let core = core.inner().clone();
-    let config = config.inner().clone();
     async_runtime::spawn(async move {
-        let mut core = core.lock().await;
-        core.speed_test(nodes, config.clone(), window)
+        let mut core = CORE.lock().await;
+        core.speed_test(nodes, window)
             .await
             .expect("Speed test failed");
-        // window.emit(ev.as_str(), false).unwrap();
     });
     Ok(())
 }

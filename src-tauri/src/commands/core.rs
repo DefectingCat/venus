@@ -1,17 +1,16 @@
 use anyhow::anyhow;
-use tauri::State;
 
 use crate::{
-    config::{outbouds_builder, ConfigState},
-    message::get_tx,
+    config::outbouds_builder,
+    message::MSG_TX,
     utils::error::{VError, VResult},
+    CONFIG,
 };
 
 /// Active select node from frontend
 #[tauri::command]
-pub async fn select_node(node_id: String, config: State<'_, ConfigState>) -> VResult<()> {
-    let tx = get_tx()?;
-    let mut config = config.lock().await;
+pub async fn select_node(node_id: String) -> VResult<()> {
+    let mut config = CONFIG.lock().await;
 
     let mut node = None;
     config.rua.subscriptions.iter().for_each(|sub| {
@@ -33,6 +32,6 @@ pub async fn select_node(node_id: String, config: State<'_, ConfigState>) -> VRe
 
     config.rua.current_id = node_id;
     config.write_rua()?;
-    tx.send(crate::message::ConfigMsg::RestartCore).await?;
+    MSG_TX.send(crate::message::ConfigMsg::RestartCore).await?;
     Ok(())
 }

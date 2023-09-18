@@ -2,17 +2,16 @@ use std::fs::{self, OpenOptions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
-use std::sync::Arc;
+
 use std::{fs::File, io::Write};
 
 use anyhow::{anyhow, Result};
 use log::error;
 use serde::Deserialize;
 use serde_derive::Serialize;
-use tokio::sync::Mutex;
 
 use crate::commands::subs::NodeType;
-use crate::{LOGGING, NAME, VERSION};
+use crate::{CONFIG, LOGGING, NAME, VERSION};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -94,7 +93,11 @@ impl CoreStatus {
     }
 }
 
-pub type ConfigState = Arc<Mutex<VConfig>>;
+impl Default for VConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 /// Core config and global stats
 /// The rua field is self state and
@@ -296,8 +299,8 @@ pub fn stream_settings_builder(node: &Node) -> Result<StreamSettings> {
 }
 
 /// Change node's connectivity field in config
-pub async fn change_connectivity(config: ConfigState, id: &str, connectivity: bool) -> Result<()> {
-    let mut config = config.lock().await;
+pub async fn change_connectivity(id: &str, connectivity: bool) -> Result<()> {
+    let mut config = CONFIG.lock().await;
     let mut node = None;
     config.rua.subscriptions.iter_mut().for_each(|sub| {
         node = sub

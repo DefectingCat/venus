@@ -3,13 +3,12 @@ use base64::{engine::general_purpose, Engine};
 use log::{debug, info};
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
-use tauri::State;
 
 use crate::{
-    config::{ConfigState, Node, Subscription},
-    message::get_tx,
+    config::{Node, Subscription},
+    message::MSG_TX,
     utils::error::VResult,
-    NAME, VERSION,
+    CONFIG, NAME, VERSION,
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -135,46 +134,39 @@ async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
 /// Add new subscription and write
 /// to config file
 #[tauri::command]
-pub async fn add_subscription(
-    name: String,
-    url: String,
-    config: State<'_, ConfigState>,
-) -> VResult<()> {
-    let tx = get_tx()?;
-    let mut config = config.lock().await;
+pub async fn add_subscription(name: String, url: String) -> VResult<()> {
+    let mut config = CONFIG.lock().await;
     let nodes = request_subs(&name, &url).await?;
 
     // Write subscription and nodes to config file
     let sub = Subscription { name, url, nodes };
     config.rua.subscriptions.push(sub);
     config.write_rua()?;
-    tx.send(crate::message::ConfigMsg::RestartCore).await?;
+    MSG_TX.send(crate::message::ConfigMsg::RestartCore).await?;
     Ok(())
 }
 
 /// Update all subscriptions in config file.
 #[tauri::command]
-pub async fn update_all_subs(config: State<'_, ConfigState>) -> VResult<()> {
+pub async fn update_all_subs() -> VResult<()> {
     info!("Starting update all subscriptions");
-    let tx = get_tx()?;
-    let mut config = config.lock().await;
+    let mut config = CONFIG.lock().await;
     let subs = &mut config.rua.subscriptions;
     for sub in subs.iter_mut() {
         let new_nodes = request_subs(&sub.name, &sub.url).await?;
         sub.nodes = new_nodes;
     }
     config.write_rua()?;
-    tx.send(crate::message::ConfigMsg::RestartCore).await?;
+    MSG_TX.send(crate::message::ConfigMsg::RestartCore).await?;
     info!("Update all subscriptions done");
     Ok(())
 }
 
 /// Update specific subscription with url
 #[tauri::command]
-pub async fn update_sub(config: State<'_, ConfigState>, url: &str) -> VResult<()> {
+pub async fn update_sub(url: &str) -> VResult<()> {
     info!("Start update subscription {}", &url);
-    let tx = get_tx()?;
-    let mut config = config.lock().await;
+    let mut config = CONFIG.lock().await;
     let sub = config
         .rua
         .subscriptions
@@ -184,7 +176,7 @@ pub async fn update_sub(config: State<'_, ConfigState>, url: &str) -> VResult<()
     let new_nodes = request_subs(&sub.name, &sub.url).await?;
     sub.nodes = new_nodes;
     config.write_rua()?;
-    tx.send(crate::message::ConfigMsg::RestartCore).await?;
+    MSG_TX.send(crate::message::ConfigMsg::RestartCore).await?;
     info!("Update subscription {} done", &url);
     Ok(())
 }
