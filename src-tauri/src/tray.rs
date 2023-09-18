@@ -56,8 +56,8 @@ pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
     if menu.is_visible()? && !is_build {
         menu.hide()?;
     } else {
+        menu.show()?;
         menu.set_focus()?;
-        // menu.show()?;
         menu.set_always_on_top(true)?;
     }
 
