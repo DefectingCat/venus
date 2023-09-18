@@ -7,7 +7,7 @@ use tauri::State;
 
 use crate::{
     config::{ConfigState, Node, Subscription},
-    message::MsgSender,
+    message::get_tx,
     utils::error::VResult,
     NAME, VERSION,
 };
@@ -139,8 +139,8 @@ pub async fn add_subscription(
     name: String,
     url: String,
     config: State<'_, ConfigState>,
-    tx: State<'_, MsgSender>,
 ) -> VResult<()> {
+    let tx = get_tx()?;
     let mut config = config.lock().await;
     let nodes = request_subs(&name, &url).await?;
 
@@ -154,11 +154,9 @@ pub async fn add_subscription(
 
 /// Update all subscriptions in config file.
 #[tauri::command]
-pub async fn update_all_subs(
-    config: State<'_, ConfigState>,
-    tx: State<'_, MsgSender>,
-) -> VResult<()> {
+pub async fn update_all_subs(config: State<'_, ConfigState>) -> VResult<()> {
     info!("Starting update all subscriptions");
+    let tx = get_tx()?;
     let mut config = config.lock().await;
     let subs = &mut config.rua.subscriptions;
     for sub in subs.iter_mut() {
@@ -173,12 +171,9 @@ pub async fn update_all_subs(
 
 /// Update specific subscription with url
 #[tauri::command]
-pub async fn update_sub(
-    config: State<'_, ConfigState>,
-    tx: State<'_, MsgSender>,
-    url: &str,
-) -> VResult<()> {
+pub async fn update_sub(config: State<'_, ConfigState>, url: &str) -> VResult<()> {
     info!("Start update subscription {}", &url);
+    let tx = get_tx()?;
     let mut config = config.lock().await;
     let sub = config
         .rua

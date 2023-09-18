@@ -8,7 +8,7 @@ use tokio::{sync::Mutex, time::Instant};
 use crate::{
     config::ConfigState,
     core::AVCore,
-    message::{ConfigMsg, MsgSender},
+    message::{get_tx, ConfigMsg},
     utils::error::VResult,
 };
 
@@ -16,12 +16,7 @@ pub mod config;
 pub mod core;
 pub mod subs;
 
-pub async fn speed_test(
-    proxy: &str,
-    config: ConfigState,
-    node_id: String,
-    tx: MsgSender,
-) -> Result<()> {
+pub async fn speed_test(proxy: &str, config: ConfigState, node_id: String) -> Result<()> {
     let start = Instant::now();
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
@@ -44,7 +39,6 @@ pub async fn speed_test(
     let bytes = bytes_per_second.clone();
     let check_done = done.clone();
     let write_config = config.clone();
-    let a_tx = tx.clone();
     async_runtime::spawn(async move {
         let config = config.clone();
         loop {
@@ -81,7 +75,8 @@ pub async fn speed_test(
             );
             drop(config);
 
-            a_tx.send(ConfigMsg::EmitConfig).await?;
+            let tx = get_tx()?;
+            tx.send(ConfigMsg::EmitConfig).await?;
             let check_done = check_done.lock().await;
             if *check_done {
                 break;
@@ -90,6 +85,7 @@ pub async fn speed_test(
         AOk(())
     });
 
+    let tx = get_tx()?;
     let download_start = Instant::now();
     tx.send(ConfigMsg::EmitConfig).await?;
     while let Ok(Some(c)) = response.chunk().await {

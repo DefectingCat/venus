@@ -3,17 +3,14 @@ use tauri::State;
 
 use crate::{
     config::{outbouds_builder, ConfigState},
-    message::MsgSender,
+    message::get_tx,
     utils::error::{VError, VResult},
 };
 
 /// Active select node from frontend
 #[tauri::command]
-pub async fn select_node(
-    node_id: String,
-    config: State<'_, ConfigState>,
-    tx: State<'_, MsgSender>,
-) -> VResult<()> {
+pub async fn select_node(node_id: String, config: State<'_, ConfigState>) -> VResult<()> {
+    let tx = get_tx()?;
     let mut config = config.lock().await;
 
     let mut node = None;

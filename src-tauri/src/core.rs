@@ -15,7 +15,7 @@ use crate::{
     commands::speed_test,
     config::{change_connectivity, outbouds_builder, ConfigState, CoreStatus},
     event::{RUAEvents, SpeedTestPayload},
-    message::{ConfigMsg, MsgSender},
+    message::{get_tx, ConfigMsg},
     CORE_SHUTDOWN,
 };
 use anyhow::{anyhow, Result};
@@ -26,13 +26,11 @@ pub type AVCore = Arc<Mutex<VCore>>;
 pub struct VCore {
     // Slidecare process
     pub child: Option<CommandChild>,
-    // Message sender
-    pub tx: MsgSender,
     // Core resource path
     asset_path: PathBuf,
 }
 
-fn start_core(tx: MsgSender, path: &Path) -> Result<CommandChild> {
+fn start_core(path: &Path) -> Result<CommandChild> {
     // `new_sidecar()` expects just the filename, NOT the whole path like in JavaScript
     let (mut rx, child) = Command::new_sidecar("v2ray")
         .expect("Failed to create `v2ray` binary command")
@@ -42,6 +40,7 @@ fn start_core(tx: MsgSender, path: &Path) -> Result<CommandChild> {
 
     async_runtime::spawn(async move {
         while let Some(event) = rx.recv().await {
+            let tx = get_tx()?;
             match event {
                 CommandEvent::Stdout(line) => {
                     info!("{line}");
@@ -71,10 +70,9 @@ fn start_core(tx: MsgSender, path: &Path) -> Result<CommandChild> {
 
 impl VCore {
     /// tx: restart core message
-    pub fn build(tx: MsgSender) -> Self {
+    pub fn build() -> Self {
         Self {
             child: None,
-            tx,
             asset_path: PathBuf::new(),
         }
     }
@@ -82,7 +80,7 @@ impl VCore {
     /// Init core add assets path and start core
     pub async fn init(&mut self, asset_path: &PathBuf) -> Result<()> {
         self.asset_path = PathBuf::from(asset_path);
-        self.child = Some(start_core(self.tx.clone(), &self.asset_path)?);
+        self.child = Some(start_core(&self.asset_path)?);
         Ok(())
     }
 
@@ -95,7 +93,7 @@ impl VCore {
             warn!("core process not exist");
             return Ok(());
         };
-        let child = start_core(self.tx.clone(), &self.asset_path)?;
+        let child = start_core(&self.asset_path)?;
         self.child = Some(child);
         Ok(())
     }
@@ -158,7 +156,7 @@ impl VCore {
             drop(config);
 
             self.restart().await?;
-            match speed_test(&proxy, write_config.clone(), id.clone(), self.tx.clone()).await {
+            match speed_test(&proxy, write_config.clone(), id.clone()).await {
                 Ok(_) => {
                     change_connectivity(write_config.clone(), &id, true).await?;
                 }
@@ -167,7 +165,7 @@ impl VCore {
                 }
             }
 
-            // speed_test(&proxy, write_config.clone(), id, self.tx.clone()).await?;
+            // speed_test(&proxy, write_config.clone(), id, ).await?;
             // restore the outbounds before speed test
             let mut config = write_config.lock().await;
             if let Some(outbounds) = current_outbound.take() {
@@ -182,7 +180,8 @@ impl VCore {
             payload.loading = false;
             window.emit(ev.as_str(), payload)?;
             config.write_rua()?;
-            self.tx.send(ConfigMsg::EmitConfig).await?;
+            let tx = get_tx()?;
+            tx.send(ConfigMsg::EmitConfig).await?;
         }
 
         Ok(())

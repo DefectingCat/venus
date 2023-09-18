@@ -30,7 +30,7 @@ use crate::{
     core::VCore,
     event::RUAEvents,
     logger::init_logger,
-    message::{message_handler, msg_build},
+    message::{message_handler, msg_build, MSG},
     tray::{handle_tray_click, new_tray, tray_menu},
     utils::get_main_window,
 };
@@ -71,10 +71,11 @@ fn main() {
     // Create a mpsc channel for config and other stuff,
     // when other stuff change state and need to update config
     // it will use tx send new state to config
-    let (tx, rx) = msg_build();
-    let tx = Arc::new(tx);
+    unsafe {
+        MSG.get_or_init(msg_build);
+    }
 
-    match init_logger(tx.clone()) {
+    match init_logger() {
         Ok(()) => {}
         Err(e) => {
             eprintln!("Logger init failed {e}");
@@ -85,7 +86,7 @@ fn main() {
     info!("Venus - {}", VERSION);
 
     // V2ray core
-    let core = Arc::new(Mutex::new(VCore::build(tx.clone())));
+    let core = Arc::new(Mutex::new(VCore::build()));
     // Init config.
     let config = Arc::new(Mutex::new(VConfig::new()));
 
@@ -167,7 +168,7 @@ fn main() {
         // The config will use receiver here
         // when got a message, config will update and
         // emit a event to notify frontend to update global state
-        message_handler(window, rx, msg_config, msg_core)?;
+        message_handler(window, msg_config, msg_core)?;
         Ok(())
     };
 
@@ -230,7 +231,6 @@ fn main() {
         })
         .manage(config)
         .manage(core)
-        .manage(tx)
         .invoke_handler(tauri::generate_handler![
             // subs
             add_subscription,

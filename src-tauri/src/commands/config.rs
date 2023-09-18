@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tauri::State;
 
 use crate::config::{ConfigState, CoreConfig, RConfig};
-use crate::message::{ConfigMsg, MsgSender};
+use crate::message::{get_tx, ConfigMsg};
 use crate::utils::error::VResult;
 use crate::LOGGING;
 
@@ -40,10 +40,10 @@ pub async fn get_config(
 #[tauri::command]
 pub async fn update_config(
     state: State<'_, ConfigState>,
-    tx: State<'_, MsgSender>,
     core_config: Option<CoreConfig>,
     rua_config: Option<RConfig>,
 ) -> VResult<()> {
+    let tx = get_tx()?;
     if let Some(c) = core_config {
         info!("Updating core config");
         let mut config = state.lock().await;
