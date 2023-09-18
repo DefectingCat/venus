@@ -3,8 +3,8 @@ use std::sync::atomic::Ordering;
 use anyhow::{anyhow, Result};
 use log::error;
 use tauri::{
-    async_runtime, AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayMenu,
-    SystemTrayMenuItem, SystemTrayMenuItemHandle, WindowBuilder, WindowUrl,
+    async_runtime, AppHandle, CustomMenuItem, LogicalSize, Manager, Size, SystemTray,
+    SystemTrayMenu, SystemTrayMenuItem, SystemTrayMenuItemHandle, WindowBuilder, WindowUrl,
 };
 
 use crate::{core::AVCore, utils::toggle_windows, CORE_SHUTDOWN};
@@ -23,12 +23,10 @@ pub fn new_tray() -> SystemTray {
 /// Handle system tray window create
 pub fn tray_menu(app: &AppHandle) {
     let app_handle = app.app_handle();
-    async_runtime::spawn(async move {
-        match handle_tray_menu(&app_handle) {
-            Ok(_) => {}
-            Err(err) => {
-                error!("Create system tray menu failed {}", err)
-            }
+    std::thread::spawn(move || match handle_tray_menu(&app_handle) {
+        Ok(_) => {}
+        Err(err) => {
+            error!("Create system tray menu failed {}", err)
         }
     });
 }
@@ -44,16 +42,22 @@ pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
         } else {
             let win =
                 WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into())).build()?;
+            win.set_size(Size::Logical(LogicalSize {
+                width: 300.0,
+                height: 600.0,
+            }))?;
             (win, true)
         }
     };
+
     menu.set_decorations(false)?;
     menu.move_window(Position::TrayCenter)?;
 
     if menu.is_visible()? && !is_build {
         menu.hide()?;
     } else {
-        menu.show()?;
+        menu.set_focus()?;
+        // menu.show()?;
         menu.set_always_on_top(true)?;
     }
 
