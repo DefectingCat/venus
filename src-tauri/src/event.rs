@@ -4,17 +4,24 @@ pub enum RUAEvents {
     UpdateRuaConfig,
     UpdateCoreConfig,
     SpeedTest,
+    EmitLog,
 }
 
 impl RUAEvents {
-    pub fn as_str(&self) -> &str {
+    pub fn as_str(&self) -> &'static str {
         use RUAEvents::*;
-
         match self {
             UpdateRuaConfig => "rua://update-rua-config",
             UpdateCoreConfig => "rua://update-core-config",
             SpeedTest => "rua://speed-test",
+            EmitLog => "rua://emit-log",
         }
+    }
+}
+
+impl<'a> From<RUAEvents> for &'a str {
+    fn from(val: RUAEvents) -> Self {
+        val.as_str()
     }
 }
 

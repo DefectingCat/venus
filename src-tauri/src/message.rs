@@ -3,7 +3,7 @@ use log::{error, info};
 use once_cell::sync::Lazy;
 use tauri::{async_runtime, Manager, Window};
 
-use crate::{config::CoreStatus, CONFIG, CORE};
+use crate::{config::CoreStatus, event::RUAEvents, CONFIG, CORE};
 
 use tokio::sync::{
     mpsc,
@@ -41,6 +41,8 @@ pub fn msg_build() -> (Sender<ConfigMsg>, Receiver<ConfigMsg>) {
 
 /// Handle core message and emit log to frontend
 pub unsafe fn message_handler(window: Window) -> Result<()> {
+    use RUAEvents::*;
+
     let handler = async move {
         while let Some(msg) = MSG.1.recv().await {
             match msg {
@@ -48,7 +50,7 @@ pub unsafe fn message_handler(window: Window) -> Result<()> {
                     info!("Update core status {}", status.as_str());
                     let mut config = CONFIG.lock().await;
                     config.rua.core_status = status;
-                    window.emit_all("rua://update-rua-config", &config.rua)?;
+                    window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
                 }
                 ConfigMsg::RestartCore => {
                     info!("Restarting core");
@@ -57,8 +59,8 @@ pub unsafe fn message_handler(window: Window) -> Result<()> {
                         Ok(_) => {
                             let mut config = CONFIG.lock().await;
                             config.rua.core_status = CoreStatus::Started;
-                            window.emit_all("rua://update-rua-config", &config.rua)?;
-                            window.emit_all("rua://update-core-config", &config.core)?;
+                            window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
+                            window.emit_all(UpdateCoreConfig.into(), &config.core)?;
                         }
                         Err(err) => {
                             error!("Core restart failed {err}");
@@ -66,12 +68,12 @@ pub unsafe fn message_handler(window: Window) -> Result<()> {
                     }
                 }
                 ConfigMsg::EmitLog(log) => {
-                    window.emit("rua://emit-log", log)?;
+                    window.emit(EmitLog.into(), log)?;
                 }
                 ConfigMsg::EmitConfig => {
                     let config = CONFIG.lock().await;
-                    window.emit_all("rua://update-rua-config", &config.rua)?;
-                    window.emit_all("rua://update-core-config", &config.core)?;
+                    window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
+                    window.emit_all(UpdateCoreConfig.into(), &config.core)?;
                 }
             }
         }
