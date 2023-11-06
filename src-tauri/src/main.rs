@@ -26,7 +26,7 @@ use crate::{
     },
     config::CoreStatus,
     core::VCore,
-    event::RUAEvents,
+    event::{RUAEvents, UIPayload},
     logger::init_logger,
     message::message_handler,
     tray::{new_tray, tray_menu},
@@ -168,30 +168,47 @@ fn main() {
         RunEvent::ExitRequested { api, .. } => {
             let _api = api;
         }
-        RunEvent::WindowEvent {
-            label,
-            event: WindowEvent::CloseRequested { api, .. },
-            ..
-        } => {
-            let win = app.get_window(label.as_str()).expect("Cannot get window");
-            win.hide().expect("Cannot hide window");
-            api.prevent_close();
-            let tray_handle = app.tray_handle().get_item("hide");
-            tray_handle
-                .set_title("Show")
-                .expect("Can not set tray title");
+        RunEvent::WindowEvent { label, event, .. } => match event {
+            WindowEvent::CloseRequested { api, .. } => {
+                let win = app.get_window(label.as_str()).expect("Cannot get window");
+                win.hide().expect("Cannot hide window");
+                api.prevent_close();
+                let tray_handle = app.tray_handle().get_item("hide");
+                tray_handle
+                    .set_title("Show")
+                    .expect("Can not set tray title");
 
-            let app_handler = app.app_handle();
-            async_runtime::spawn(async move {
-                let config = CONFIG.lock().await;
-                if config.rua.save_windows {
-                    app_handler
-                        .save_window_state(StateFlags::all())
-                        .map_err(|_e| anyhow!("Save window status failed"))?;
+                let app_handler = app.app_handle();
+                async_runtime::spawn(async move {
+                    if label == "main" {
+                        if let Err(err) = app_handler
+                            .emit_all(RUAEvents::UpdateUI.into(), UIPayload { main_show: false })
+                        {
+                            error!("Emit ui event to window failed {}", err);
+                        }
+                    }
+                    let config = CONFIG.lock().await;
+                    if config.rua.save_windows {
+                        if let Err(err) = app_handler.save_window_state(StateFlags::all()) {
+                            error!("Save window status failed {}", err)
+                        };
+                    }
+                });
+            }
+            WindowEvent::Focused(is_focused) => {
+                if label == "main" {
+                    if let Err(err) = app.emit_all(
+                        RUAEvents::UpdateUI.into(),
+                        UIPayload {
+                            main_show: is_focused,
+                        },
+                    ) {
+                        error!("Emit ui event to window failed {}", err);
+                    }
                 }
-                AOk(())
-            });
-        }
+            }
+            _ => {}
+        },
         _ => {}
     };
 

@@ -1,3 +1,4 @@
+import { Button } from 'antd';
 import clsx from 'clsx';
 
 const SystemTray = () => {
@@ -9,6 +10,10 @@ const SystemTray = () => {
           'h-full flex p-4',
         )}
       >
+        <div>
+          <Button>Show</Button>
+          <Button>Hide</Button>
+        </div>
         123
       </div>
     </>
