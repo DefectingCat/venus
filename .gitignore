@@ -11,6 +11,7 @@ downloads/
 .xwin-cache/
 .cargo/
 out
+.vscode
 
 node_modules
 dist
