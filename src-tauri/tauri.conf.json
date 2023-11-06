@@ -16,6 +16,7 @@
       "iconAsTemplate": true,
       "menuOnLeftClick": false
     },
+    "macOSPrivateApi": true,
     "allowlist": {
       "all": false,
       "shell": {

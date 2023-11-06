@@ -29,7 +29,7 @@ use crate::{
     event::RUAEvents,
     logger::init_logger,
     message::message_handler,
-    tray::{handle_tray_click, new_tray, tray_menu},
+    tray::{new_tray, tray_menu},
     utils::get_main_window,
 };
 
@@ -202,8 +202,8 @@ fn main() {
             match event {
                 SystemTrayEvent::LeftClick { .. } => tray_menu(app),
                 SystemTrayEvent::RightClick { .. } => tray_menu(app),
-                SystemTrayEvent::DoubleClick { .. } => {}
-                SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id),
+                // SystemTrayEvent::DoubleClick { .. } => {}
+                // SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id),
                 _ => {}
             }
         })

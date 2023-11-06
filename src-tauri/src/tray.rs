@@ -40,8 +40,10 @@ pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
         if let Some(win) = window {
             (win, false)
         } else {
-            let win =
-                WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into())).build()?;
+            let win = WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into()))
+                .decorations(false)
+                .transparent(true)
+                .build()?;
             win.set_size(Size::Logical(LogicalSize {
                 width: 300.0,
                 height: 600.0,
@@ -50,7 +52,6 @@ pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
         }
     };
 
-    menu.set_decorations(false)?;
     menu.move_window(Position::TrayCenter)?;
 
     if menu.is_visible()? && !is_build {

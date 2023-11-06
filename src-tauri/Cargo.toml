@@ -34,6 +34,7 @@ tauri = { version = "1.5", features = [
   "shell-open",
   "shell-sidecar",
   "system-tray",
+  "macos-private-api",
 ] }
 anyhow = "1.0.75"
 reqwest = { version = "0.11.22", features = ["json"] }
