@@ -16,6 +16,7 @@ use crate::{
     event::{RUAEvents, UIPayload},
     logger::init_logger,
     message::message_handler,
+    tray::tray_menu,
     utils::get_main_window,
 };
 use anyhow::{anyhow, Ok as AOk};
@@ -27,7 +28,9 @@ use std::{
     error::Error,
     sync::atomic::{AtomicBool, Ordering},
 };
-use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, WindowEvent};
+use tauri::{
+    async_runtime, App, AppHandle, Manager, RunEvent, SystemTray, SystemTrayEvent, WindowEvent,
+};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tokio::sync::Mutex;
@@ -204,6 +207,17 @@ fn main() {
     };
 
     tauri::Builder::default()
+        .system_tray(SystemTray::new())
+        .on_system_tray_event(move |app, event| {
+            tauri_plugin_positioner::on_tray_event(app, &event);
+            match event {
+                SystemTrayEvent::LeftClick { .. } => tray_menu(app),
+                SystemTrayEvent::RightClick { .. } => tray_menu(app),
+                // SystemTrayEvent::DoubleClick { .. } => {}
+                // SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id),
+                _ => {}
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             // subs
             add_subscription,

@@ -1,3 +1,7 @@
+use anyhow::Result;
+use log::error;
+use tauri::{AppHandle, LogicalSize, Manager, Size, WindowBuilder, WindowUrl};
+
 // Build new system tray.
 // pub fn new_tray() -> SystemTray {
 //     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
@@ -8,49 +12,50 @@
 //         .add_item(quit);
 //     SystemTray::new().with_menu(tray_menu)
 // }
-// Handle system tray window create
-// pub fn tray_menu(app: &AppHandle) {
-//     let app_handle = app.app_handle();
-//     std::thread::spawn(move || match handle_tray_menu(&app_handle) {
-//         Ok(_) => {}
-//         Err(err) => {
-//             error!("Create system tray menu failed {}", err)
-//         }
-//     });
-// }
-// Create new system tray window
-// pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
-//     use tauri_plugin_positioner::{Position, WindowExt};
 
-//     // get or create a new menu window
-//     let (menu, is_build) = {
-//         let window = app.get_window("menu");
-//         if let Some(win) = window {
-//             (win, false)
-//         } else {
-//             let win = WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into()))
-//                 .decorations(false)
-//                 .transparent(true)
-//                 .build()?;
-//             win.set_size(Size::Logical(LogicalSize {
-//                 width: 300.0,
-//                 height: 600.0,
-//             }))?;
-//             (win, true)
-//         }
-//     };
+/// Handle system tray window create
+pub fn tray_menu(app: &AppHandle) {
+    let app_handle = app.app_handle();
+    std::thread::spawn(move || match handle_tray_menu(&app_handle) {
+        Ok(_) => {}
+        Err(err) => {
+            error!("Create system tray menu failed {}", err)
+        }
+    });
+}
+/// Create new system tray window
+pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
+    use tauri_plugin_positioner::{Position, WindowExt};
 
-//     menu.move_window(Position::TrayCenter)?;
+    // get or create a new menu window
+    let (menu, is_build) = {
+        let window = app.get_window("menu");
+        if let Some(win) = window {
+            (win, false)
+        } else {
+            let win = WindowBuilder::new(app, "menu", WindowUrl::App("system-tray".into()))
+                .decorations(false)
+                .transparent(true)
+                .build()?;
+            win.set_size(Size::Logical(LogicalSize {
+                width: 300.0,
+                height: 600.0,
+            }))?;
+            (win, true)
+        }
+    };
 
-//     if menu.is_visible()? && !is_build {
-//         menu.hide()?;
-//     } else {
-//         menu.show()?;
-//         menu.set_focus()?;
-//         menu.set_always_on_top(true)?;
-//     }
-//     Ok(())
-// }
+    menu.move_window(Position::TrayCenter)?;
+
+    if menu.is_visible()? && !is_build {
+        menu.hide()?;
+    } else {
+        menu.show()?;
+        menu.set_focus()?;
+        menu.set_always_on_top(true)?;
+    }
+    Ok(())
+}
 
 // Handle system tray menu item right-click.
 // pub fn handle_tray_click(app: &AppHandle, id: String) {
