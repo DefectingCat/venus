@@ -3,6 +3,21 @@
     windows_subsystem = "windows"
 )]
 
+use crate::{
+    commands::{
+        config::{get_config, update_config},
+        core::select_node,
+        node_speed,
+        subs::{add_subscription, update_all_subs, update_sub},
+        ui::toggle_main,
+    },
+    config::CoreStatus,
+    core::VCore,
+    event::{RUAEvents, UIPayload},
+    logger::init_logger,
+    message::message_handler,
+    utils::get_main_window,
+};
 use anyhow::{anyhow, Ok as AOk};
 use config::VConfig;
 use log::{error, info};
@@ -16,22 +31,6 @@ use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, W
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tokio::sync::Mutex;
-
-use crate::{
-    commands::{
-        config::{get_config, update_config},
-        core::select_node,
-        node_speed,
-        subs::{add_subscription, update_all_subs, update_sub},
-    },
-    config::CoreStatus,
-    core::VCore,
-    event::{RUAEvents, UIPayload},
-    logger::init_logger,
-    message::message_handler,
-    tray::{new_tray, tray_menu},
-    utils::get_main_window,
-};
 
 mod commands;
 mod config;
@@ -67,8 +66,6 @@ fn main() {
     use utils::debug_process;
     #[cfg(debug_assertions)]
     debug_process();
-
-    let tray = new_tray();
 
     match init_logger() {
         Ok(()) => {}
@@ -173,10 +170,6 @@ fn main() {
                 let win = app.get_window(label.as_str()).expect("Cannot get window");
                 win.hide().expect("Cannot hide window");
                 api.prevent_close();
-                let tray_handle = app.tray_handle().get_item("hide");
-                tray_handle
-                    .set_title("Show")
-                    .expect("Can not set tray title");
 
                 let app_handler = app.app_handle();
                 async_runtime::spawn(async move {
@@ -213,17 +206,6 @@ fn main() {
     };
 
     tauri::Builder::default()
-        .system_tray(tray)
-        .on_system_tray_event(move |app, event| {
-            tauri_plugin_positioner::on_tray_event(app, &event);
-            match event {
-                SystemTrayEvent::LeftClick { .. } => tray_menu(app),
-                SystemTrayEvent::RightClick { .. } => tray_menu(app),
-                // SystemTrayEvent::DoubleClick { .. } => {}
-                // SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id),
-                _ => {}
-            }
-        })
         .invoke_handler(tauri::generate_handler![
             // subs
             add_subscription,
@@ -235,7 +217,9 @@ fn main() {
             // core
             select_node,
             // common commands
-            node_speed
+            node_speed,
+            // ui
+            toggle_main
         ])
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())

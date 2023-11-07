@@ -1,19 +1,18 @@
-use anyhow::{Ok as AOk, Result};
-use std::{sync::Arc, thread, time::Duration};
-
-use log::{info, warn};
-use tauri::{async_runtime, Window};
-use tokio::{sync::Mutex, time::Instant};
-
 use crate::{
     message::{ConfigMsg, MSG_TX},
     utils::error::VResult,
     CONFIG, CORE,
 };
+use anyhow::{Ok as AOk, Result};
+use log::{info, warn};
+use std::{sync::Arc, thread, time::Duration};
+use tauri::{async_runtime, Window};
+use tokio::{sync::Mutex, time::Instant};
 
 pub mod config;
 pub mod core;
 pub mod subs;
+pub mod ui;
 
 pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     let start = Instant::now();
@@ -101,9 +100,6 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
 
 #[tauri::command]
 pub async fn node_speed(nodes: Vec<String>, window: Window) -> VResult<()> {
-    // let ev = RUAEvents::SpeedTest;
-    // window.emit(ev.as_str(), true)?;
-
     async_runtime::spawn(async move {
         let mut core = CORE.lock().await;
         core.speed_test(nodes, window)
