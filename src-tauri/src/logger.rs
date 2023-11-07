@@ -21,7 +21,11 @@ pub fn init_logger() -> Result<()> {
             let emit_log = log.clone();
             async_runtime::spawn(async move {
                 if LOGGING.load(std::sync::atomic::Ordering::Relaxed) {
-                    MSG_TX.send(ConfigMsg::EmitLog(emit_log)).await?;
+                    MSG_TX
+                        .lock()
+                        .await
+                        .send(ConfigMsg::EmitLog(emit_log))
+                        .await?;
                 }
                 Ok(())
             });

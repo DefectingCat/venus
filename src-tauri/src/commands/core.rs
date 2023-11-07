@@ -1,11 +1,10 @@
-use anyhow::anyhow;
-
 use crate::{
     config::outbouds_builder,
     message::MSG_TX,
     utils::error::{VError, VResult},
     CONFIG,
 };
+use anyhow::anyhow;
 
 /// Active select node from frontend
 #[tauri::command]
@@ -32,6 +31,10 @@ pub async fn select_node(node_id: String) -> VResult<()> {
 
     config.rua.current_id = node_id;
     config.write_rua()?;
-    MSG_TX.send(crate::message::ConfigMsg::RestartCore).await?;
+    MSG_TX
+        .lock()
+        .await
+        .send(crate::message::ConfigMsg::RestartCore)
+        .await?;
     Ok(())
 }

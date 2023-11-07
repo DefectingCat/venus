@@ -1,10 +1,9 @@
-use log::info;
-use serde::{Deserialize, Serialize};
-
 use crate::config::{CoreConfig, RConfig};
 use crate::message::{ConfigMsg, MSG_TX};
 use crate::utils::error::VResult;
 use crate::{CONFIG, LOGGING};
+use log::info;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ReturnConfig {
@@ -43,7 +42,7 @@ pub async fn update_config(
         let mut config = CONFIG.lock().await;
         config.core = Some(c);
         config.write_core()?;
-        MSG_TX.send(ConfigMsg::RestartCore).await?;
+        MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     }
 
     if let Some(r) = rua_config {
@@ -56,7 +55,7 @@ pub async fn update_config(
         }
         config.rua = r;
         config.write_rua()?;
-        MSG_TX.send(ConfigMsg::RestartCore).await?;
+        MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     }
     Ok(())
 }

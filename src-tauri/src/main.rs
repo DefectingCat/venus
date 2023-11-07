@@ -27,7 +27,7 @@ use std::{
     error::Error,
     sync::atomic::{AtomicBool, Ordering},
 };
-use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, SystemTrayEvent, WindowEvent};
+use tauri::{async_runtime, App, AppHandle, Manager, RunEvent, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tokio::sync::Mutex;
@@ -146,9 +146,7 @@ fn main() {
         // The config will use receiver here
         // when got a message, config will update and
         // emit a event to notify frontend to update global state
-        unsafe {
-            message_handler(window)?;
-        }
+        message_handler(window)?;
         Ok(())
     };
 

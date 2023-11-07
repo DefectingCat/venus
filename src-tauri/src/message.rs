@@ -1,24 +1,24 @@
+use crate::{config::CoreStatus, event::RUAEvents, CONFIG, CORE};
 use anyhow::{Ok as AOk, Result};
 use log::{error, info};
 use once_cell::sync::Lazy;
 use tauri::{async_runtime, Manager, Window};
-
-use crate::{config::CoreStatus, event::RUAEvents, CONFIG, CORE};
-
 use tokio::sync::{
     mpsc,
     mpsc::{Receiver, Sender},
+    Mutex,
 };
 
+type VMessage = Lazy<(Mutex<Sender<ConfigMsg>>, Mutex<Receiver<ConfigMsg>>)>;
 // Init message
 // Create a mpsc channel for config and other stuff,
 // when other stuff change state and need to update config
 // it will use tx send new state to config
-pub static mut MSG: Lazy<(Sender<ConfigMsg>, Receiver<ConfigMsg>)> = Lazy::new(msg_build);
-// Message channel sender
-pub static MSG_TX: Lazy<&Sender<ConfigMsg>> = Lazy::new(|| unsafe { &MSG.0 });
-// Message channel receiver
-// pub static MSG_RX: Lazy<&Receiver<ConfigMsg>> = Lazy::new(|| unsafe { &MSG.1 });
+pub static MSG: VMessage = Lazy::new(|| {
+    let msg = msg_build();
+    (Mutex::new(msg.0), Mutex::new(msg.1))
+});
+pub static MSG_TX: Lazy<&Mutex<Sender<ConfigMsg>>> = Lazy::new(|| &MSG.0);
 
 #[derive(Debug)]
 pub enum ConfigMsg {
@@ -40,11 +40,11 @@ pub fn msg_build() -> (Sender<ConfigMsg>, Receiver<ConfigMsg>) {
 }
 
 /// Handle core message and emit log to frontend
-pub unsafe fn message_handler(window: Window) -> Result<()> {
+pub fn message_handler(window: Window) -> Result<()> {
     use RUAEvents::*;
 
     let handler = async move {
-        while let Some(msg) = MSG.1.recv().await {
+        while let Some(msg) = MSG.1.lock().await.recv().await {
             match msg {
                 ConfigMsg::CoreStatus(status) => {
                     info!("Update core status {}", status.as_str());

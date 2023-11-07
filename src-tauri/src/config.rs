@@ -1,17 +1,14 @@
-use std::fs::{self, OpenOptions};
-use std::io::Read;
-use std::path::{Path, PathBuf};
-use std::sync::atomic::Ordering;
-
-use std::{fs::File, io::Write};
-
+use crate::commands::subs::NodeType;
+use crate::{CONFIG, LOGGING, NAME, VERSION};
 use anyhow::{anyhow, Result};
 use log::error;
 use serde::Deserialize;
 use serde_derive::Serialize;
-
-use crate::commands::subs::NodeType;
-use crate::{CONFIG, LOGGING, NAME, VERSION};
+use std::fs::{self, OpenOptions};
+use std::io::Read;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::Ordering;
+use std::{fs::File, io::Write};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]

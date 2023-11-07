@@ -71,7 +71,7 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
             );
             drop(config);
 
-            MSG_TX.send(ConfigMsg::EmitConfig).await?;
+            MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
             let check_done = check_done.lock().await;
             if *check_done {
                 break;
@@ -81,7 +81,7 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     });
 
     let download_start = Instant::now();
-    MSG_TX.send(ConfigMsg::EmitConfig).await?;
+    MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
     while let Ok(Some(c)) = response.chunk().await {
         // milliseconds
         let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000_f64;
@@ -94,7 +94,7 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     *done = true;
     let mut config = CONFIG.lock().await;
     config.write_rua()?;
-    MSG_TX.send(ConfigMsg::EmitConfig).await?;
+    MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
     Ok(())
 }
 

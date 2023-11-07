@@ -1,15 +1,3 @@
-use std::{
-    path::{Path, PathBuf},
-    sync::atomic::Ordering,
-};
-
-use anyhow::Ok as AOk;
-use log::{error, info, warn};
-use tauri::{
-    api::process::{Command, CommandChild, CommandEvent},
-    async_runtime, Window,
-};
-
 use crate::{
     commands::speed_test,
     config::{change_connectivity, outbouds_builder, CoreStatus},
@@ -17,7 +5,17 @@ use crate::{
     message::{ConfigMsg, MSG_TX},
     CONFIG, CORE_SHUTDOWN,
 };
+use anyhow::Ok as AOk;
 use anyhow::{anyhow, Result};
+use log::{error, info, warn};
+use std::{
+    path::{Path, PathBuf},
+    sync::atomic::Ordering,
+};
+use tauri::{
+    api::process::{Command, CommandChild, CommandEvent},
+    async_runtime, Window,
+};
 
 #[derive(Debug)]
 pub struct VCore {
@@ -50,12 +48,16 @@ fn start_core(path: &Path) -> Result<CommandChild> {
                     } else {
                         error!("{line:?}");
                         MSG_TX
+                            .lock()
+                            .await
                             .send(ConfigMsg::CoreStatus(CoreStatus::Stopped))
                             .await?;
                     }
                 }
                 _ => {
                     MSG_TX
+                        .lock()
+                        .await
                         .send(ConfigMsg::CoreStatus(CoreStatus::Stopped))
                         .await?;
                     error!("Core unknown error {event:?}");
@@ -171,7 +173,7 @@ impl VCore {
             payload.loading = false;
             window.emit(ev.as_str(), payload)?;
             config.write_rua()?;
-            MSG_TX.send(ConfigMsg::EmitConfig).await?;
+            MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
         }
 
         Ok(())

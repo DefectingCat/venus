@@ -1,15 +1,14 @@
-use anyhow::anyhow;
-use base64::{engine::general_purpose, Engine};
-use log::{debug, info};
-use reqwest::header::USER_AGENT;
-use serde::{Deserialize, Serialize};
-
 use crate::{
     config::{Node, Subscription},
     message::MSG_TX,
     utils::error::VResult,
     CONFIG, NAME, VERSION,
 };
+use anyhow::anyhow;
+use base64::{engine::general_purpose, Engine};
+use log::{debug, info};
+use reqwest::header::USER_AGENT;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeType {
@@ -142,7 +141,11 @@ pub async fn add_subscription(name: String, url: String) -> VResult<()> {
     let sub = Subscription { name, url, nodes };
     config.rua.subscriptions.push(sub);
     config.write_rua()?;
-    MSG_TX.send(crate::message::ConfigMsg::RestartCore).await?;
+    MSG_TX
+        .lock()
+        .await
+        .send(crate::message::ConfigMsg::RestartCore)
+        .await?;
     Ok(())
 }
 
@@ -157,7 +160,11 @@ pub async fn update_all_subs() -> VResult<()> {
         sub.nodes = new_nodes;
     }
     config.write_rua()?;
-    MSG_TX.send(crate::message::ConfigMsg::RestartCore).await?;
+    MSG_TX
+        .lock()
+        .await
+        .send(crate::message::ConfigMsg::RestartCore)
+        .await?;
     info!("Update all subscriptions done");
     Ok(())
 }
@@ -176,7 +183,11 @@ pub async fn update_sub(url: &str) -> VResult<()> {
     let new_nodes = request_subs(&sub.name, &sub.url).await?;
     sub.nodes = new_nodes;
     config.write_rua()?;
-    MSG_TX.send(crate::message::ConfigMsg::RestartCore).await?;
+    MSG_TX
+        .lock()
+        .await
+        .send(crate::message::ConfigMsg::RestartCore)
+        .await?;
     info!("Update subscription {} done", &url);
     Ok(())
 }
