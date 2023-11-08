@@ -1,12 +1,10 @@
-use chrono::Local;
-use std::io::Write;
-use tauri::async_runtime;
-
-use env_logger::{Builder, Env};
-
 use crate::message::{ConfigMsg, MSG_TX};
 use crate::LOGGING;
 use anyhow::{Ok, Result};
+use chrono::Local;
+use env_logger::{Builder, Env};
+use std::io::Write;
+use tauri::async_runtime;
 
 pub fn init_logger() -> Result<()> {
     let env = Env::default().filter_or("RUA_LOG_LEVEL", "info");

@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import useStore from 'store';
 import Image from 'next/image';
 import venusLogo from 'assets/venus.svg';
+import { LoadingOutlined } from '@ant-design/icons';
+import CoreStatus from './core-status';
 
 type SingleNavi = {
   id: number;
@@ -30,7 +32,6 @@ const navi = [
 
 export default function SideBar() {
   const router = useRouter();
-  const coreStatus = useStore((s) => s.rua.coreStatus);
 
   const handleRoute = (item: SingleNavi) => {
     router.push(item.path);
@@ -71,7 +72,7 @@ export default function SideBar() {
         </div>
 
         {/* core status */}
-        <div>{coreStatus}</div>
+        <CoreStatus />
       </div>
     </nav>
   );
