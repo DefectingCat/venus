@@ -13,7 +13,10 @@ const CoreStatus = () => {
 
   return (
     <>
-      <div className="flex">{StatusMap[coreStatus]}</div>
+      <div className="flex items-center">
+        <div className="mr-1">{StatusMap[coreStatus]}</div>
+        <div className="">Core 5.2</div>
+      </div>
     </>
   );
 };
