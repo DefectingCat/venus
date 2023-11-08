@@ -1,11 +1,9 @@
-import clsx from 'clsx';
-import NaviItem from './navi-item';
-import { useRouter } from 'next/router';
-import useStore from 'store';
-import Image from 'next/image';
 import venusLogo from 'assets/venus.svg';
-import { LoadingOutlined } from '@ant-design/icons';
+import clsx from 'clsx';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
 import CoreStatus from './core-status';
+import NaviItem from './navi-item';
 
 type SingleNavi = {
   id: number;

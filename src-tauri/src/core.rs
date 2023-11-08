@@ -1,8 +1,9 @@
 use crate::{
     commands::speed_test,
-    config::{change_connectivity, outbouds_builder, CoreStatus},
+    config::{change_connectivity, outbouds_builder},
     event::{RUAEvents, SpeedTestPayload},
     message::{ConfigMsg, MSG_TX},
+    store::ui::CoreStatus,
     CONFIG, CORE_SHUTDOWN,
 };
 use anyhow::Ok as AOk;

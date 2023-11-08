@@ -1,4 +1,4 @@
-use crate::{config::CoreStatus, event::RUAEvents, CONFIG, CORE};
+use crate::{event::RUAEvents, store::ui::CoreStatus, CONFIG, CORE, UI};
 use anyhow::{Ok as AOk, Result};
 use log::{error, info};
 use once_cell::sync::Lazy;
@@ -22,10 +22,16 @@ pub static MSG_TX: Lazy<&Mutex<Sender<ConfigMsg>>> = Lazy::new(|| &MSG.0);
 
 #[derive(Debug)]
 pub enum ConfigMsg {
+    /// change core status
     CoreStatus(CoreStatus),
+    /// restart core and notifiy frontend update ui
     RestartCore,
+    /// emit single line log to frontend
     EmitLog(String),
+    /// emit core and rua config to frontend
     EmitConfig,
+    /// emit whole ui to fronted
+    EmitUI,
 }
 // pub struct ConfigMsg {
 //     pub msg: ConfigMsgType,
@@ -48,18 +54,19 @@ pub fn message_handler(window: Window) -> Result<()> {
             match msg {
                 ConfigMsg::CoreStatus(status) => {
                     info!("Update core status {}", status.as_str());
-                    let mut config = CONFIG.lock().await;
-                    config.rua.core_status = status;
-                    window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
+                    let mut ui = UI.lock().await;
+                    ui.core_status = status;
+                    window.emit_all(UpdateUI.into(), &*ui)?;
                 }
                 ConfigMsg::RestartCore => {
                     info!("Restarting core");
                     let mut core = CORE.lock().await;
                     match core.restart().await {
                         Ok(_) => {
-                            let mut config = CONFIG.lock().await;
-                            config.rua.core_status = CoreStatus::Started;
-                            window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
+                            let mut ui = UI.lock().await;
+                            let config = CONFIG.lock().await;
+                            ui.core_status = CoreStatus::Started;
+                            window.emit_all(UpdateUI.into(), &*ui)?;
                             window.emit_all(UpdateCoreConfig.into(), &config.core)?;
                         }
                         Err(err) => {
@@ -74,6 +81,10 @@ pub fn message_handler(window: Window) -> Result<()> {
                     let config = CONFIG.lock().await;
                     window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
                     window.emit_all(UpdateCoreConfig.into(), &config.core)?;
+                }
+                ConfigMsg::EmitUI => {
+                    let ui = UI.lock().await;
+                    window.emit_all(UpdateUI.into(), &*ui)?;
                 }
             }
         }

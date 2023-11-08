@@ -218,6 +218,7 @@ const Nodes = () => {
 
   // Select node
   const rua = useStore((s) => s.rua);
+  const ui = useStore((s) => s.venus);
   const updateConfig = useStore((s) => s.updateConfig);
   const handleSelect = useCallback(async (node: Node) => {
     try {
@@ -272,7 +273,7 @@ const Nodes = () => {
           },
           className: clsx(
             'cursor-pointer select-none',
-            record.nodeId === rua.currentId
+            record.nodeId === ui.currentId
               ? 'bg-gray-300 dark:bg-gray-900'
               : 'hover:bg-[#fafafa] hover:dark:bg-gray-800',
             'transition-all duration-300',

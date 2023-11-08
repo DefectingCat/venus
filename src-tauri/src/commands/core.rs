@@ -2,7 +2,7 @@ use crate::{
     config::outbouds_builder,
     message::MSG_TX,
     utils::error::{VError, VResult},
-    CONFIG,
+    CONFIG, UI,
 };
 use anyhow::anyhow;
 
@@ -29,7 +29,10 @@ pub async fn select_node(node_id: String) -> VResult<()> {
     core.outbounds = outbounds;
     config.write_core()?;
 
-    config.rua.current_id = node_id;
+    {
+        let mut ui = UI.lock().await;
+        ui.current_id = node_id;
+    }
     config.write_rua()?;
     MSG_TX
         .lock()

@@ -14,7 +14,6 @@ const createConfigSlice: StateCreator<
     logging: false,
     version: '',
     saveWindows: true,
-    currentId: '',
     coreStatus: 'Stopped',
     subscriptions: [],
     settings: {
@@ -217,8 +216,6 @@ export interface RConfig {
   logging: boolean;
   version: string;
   saveWindows: boolean;
-  coreStatus?: 'Started' | 'Restarting' | 'Stopped';
-  currentId: string;
   subscriptions: Subscription[] | null;
   settings: RUABasicSetting;
 }

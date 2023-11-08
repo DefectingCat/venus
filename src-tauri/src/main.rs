@@ -11,11 +11,11 @@ use crate::{
         subs::{add_subscription, update_all_subs, update_sub},
         ui::toggle_main,
     },
-    config::CoreStatus,
     core::VCore,
-    event::{RUAEvents, UIPayload},
+    event::RUAEvents,
     logger::init_logger,
-    message::message_handler,
+    message::{message_handler, ConfigMsg, MSG_TX},
+    store::ui::CoreStatus,
     tray::tray_menu,
     utils::get_main_window,
 };
@@ -28,6 +28,7 @@ use std::{
     error::Error,
     sync::atomic::{AtomicBool, Ordering},
 };
+use store::ui::UI;
 use tauri::{
     async_runtime, App, AppHandle, Manager, RunEvent, SystemTray, SystemTrayEvent, WindowEvent,
 };
@@ -41,6 +42,7 @@ mod core;
 mod event;
 mod logger;
 mod message;
+mod store;
 mod tray;
 mod utils;
 
@@ -63,6 +65,8 @@ static NAME: &str = env!("CARGO_PKG_NAME");
 pub static CORE: Lazy<Mutex<VCore>> = Lazy::new(|| Mutex::new(VCore::build()));
 /// Global config and v2ray-core config
 pub static CONFIG: Lazy<Mutex<VConfig>> = Lazy::new(|| Mutex::new(VConfig::new()));
+/// Global UI state
+pub static UI: Lazy<Mutex<UI>> = Lazy::new(|| Mutex::new(UI::default()));
 
 fn main() {
     #[cfg(debug_assertions)]
@@ -113,15 +117,16 @@ fn main() {
             // Set v2ray assert location with environment
             env::set_var("V2RAY_LOCATION_ASSET", &resources_path);
 
+            let mut ui = UI.lock().await;
             match core.init(&config.core_path).await {
                 Ok(_) => {
-                    config.rua.core_status = CoreStatus::Started;
+                    ui.core_status = CoreStatus::Started;
                     info!("Core started");
                 }
                 Err(err) => {
                     error!("Core start failed {err:?}");
                     CORE_SHUTDOWN.store(false, Ordering::Relaxed);
-                    config.rua.core_status = CoreStatus::Stopped;
+                    ui.core_status = CoreStatus::Stopped;
                 }
             }
             AOk(())
@@ -130,15 +135,14 @@ fn main() {
         let window = get_main_window(app)?;
         app.listen_global("ready", move |_e| {
             use RUAEvents::*;
-
             info!("Frontend ready");
             let window = window.get_window("main").unwrap();
             let task = async move {
                 let config = CONFIG.lock().await;
-                let core_ev = UpdateCoreConfig;
-                let rua_ev = UpdateRuaConfig;
-                window.emit_all(rua_ev.as_str(), &config.rua)?;
-                window.emit_all(core_ev.as_str(), &config.core)?;
+                let ui = UI.lock().await;
+                window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
+                window.emit_all(UpdateCoreConfig.into(), &config.core)?;
+                window.emit_all(UpdateUI.into(), &*ui)?;
                 info!("Reload config succeeded");
                 AOk(())
             };
@@ -175,11 +179,11 @@ fn main() {
                 let app_handler = app.app_handle();
                 async_runtime::spawn(async move {
                     if label == "main" {
-                        if let Err(err) = app_handler
-                            .emit_all(RUAEvents::UpdateUI.into(), UIPayload { main_show: false })
                         {
-                            error!("Emit ui event to window failed {}", err);
+                            let mut ui = UI.lock().await;
+                            ui.main_visible = false;
                         }
+                        MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
                     }
                     let config = CONFIG.lock().await;
                     if config.rua.save_windows {
@@ -187,19 +191,20 @@ fn main() {
                             error!("Save window status failed {}", err)
                         };
                     }
+                    AOk(())
                 });
             }
             WindowEvent::Focused(is_focused) => {
-                if label == "main" {
-                    if let Err(err) = app.emit_all(
-                        RUAEvents::UpdateUI.into(),
-                        UIPayload {
-                            main_show: is_focused,
-                        },
-                    ) {
-                        error!("Emit ui event to window failed {}", err);
+                async_runtime::spawn(async move {
+                    {
+                        let mut ui = UI.lock().await;
+                        ui.main_visible = is_focused;
                     }
-                }
+                    if label == "main" {
+                        MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
+                    }
+                    AOk(())
+                });
             }
             _ => {}
         },

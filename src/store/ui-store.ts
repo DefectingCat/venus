@@ -45,6 +45,14 @@ export interface UI {
     index: string;
     setting: string;
   };
+  // from backend
+  venus: VenusUI;
+}
+export interface VenusUI {
+  currentId: string;
+  coreStatus?: 'Started' | 'Restarting' | 'Stopped';
+  coreVersion: string;
+  mainVisible: boolean;
 }
 export interface UIAction {
   toggleUI: (callback: (ui: UI) => void) => void;
@@ -78,6 +86,12 @@ const createUISlice: StateCreator<
   tabs: {
     index: '1',
     setting: '1',
+  },
+  venus: {
+    currentId: '',
+    coreStatus: 'Stopped',
+    coreVersion: '',
+    mainVisible: true,
   },
   toggleUI(callback) {
     set(callback);

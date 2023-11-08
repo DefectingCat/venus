@@ -2,8 +2,7 @@ use crate::commands::subs::NodeType;
 use crate::{CONFIG, LOGGING, NAME, VERSION};
 use anyhow::{anyhow, Result};
 use log::error;
-use serde::Deserialize;
-use serde_derive::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fs::{self, OpenOptions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -39,24 +38,16 @@ pub struct RConfig {
     pub version: String,
     /// Save state of all open windows to disk
     pub save_windows: bool,
-    /// Current selected node id
-    pub current_id: String,
-    /// V2ray core status
-    pub core_status: CoreStatus,
     /// Subscriptions
     pub subscriptions: Vec<Subscription>,
     pub settings: RUABasicSetting,
 }
 impl Default for RConfig {
     fn default() -> Self {
-        use CoreStatus::*;
-
         RConfig {
             logging: false,
             version: VERSION.to_owned(),
             save_windows: true,
-            current_id: String::new(),
-            core_status: Stopped,
             subscriptions: vec![],
             settings: RUABasicSetting::default(),
         }
@@ -71,23 +62,6 @@ pub struct VConfig {
     pub core_path: PathBuf,
     pub rua: RConfig,
     pub rua_path: PathBuf,
-}
-
-/// The core current status
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub enum CoreStatus {
-    Started,
-    Restarting,
-    Stopped,
-}
-impl CoreStatus {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            CoreStatus::Started => "Started",
-            CoreStatus::Restarting => "Restarting",
-            CoreStatus::Stopped => "Stopped",
-        }
-    }
 }
 
 impl Default for VConfig {
@@ -162,8 +136,7 @@ impl VConfig {
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
         let mut rua_config = toml::from_str::<RConfig>(&buffer)?;
-        // Do not read core status from config file
-        rua_config.core_status = self.rua.core_status;
+        // TODO upgrade from old version
         rua_config.version = VERSION.to_owned();
         self.rua = rua_config;
         Ok(())

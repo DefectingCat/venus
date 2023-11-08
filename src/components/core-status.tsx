@@ -9,7 +9,7 @@ const StatusMap = {
 };
 
 const CoreStatus = () => {
-  const coreStatus = useStore((s) => s.rua.coreStatus);
+  const coreStatus = useStore((s) => s.venus.coreStatus);
 
   return (
     <>

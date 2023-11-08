@@ -7,6 +7,7 @@ import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
 import useStore from 'store';
 import { CoreConfig, RConfig } from 'store/config-store';
+import { VenusUI } from 'store/ui-store';
 import 'styles/global.css';
 
 // This default export is required in a new `pages/_app.js` file.
@@ -42,7 +43,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           updateCoreConfig(e.payload);
         }),
       );
-
       // logs
       listeners.push(
         await listen<string>('rua://emit-log', (e) => {
@@ -54,7 +54,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           });
         }),
       );
-
       // ui state
       listeners.push(
         await listen<{
@@ -70,6 +69,14 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             } else {
               ui.loading.node.speedTest.push(e.payload);
             }
+          });
+        }),
+      );
+      // venus ui
+      listeners.push(
+        await listen<VenusUI>('rua://update-ui', (e) => {
+          toggleUI((ui) => {
+            ui.venus = e.payload;
           });
         }),
       );
