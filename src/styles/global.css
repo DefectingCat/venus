@@ -5,6 +5,7 @@
 @layer base {
   body {
     @apply dark:text-gray-300;
+    user-select: none;
   }
 
   /* 滚动槽 */

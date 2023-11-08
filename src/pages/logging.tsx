@@ -45,6 +45,7 @@ const Logging = () => {
             'flex-1 rounded-lg bg-gray-200',
             'p-6 overflow-x-auto',
             'dark:bg-gray-800',
+            'select-auto',
           )}
           ref={ref}
         >

@@ -17,7 +17,7 @@ const SystemTray = () => {
       <div
         className={clsx(
           'rounded-lg overflow-hidden bg-white',
-          'h-full flex p-4',
+          'h-full flex p-4 dark:bg-rua-gray-900',
         )}
       >
         <div>
