@@ -2,6 +2,8 @@ import clsx from 'clsx';
 import NaviItem from './navi-item';
 import { useRouter } from 'next/router';
 import useStore from 'store';
+import Image from 'next/image';
+import venusLogo from 'assets/venus.svg';
 
 type SingleNavi = {
   id: number;
@@ -44,7 +46,14 @@ export default function SideBar() {
       )}
     >
       {/* logo */}
-      <div className={clsx('flex')}>Logo</div>
+      <div className={clsx('flex w-full justify-center')}>
+        <Image
+          className={clsx('object-contain w-28 h-28')}
+          priority
+          alt="Venus"
+          src={venusLogo}
+        />
+      </div>
 
       {/* navi */}
       <div className={clsx('flex flex-col justify-between', 'felx-1 h-full')}>
@@ -53,7 +62,7 @@ export default function SideBar() {
             <NaviItem
               key={n.id}
               onClick={() => handleRoute(n)}
-              className="mb-2 w-full"
+              className="w-full mb-2"
               active={router.pathname === n.path}
             >
               {n.name}
