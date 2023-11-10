@@ -20,7 +20,6 @@ const Nodes = () => {
   const { message } = App.useApp();
   const subscriptions = useStore((s) => s.rua.subscriptions);
   const nodeLoading = useStore((s) => s.loading.node.speedTest);
-  const toggleUI = useStore((s) => s.toggleUI);
 
   const nodes = useMemo(
     () => subscriptions.flatMap((sub) => sub.nodes),
@@ -217,16 +216,18 @@ const Nodes = () => {
   }));
 
   // Select node
-  const rua = useStore((s) => s.rua);
   const ui = useStore((s) => s.venus);
-  const updateConfig = useStore((s) => s.updateConfig);
+  const { updateConfig, toggleUI } = useStore((s) => ({
+    updateConfig: s.updateConfig,
+    toggleUI: s.toggleUI,
+  }));
   const handleSelect = useCallback(async (node: Node) => {
     try {
       await invoke('select_node', {
         nodeId: node.nodeId,
       });
-      updateConfig((config) => {
-        config.rua.coreStatus = 'Restarting';
+      toggleUI((ui) => {
+        ui.venus.coreStatus = 'Restarting';
       });
     } catch (err) {
       message.error(err);

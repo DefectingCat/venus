@@ -16,12 +16,15 @@ const VenusSetting = () => {
 
   const { writeConfig } = useBackend();
   const rua = useStore((s) => s.rua);
-  const coreStatus = useStore((s) => s.rua.coreStatus);
-  const updateConfig = useStore((s) => s.updateConfig);
+  const coreStatus = useStore((s) => s.venus.coreStatus);
+  const { updateConfig, toggleUI } = useStore((s) => ({
+    updateConfig: s.updateConfig,
+    toggleUI: s.toggleUI,
+  }));
   const handleApply = async () => {
     try {
-      updateConfig((config) => {
-        config.rua.coreStatus = 'Restarting';
+      toggleUI((ui) => {
+        ui.venus.coreStatus = 'Restarting';
       });
       writeConfig('rua');
     } catch (err) {

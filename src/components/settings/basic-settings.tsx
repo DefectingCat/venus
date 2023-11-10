@@ -8,7 +8,10 @@ import { Inbound, InboundSettings, Sniffing } from 'store/config-store';
 const BasicSettings = () => {
   const { message } = App.useApp();
   const core = useStore((s) => s.core);
-  const updateSocksInbound = useStore((s) => s.updateSocksInbound);
+  const { updateSocksInbound, toggleUI } = useStore((s) => ({
+    updateSocksInbound: s.updateSocksInbound,
+    toggleUI: s.toggleUI,
+  }));
   const socksInbound = useMemo(
     () => core?.inbounds.find((i) => i.tag === 'socks'),
     [core?.inbounds],
@@ -40,12 +43,12 @@ const BasicSettings = () => {
 
   // Apply settings
   const { writeConfig } = useBackend();
-  const coreStatus = useStore((s) => s.rua.coreStatus);
+  const coreStatus = useStore((s) => s.venus.coreStatus);
   const updateConfig = useStore((s) => s.updateConfig);
   const handleApply = async () => {
     try {
-      updateConfig((config) => {
-        config.rua.coreStatus = 'Restarting';
+      toggleUI((ui) => {
+        ui.venus.coreStatus = 'Restarting';
       });
       writeConfig('core');
     } catch (err) {
