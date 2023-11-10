@@ -10,12 +10,13 @@ const StatusMap = {
 
 const CoreStatus = () => {
   const coreStatus = useStore((s) => s.venus.coreStatus);
+  const version = useStore((s) => s.venus.coreVersion);
 
   return (
     <>
       <div className="flex items-center">
-        <div className="mr-1">{StatusMap[coreStatus]}</div>
-        <div className="">Core 5.2</div>
+        <div className="mr-2">{StatusMap[coreStatus]}</div>
+        <div className="">Core {version}</div>
       </div>
     </>
   );

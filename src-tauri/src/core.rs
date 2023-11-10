@@ -26,7 +26,8 @@ pub struct VCore {
     asset_path: PathBuf,
 }
 
-fn core_version() -> Result<String> {
+/// detect the v2ray core version
+pub fn core_version() -> Result<String> {
     let core = Command::new_sidecar("v2ray")?.args(["version"]).output()?;
     let stdout = core.stdout.split(' ').collect::<Vec<_>>();
     let stdout = stdout.get(1).unwrap_or(&"0.0");
@@ -88,7 +89,6 @@ impl VCore {
     pub async fn init(&mut self, asset_path: &PathBuf) -> Result<()> {
         self.asset_path = PathBuf::from(asset_path);
         self.child = Some(start_core(&self.asset_path)?);
-        core_version()?;
         Ok(())
     }
 

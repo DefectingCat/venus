@@ -11,7 +11,7 @@ use crate::{
         subs::{add_subscription, update_all_subs, update_sub},
         ui::toggle_main,
     },
-    core::VCore,
+    core::{core_version, VCore},
     event::RUAEvents,
     logger::init_logger,
     message::{message_handler, ConfigMsg, MSG_TX},
@@ -84,7 +84,7 @@ fn main() {
     info!("Starting up.");
     info!("Venus - {}", VERSION);
 
-    // App handler
+    // App handler. handle app startup
     let handle_app = move |app: &mut App| -> Result<(), Box<dyn Error>> {
         #[cfg(target_os = "macos")]
         app.set_activation_policy(tauri::ActivationPolicy::Accessory);
@@ -129,6 +129,7 @@ fn main() {
                     ui.core_status = CoreStatus::Stopped;
                 }
             }
+            ui.core_version = core_version()?;
             AOk(())
         });
 
