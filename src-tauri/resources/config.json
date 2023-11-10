@@ -64,8 +64,13 @@
     "rules": [
       {
         "type": "field",
+        "outboundTag": "direct",
+        "domain": ["geosite:cn"]
+      },
+      {
+        "type": "field",
         "ip": ["geoip:private"],
-        "outboundTag": "blocked"
+        "outboundTag": "direct"
       },
       {
         "type": "field",
