@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UI {
-    /// Current selected node id
-    pub current_id: String,
     /// V2ray core status
     pub core_status: CoreStatus,
     /// V2ray core version
@@ -18,7 +16,6 @@ impl Default for UI {
     fn default() -> Self {
         use CoreStatus::*;
         UI {
-            current_id: String::new(),
             core_status: Stopped,
             core_version: String::new(),
             main_visible: true,

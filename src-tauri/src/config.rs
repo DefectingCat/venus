@@ -36,6 +36,8 @@ impl Default for RUABasicSetting {
 pub struct RConfig {
     pub logging: bool,
     pub version: String,
+    /// Current selected node id (node_id)
+    pub current_id: String,
     /// Save state of all open windows to disk
     pub save_windows: bool,
     /// Subscriptions
@@ -47,6 +49,7 @@ impl Default for RConfig {
         RConfig {
             logging: false,
             version: VERSION.to_owned(),
+            current_id: String::new(),
             save_windows: true,
             subscriptions: vec![],
             settings: RUABasicSetting::default(),

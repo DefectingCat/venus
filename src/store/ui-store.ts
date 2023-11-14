@@ -49,7 +49,6 @@ export interface UI {
   venus: VenusUI;
 }
 export interface VenusUI {
-  currentId: string;
   coreStatus?: 'Started' | 'Restarting' | 'Stopped';
   coreVersion: string;
   mainVisible: boolean;
@@ -88,7 +87,6 @@ const createUISlice: StateCreator<
     setting: '1',
   },
   venus: {
-    currentId: '',
     coreStatus: 'Stopped',
     coreVersion: '',
     mainVisible: true,

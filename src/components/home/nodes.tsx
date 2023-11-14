@@ -216,18 +216,12 @@ const Nodes = () => {
   }));
 
   // Select node
-  const ui = useStore((s) => s.venus);
-  const { updateConfig, toggleUI } = useStore((s) => ({
-    updateConfig: s.updateConfig,
-    toggleUI: s.toggleUI,
-  }));
+  const current = useStore((s) => s.rua.currentId);
+  const toggleUI = useStore((s) => s.toggleUI);
   const handleSelect = useCallback(async (node: Node) => {
     try {
       await invoke('select_node', {
         nodeId: node.nodeId,
-      });
-      toggleUI((ui) => {
-        ui.venus.coreStatus = 'Restarting';
       });
     } catch (err) {
       message.error(err);
@@ -274,7 +268,7 @@ const Nodes = () => {
           },
           className: clsx(
             'cursor-pointer select-none',
-            record.nodeId === ui.currentId
+            record.nodeId === current
               ? 'bg-gray-300 dark:bg-gray-900'
               : 'hover:bg-[#fafafa] hover:dark:bg-gray-800',
             'transition-all duration-300',

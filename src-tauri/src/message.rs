@@ -61,9 +61,10 @@ pub fn message_handler(window: Window) -> Result<()> {
                 ConfigMsg::RestartCore => {
                     info!("Restarting core");
                     let mut core = CORE.lock().await;
+                    let mut ui = UI.lock().await;
+                    ui.core_status = CoreStatus::Restarting;
                     match core.restart().await {
                         Ok(_) => {
-                            let mut ui = UI.lock().await;
                             let config = CONFIG.lock().await;
                             ui.core_status = CoreStatus::Started;
                             window.emit_all(UpdateUI.into(), &*ui)?;
