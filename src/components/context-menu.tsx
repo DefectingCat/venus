@@ -4,7 +4,10 @@ import useStore from 'store';
 import { MenuType } from 'store/ui-store';
 
 export const ContextID = 'rua-context-menu';
-const MenuItemClass = clsx(
+/**
+ * System tray and content menu item class
+ */
+export const MenuItemClass = clsx(
   'transition-all hover:bg-gray-200',
   'px-4 py-1 select-none',
   'cursor-pointer rounded-lg',

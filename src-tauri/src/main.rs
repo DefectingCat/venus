@@ -197,11 +197,9 @@ fn main() {
             }
             WindowEvent::Focused(is_focused) => {
                 async_runtime::spawn(async move {
-                    {
+                    if label == "main" {
                         let mut ui = UI.lock().await;
                         ui.main_visible = is_focused;
-                    }
-                    if label == "main" {
                         MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
                     }
                     AOk(())
