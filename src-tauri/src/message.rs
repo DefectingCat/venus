@@ -69,6 +69,7 @@ pub fn message_handler(window: Window) -> Result<()> {
                             ui.core_status = CoreStatus::Started;
                             window.emit_all(UpdateUI.into(), &*ui)?;
                             window.emit_all(UpdateCoreConfig.into(), &config.core)?;
+                            window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
                         }
                         Err(err) => {
                             error!("Core restart failed {err}");
