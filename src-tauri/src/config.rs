@@ -25,7 +25,7 @@ pub struct RUABasicSetting {
 impl Default for RUABasicSetting {
     fn default() -> Self {
         Self {
-            speed_url: "https://sabnzbd.org/tests/internetspeed/20MB.bin".to_owned(),
+            speed_url: "https://sabnzbd.org/tests/internetspeed/20MB.bin".into(),
         }
     }
 }
@@ -140,7 +140,7 @@ impl VConfig {
         config_file.read_to_string(&mut buffer)?;
         let mut rua_config = toml::from_str::<RConfig>(&buffer)?;
         // TODO upgrade from old version
-        rua_config.version = VERSION.to_owned();
+        rua_config.version = VERSION.into();
         self.rua = rua_config;
         Ok(())
     }
@@ -195,13 +195,13 @@ pub fn outbouds_builder(node: &Node) -> Result<Vec<Outbound>> {
         users: vec![CoreUser {
             id: node.id.clone(),
             alter_id: node.aid.parse()?,
-            email: "rua@rua.rua".to_string(),
-            security: "auto".to_string(),
+            email: "rua@rua.rua".into(),
+            security: "auto".into(),
         }],
     };
     let proxy = Outbound {
-        tag: "proxy".to_string(),
-        protocol: "vmess".to_string(),
+        tag: "proxy".into(),
+        protocol: "vmess".into(),
         settings: OutboundSettings { vnext: vec![vmess] },
         stream_settings: Some(stream_settings_builder(node)?),
         proxy_setting: None,
@@ -209,24 +209,23 @@ pub fn outbouds_builder(node: &Node) -> Result<Vec<Outbound>> {
     };
 
     let freedom = Outbound {
-        protocol: "freedom".to_owned(),
+        protocol: "freedom".into(),
         settings: OutboundSettings { vnext: vec![] },
-        tag: "direct".to_owned(),
+        tag: "direct".into(),
         proxy_setting: None,
         stream_settings: None,
         mux: None,
     };
     let blackhole = Outbound {
-        protocol: "blackhole".to_owned(),
+        protocol: "blackhole".into(),
         settings: OutboundSettings { vnext: vec![] },
-        tag: "blocked".to_owned(),
+        tag: "blocked".into(),
         proxy_setting: None,
         stream_settings: None,
         mux: None,
     };
 
     let outbounds = vec![proxy, freedom, blackhole];
-
     Ok(outbounds)
 }
 
@@ -237,7 +236,7 @@ pub fn stream_settings_builder(node: &Node) -> Result<StreamSettings> {
         security: if !node.tls.is_empty() {
             node.tls.clone()
         } else {
-            "none".to_owned()
+            "none".into()
         },
         tls_settings: if !node.tls.is_empty() {
             Some(TlsSettings {
@@ -279,7 +278,7 @@ pub async fn change_connectivity(id: &str, connectivity: bool) -> Result<()> {
         node = sub
             .nodes
             .iter_mut()
-            .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == id);
+            .find(|n| n.node_id.as_ref().unwrap_or(&"".into()) == id);
     });
     let node = node.ok_or(anyhow!("node {} not found", &id))?;
     node.connectivity = Some(connectivity);

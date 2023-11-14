@@ -1,12 +1,14 @@
 import { App, Button } from 'antd';
 import clsx from 'clsx';
 import { invoke } from '@tauri-apps/api/tauri';
+import useStore from 'store';
 
 const SystemTray = () => {
   const { message } = App.useApp();
-  const handleShow = async (show: boolean) => {
+  const mainVisible = useStore((s) => s.venus.mainVisible);
+  const handleShow = async () => {
     try {
-      await invoke('toggle_main', { show });
+      await invoke('toggle_main', { show: !mainVisible });
     } catch (err) {
       message.error(err.toString());
     }
@@ -21,8 +23,7 @@ const SystemTray = () => {
         )}
       >
         <div>
-          <Button onClick={() => handleShow(true)}>Show</Button>
-          <Button onClick={() => handleShow(false)}>Hide</Button>
+          <Button onClick={handleShow}>{mainVisible ? 'Hide' : 'Show'}</Button>
         </div>
       </div>
     </>

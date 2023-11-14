@@ -4,6 +4,6 @@ use tauri::{AppHandle, Manager};
 #[tauri::command]
 pub async fn toggle_main(app: AppHandle, show: bool) -> VResult<()> {
     let windows = app.windows();
-    toggle_windows(windows, show)?;
+    toggle_windows(windows, show).await?;
     Ok(())
 }
