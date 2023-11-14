@@ -171,42 +171,33 @@ fn main() {
         RunEvent::ExitRequested { api, .. } => {
             let _api = api;
         }
-        RunEvent::WindowEvent { label, event, .. } => match event {
-            WindowEvent::CloseRequested { api, .. } => {
-                let win = app.get_window(label.as_str()).expect("Cannot get window");
-                win.hide().expect("Cannot hide window");
-                api.prevent_close();
+        RunEvent::WindowEvent {
+            label,
+            event: WindowEvent::CloseRequested { api, .. },
+            ..
+        } => {
+            let win = app.get_window(label.as_str()).expect("Cannot get window");
+            win.hide().expect("Cannot hide window");
+            api.prevent_close();
 
-                let app_handler = app.app_handle();
-                async_runtime::spawn(async move {
-                    if label == "main" {
-                        {
-                            let mut ui = UI.lock().await;
-                            ui.main_visible = false;
-                        }
-                        MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
-                    }
-                    let config = CONFIG.lock().await;
-                    if config.rua.save_windows {
-                        if let Err(err) = app_handler.save_window_state(StateFlags::all()) {
-                            error!("Save window status failed {}", err)
-                        };
-                    }
-                    AOk(())
-                });
-            }
-            WindowEvent::Focused(is_focused) => {
-                async_runtime::spawn(async move {
-                    if label == "main" {
+            let app_handler = app.app_handle();
+            async_runtime::spawn(async move {
+                if label == "main" {
+                    {
                         let mut ui = UI.lock().await;
-                        ui.main_visible = is_focused;
-                        MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
+                        ui.main_visible = false;
                     }
-                    AOk(())
-                });
-            }
-            _ => {}
-        },
+                    MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
+                }
+                let config = CONFIG.lock().await;
+                if config.rua.save_windows {
+                    if let Err(err) = app_handler.save_window_state(StateFlags::all()) {
+                        error!("Save window status failed {}", err)
+                    };
+                }
+                AOk(())
+            });
+        }
         _ => {}
     };
 

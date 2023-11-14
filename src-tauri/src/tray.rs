@@ -45,11 +45,10 @@ pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
         }
     };
 
-    menu.move_window(Position::TrayCenter)?;
-
     if menu.is_visible()? && !is_build {
         menu.hide()?;
     } else {
+        menu.move_window(Position::TrayCenter)?;
         menu.show()?;
         menu.set_focus()?;
         menu.set_always_on_top(true)?;
