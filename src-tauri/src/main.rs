@@ -11,7 +11,7 @@ use crate::{
         subs::{add_subscription, update_all_subs, update_sub},
         ui::{exit_app, toggle_main},
     },
-    core::{core_version, VCore},
+    core::{core_version, exit_core, VCore},
     event::RUAEvents,
     logger::init_logger,
     message::{message_handler, ConfigMsg, MSG_TX},
@@ -162,11 +162,7 @@ fn main() {
     // Runner handler
     let runner = move |app: &AppHandle, event: RunEvent| match event {
         RunEvent::Exit => {
-            async_runtime::spawn(async move {
-                let mut core = CORE.lock().await;
-                CORE_SHUTDOWN.store(true, Ordering::Relaxed);
-                core.exit().expect("Kill core failed");
-            });
+            async_runtime::spawn(async move { exit_core().await });
         }
         RunEvent::ExitRequested { api, .. } => {
             let _api = api;

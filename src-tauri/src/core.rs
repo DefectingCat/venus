@@ -107,6 +107,7 @@ impl VCore {
     }
 
     pub fn exit(&mut self) -> Result<()> {
+        CORE_SHUTDOWN.store(true, Ordering::Relaxed);
         if let Some(child) = self.child.take() {
             info!("Exiting core");
             child.kill()?;
@@ -190,7 +191,6 @@ impl VCore {
 /// Exit Core and store the status
 pub async fn exit_core() -> Result<()> {
     let mut core = CORE.lock().await;
-    CORE_SHUTDOWN.store(true, Ordering::Relaxed);
     core.exit().with_context(|| "Kill core failed")?;
     Ok(())
 }
