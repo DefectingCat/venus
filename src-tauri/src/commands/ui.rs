@@ -1,15 +1,35 @@
 use crate::{
     core::exit_core,
-    utils::{error::VResult, toggle_windows},
+    message::{ConfigMsg, MSG_TX},
+    utils::error::VResult,
+    UI,
 };
+use anyhow::anyhow;
 use tauri::{AppHandle, Manager};
 
-/// Toggle all windows not only main window
-/// and change `mian_visible` in UI
+/// Toggles the visibility of a window with the specified label
+///
+/// # Arguments
+///
+/// * `app` - An `AppHandle` instance to interact with the Tauri application.
+/// * `label` - A `String` representing the label of the window to toggle.
+/// * `show` - A boolean flag indicating whether to show (`true`) or hide (`false`) the window.
 #[tauri::command]
-pub async fn toggle_main(app: AppHandle, show: bool) -> VResult<()> {
-    let windows = app.windows();
-    toggle_windows(windows, show).await?;
+pub async fn toggle_window(app: AppHandle, label: String, show: bool) -> VResult<()> {
+    let win = app
+        .get_window(&label)
+        .ok_or(anyhow!("cannot get window {}", label))?;
+    if show {
+        win.show()?;
+        win.set_focus()?;
+    } else {
+        win.hide()?;
+    }
+    if label == "main" {
+        let mut ui = UI.lock().await;
+        ui.main_visible = show;
+    }
+    MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
     Ok(())
 }
 

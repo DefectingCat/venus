@@ -2,7 +2,7 @@ use crate::{
     config::outbouds_builder,
     message::{ConfigMsg, MSG_TX},
     utils::error::{VError, VResult},
-    CONFIG,
+    CONFIG, CORE,
 };
 use anyhow::anyhow;
 
@@ -32,5 +32,11 @@ pub async fn select_node(node_id: String) -> VResult<()> {
     config.rua.current_id = node_id;
     config.write_rua()?;
     MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn restart_core() -> VResult<()> {
+    CORE.lock().await.restart().await?;
     Ok(())
 }

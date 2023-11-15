@@ -9,12 +9,33 @@ import { BsWindowDesktop } from 'react-icons/bs';
 
 const TrayMenu = clsx(MenuItemClass, 'flex items-center');
 
+/**
+ * The system tray menu.
+ *
+ * In tauri window called `menu`
+ * @returns
+ */
+
 const SystemTray = () => {
   const { message } = App.useApp();
   const mainVisible = useStore((s) => s.venus.mainVisible);
   const handleShow = async () => {
     try {
-      await invoke('toggle_main', { show: !mainVisible });
+      await Promise.all([
+        invoke('toggle_window', { label: 'main', show: !mainVisible }),
+        invoke('toggle_window', { label: 'menu', show: !mainVisible }),
+      ]);
+    } catch (err) {
+      message.error(err.toString());
+    }
+  };
+
+  const handleCore = async () => {
+    try {
+      await Promise.all([
+        invoke('restart_core'),
+        invoke('toggle_window', { label: 'menu', show: false }),
+      ]);
     } catch (err) {
       message.error(err.toString());
     }
@@ -41,7 +62,7 @@ const SystemTray = () => {
           <BsWindowDesktop className="mr-2" />
           <div>{mainVisible ? 'Hide all windows' : 'Show all windows'}</div>
         </div>
-        <div className={TrayMenu} onClick={handleShow}>
+        <div className={TrayMenu} onClick={handleCore}>
           <LuRefreshCcw className="mr-2" />
           <div>Restart Core</div>
         </div>

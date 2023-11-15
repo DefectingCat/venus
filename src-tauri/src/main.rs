@@ -6,10 +6,10 @@
 use crate::{
     commands::{
         config::{get_config, update_config},
-        core::select_node,
+        core::{restart_core, select_node},
         node_speed,
         subs::{add_subscription, update_all_subs, update_sub},
-        ui::{exit_app, toggle_main},
+        ui::{exit_app, toggle_window},
     },
     core::{core_version, exit_core, VCore},
     event::RUAEvents,
@@ -219,10 +219,11 @@ fn main() {
             update_config,
             // core
             select_node,
+            restart_core,
             // common commands
             node_speed,
             // ui
-            toggle_main,
+            toggle_window,
             exit_app
         ])
         .plugin(tauri_plugin_positioner::init())
