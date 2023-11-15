@@ -20,6 +20,14 @@ const SystemTray = () => {
     }
   };
 
+  const handleExit = async () => {
+    try {
+      await invoke('exit_app');
+    } catch (err) {
+      message.error(err.toString());
+    }
+  };
+
   return (
     <>
       <div
@@ -30,15 +38,15 @@ const SystemTray = () => {
         )}
       >
         <div className={TrayMenu} onClick={handleShow}>
-          <BsWindowDesktop className="mr-1" />
+          <BsWindowDesktop className="mr-2" />
           <div>{mainVisible ? 'Hide all windows' : 'Show all windows'}</div>
         </div>
         <div className={TrayMenu} onClick={handleShow}>
-          <LuRefreshCcw className="mr-1" />
+          <LuRefreshCcw className="mr-2" />
           <div>Restart Core</div>
         </div>
-        <div className={TrayMenu} onClick={handleShow}>
-          <GrPowerShutdown className="mr-1" />
+        <div className={TrayMenu} onClick={handleExit}>
+          <GrPowerShutdown className="mr-2" />
           <div>Quit</div>
         </div>
       </div>

@@ -9,7 +9,7 @@ use crate::{
         core::select_node,
         node_speed,
         subs::{add_subscription, update_all_subs, update_sub},
-        ui::toggle_main,
+        ui::{exit_app, toggle_main},
     },
     core::{core_version, VCore},
     event::RUAEvents,
@@ -226,7 +226,8 @@ fn main() {
             // common commands
             node_speed,
             // ui
-            toggle_main
+            toggle_main,
+            exit_app
         ])
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())

@@ -4,10 +4,10 @@ use crate::{
     event::{RUAEvents, SpeedTestPayload},
     message::{ConfigMsg, MSG_TX},
     store::ui::CoreStatus,
-    CONFIG, CORE_SHUTDOWN,
+    CONFIG, CORE, CORE_SHUTDOWN,
 };
-use anyhow::Ok as AOk;
 use anyhow::{anyhow, Result};
+use anyhow::{Context, Ok as AOk};
 use log::{error, info, warn};
 use std::{
     path::{Path, PathBuf},
@@ -185,4 +185,12 @@ impl VCore {
 
         Ok(())
     }
+}
+
+/// Exit Core and store the status
+pub async fn exit_core() -> Result<()> {
+    let mut core = CORE.lock().await;
+    CORE_SHUTDOWN.store(true, Ordering::Relaxed);
+    core.exit().with_context(|| "Kill core failed")?;
+    Ok(())
 }
