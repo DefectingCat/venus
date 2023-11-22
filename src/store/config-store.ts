@@ -200,13 +200,27 @@ export interface System {
 export interface Routing {
   domainStrategy: string;
   rules: Rule[];
+  balancers: Balancer[];
 }
 
 export interface Rule {
   type: string;
-  ip: string[];
+  domain?: string[];
+  ip?: string[];
+  port?: string;
+  network?: string;
+  source?: string[];
+  user?: string[];
+  inboundTag?: string[];
+  protocol?: string[];
+  attrs?: string;
   outboundTag: string;
-  domain: string[];
+  balancerTag?: string;
+}
+
+export interface Balancer {
+  tag: string;
+  selector: string[];
 }
 
 export interface RUABasicSetting {

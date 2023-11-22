@@ -571,11 +571,14 @@ pub struct CoreUser {
     pub security: String,
 }
 
+// https://www.v2ray.com/chapter_02/03_routing.html
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Routing {
+    // "AsIs" | "IPIfNonMatch" | "IPOnDemand"
     pub domain_strategy: String,
     pub rules: Vec<Rule>,
+    pub balancers: Vec<Balancers>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -584,10 +587,25 @@ pub struct Rule {
     #[serde(rename = "type")]
     pub type_field: String,
     #[serde(default)]
-    pub ip: Vec<String>,
-    pub outbound_tag: String,
+    pub ip: Option<Vec<String>>,
     #[serde(default)]
-    pub domain: Vec<String>,
+    pub domain: Option<Vec<String>>,
+    pub port: Option<String>,
+    pub network: Option<String>,
+    pub source: Option<Vec<String>>,
+    pub user: Option<Vec<String>>,
+    pub inbound_tag: Option<Vec<String>>,
+    pub protocol: Option<Vec<String>>,
+    pub attrs: Option<String>,
+    pub outbound_tag: String,
+    pub balancer_tag: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Balancers {
+    pub tag: String,
+    pub selector: Vec<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
