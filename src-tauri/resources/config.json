@@ -77,7 +77,8 @@
         "domain": ["geosite:category-ads"],
         "outboundTag": "blocked"
       }
-    ]
+    ],
+    "balancers": []
   },
   "dns": {
     "hosts": {
@@ -105,10 +106,10 @@
       }
     },
     "system": {
-      "statsInboundUplink": false,
-      "statsInboundDownlink": false,
-      "statsOutboundUplink": false,
-      "statsOutboundDownlink": false
+      "statsInboundUplink": true,
+      "statsInboundDownlink": true,
+      "statsOutboundUplink": true,
+      "statsOutboundDownlink": true
     }
   },
   "other": {}
