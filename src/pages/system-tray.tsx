@@ -15,7 +15,6 @@ const TrayMenu = clsx(MenuItemClass, 'flex items-center');
  * In tauri window called `menu`
  * @returns
  */
-
 const SystemTray = () => {
   const { message } = App.useApp();
   const mainVisible = useStore((s) => s.venus.mainVisible);

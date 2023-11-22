@@ -1,17 +1,13 @@
-import { App, Button, Input, Select, Switch, Tooltip } from 'antd';
+import { Input, Select, Switch } from 'antd';
 import clsx from 'clsx';
-import useBackend from 'hooks/use-backend';
 import { useMemo } from 'react';
 import useStore from 'store';
 import { Inbound, InboundSettings, Sniffing } from 'store/config-store';
+import ApplyBtn from './apply-btn';
 
 const BasicSettings = () => {
-  const { message } = App.useApp();
   const core = useStore((s) => s.core);
-  const { updateSocksInbound, toggleUI } = useStore((s) => ({
-    updateSocksInbound: s.updateSocksInbound,
-    toggleUI: s.toggleUI,
-  }));
+  const updateSocksInbound = useStore((s) => s.updateSocksInbound);
   const socksInbound = useMemo(
     () => core?.inbounds.find((i) => i.tag === 'socks'),
     [core?.inbounds],
@@ -42,19 +38,7 @@ const BasicSettings = () => {
     };
 
   // Apply settings
-  const { writeConfig } = useBackend();
-  const coreStatus = useStore((s) => s.venus.coreStatus);
   const updateConfig = useStore((s) => s.updateConfig);
-  const handleApply = async () => {
-    try {
-      toggleUI((ui) => {
-        ui.venus.coreStatus = 'Restarting';
-      });
-      writeConfig('core');
-    } catch (err) {
-      message.error(err);
-    }
-  };
 
   return (
     <>
@@ -160,15 +144,7 @@ const BasicSettings = () => {
       </div>
 
       <div className="mt-4">
-        <Tooltip placement="top" title="Apply and restart core">
-          <Button
-            loading={coreStatus === 'Restarting'}
-            disabled={coreStatus === 'Stopped'}
-            onClick={handleApply}
-          >
-            Apply
-          </Button>
-        </Tooltip>
+        <ApplyBtn />
       </div>
     </>
   );

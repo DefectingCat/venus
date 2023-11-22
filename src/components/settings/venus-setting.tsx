@@ -1,36 +1,20 @@
 import { useBoolean, useMount } from 'ahooks';
-import { App, Button, Checkbox, Input, Select, Tooltip } from 'antd';
+import { Checkbox, Input, Select } from 'antd';
 import clsx from 'clsx';
-import useBackend from 'hooks/use-backend';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import useStore from 'store';
-import { enable, isEnabled, disable } from 'tauri-plugin-autostart-api';
+import { disable, enable, isEnabled } from 'tauri-plugin-autostart-api';
+import ApplyBtn from './apply-btn';
 
 const VenusSetting = () => {
-  const { message } = App.useApp();
   const [mounted, setMounted] = useBoolean(false);
   useMount(setMounted.setTrue);
 
   const { theme, setTheme } = useTheme();
 
-  const { writeConfig } = useBackend();
   const rua = useStore((s) => s.rua);
-  const coreStatus = useStore((s) => s.venus.coreStatus);
-  const { updateConfig, toggleUI } = useStore((s) => ({
-    updateConfig: s.updateConfig,
-    toggleUI: s.toggleUI,
-  }));
-  const handleApply = async () => {
-    try {
-      toggleUI((ui) => {
-        ui.venus.coreStatus = 'Restarting';
-      });
-      writeConfig('rua');
-    } catch (err) {
-      message.error(err);
-    }
-  };
+  const updateConfig = useStore((s) => s.updateConfig);
 
   // auto start
   const [isAuto, setIsAuto] = useState(false);
@@ -88,15 +72,7 @@ const VenusSetting = () => {
         />
 
         <div>
-          <Tooltip placement="top" title="Apply and restart core">
-            <Button
-              loading={coreStatus === 'Restarting'}
-              disabled={coreStatus === 'Stopped'}
-              onClick={handleApply}
-            >
-              Apply
-            </Button>
-          </Tooltip>
+          <ApplyBtn />
         </div>
       </div>
     </div>
