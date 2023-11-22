@@ -5,10 +5,16 @@ import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
 import useStore from 'store';
 
+// tailwind names for each setting line
+export const SettingItemLine = clsx('grid grid-cols-2', 'items-center gap-4');
+
 const BasicSettings = dynamic(
   () => import('components/settings/basic-settings'),
 );
 const VenusSetting = dynamic(() => import('components/settings/venus-setting'));
+const RoutingSetting = dynamic(
+  () => import('components/settings/routing-settings'),
+);
 
 const Settings = () => {
   const tabItems: TabsProps['items'] = [
@@ -20,6 +26,10 @@ const Settings = () => {
       key: '2',
       label: 'Core Basic',
     },
+    {
+      key: '3',
+      label: 'Routing Setting',
+    },
   ];
   const current = useStore((s) => s.tabs.setting);
   const toggleUI = useStore((s) => s.toggleUI);
@@ -27,6 +37,7 @@ const Settings = () => {
   const children = {
     1: <VenusSetting />,
     2: <BasicSettings />,
+    3: <RoutingSetting />,
   };
 
   return (

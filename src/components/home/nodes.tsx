@@ -1,14 +1,14 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import type { Node } from 'store/config-store';
 import { App, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
-import { useCallback, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import React, { useCallback, useMemo, useState } from 'react';
+import { BsCheckCircleFill, BsFillDashCircleFill } from 'react-icons/bs';
 import { ResizeCallbackData } from 'react-resizable';
 import useStore from 'store';
+import type { Node } from 'store/config-store';
 import styles from 'styles/index.module.scss';
-import dynamic from 'next/dynamic';
-import { BsFillDashCircleFill, BsCheckCircleFill } from 'react-icons/bs';
 
 const ResizableTitle = dynamic(
   () => import('components/pages/resizable-title'),

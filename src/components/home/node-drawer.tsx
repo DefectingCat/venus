@@ -1,41 +1,11 @@
 import { useBoolean } from 'ahooks';
-import { Drawer, Input, QRCode, theme } from 'antd';
-import clsx from 'clsx';
+import { Drawer, QRCode } from 'antd';
+import dynamic from 'next/dynamic';
 import useStore from 'store';
 import { Node } from 'store/config-store';
 import { NodeDrawerType } from 'store/ui-store';
 
-const { useToken } = theme;
-
-const DrawerItem = ({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value?: string;
-  onChange?: () => void;
-}) => {
-  const token = useToken();
-
-  return (
-    <div className={clsx('relative flex items-center', 'mb-4')}>
-      <Input value={value} />
-      <div
-        className={clsx(
-          'absolute left-2 top-[-8px]',
-          'text-gray-600 dark:text-gray-400',
-          'text-xs',
-        )}
-        style={{
-          background: token.token.colorBgElevated,
-        }}
-      >
-        {label}
-      </div>
-    </div>
-  );
-};
+const DrawerItem = dynamic(() => import('components/home/drawer-item'));
 
 const NodeDrawer = ({ node }: { node: Node }) => {
   const [open, setOpen] = useBoolean(true);
