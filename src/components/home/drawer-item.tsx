@@ -16,7 +16,7 @@ const DrawerItem = ({
 
   return (
     <div className={clsx('relative flex items-center', 'mb-4')}>
-      <Input value={value} />
+      <Input value={value} onChange={onChange} />
       <div
         className={clsx(
           'absolute left-2 top-[-8px]',

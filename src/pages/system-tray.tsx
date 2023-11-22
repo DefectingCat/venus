@@ -1,4 +1,4 @@
-import { App, Button } from 'antd';
+import { App } from 'antd';
 import clsx from 'clsx';
 import { invoke } from '@tauri-apps/api/tauri';
 import useStore from 'store';

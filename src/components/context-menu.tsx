@@ -80,7 +80,7 @@ const ContextMenu = () => {
         'transition-all opacity-0',
         'w-52 text-sm px-1',
       )}
-      style={{ left: pos.x + 10, top: pos.y + 8, opacity: !!type ? 1 : 0 }}
+      style={{ left: pos.x + 10, top: pos.y + 8, opacity: type ? 1 : 0 }}
       id={ContextID}
     >
       {menuMap[type]}

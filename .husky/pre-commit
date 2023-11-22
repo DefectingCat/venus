@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-pnpm pretty-check && pnpm fmt-check
+pnpm pretty-check && pnpm fmt-check && pnpm lint

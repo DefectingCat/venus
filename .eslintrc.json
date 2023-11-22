@@ -5,5 +5,9 @@
     "plugin:@typescript-eslint/recommended"
   ],
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"]
+  "ignorePatterns": ["dist", "node_modules"],
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "no-extra-boolean-cast": "off"
+  }
 }

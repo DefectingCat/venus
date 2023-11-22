@@ -197,7 +197,7 @@ const Nodes = () => {
       };
     });
   }, [colWidth, nodeLoading]);
-  const handleResize: Function =
+  const handleResize =
     (index: number) =>
     (_: React.SyntheticEvent<Element>, { size }: ResizeCallbackData) => {
       const newWidth = [...colWidth];
@@ -211,7 +211,7 @@ const Nodes = () => {
     ...col,
     onHeaderCell: (column: ColumnsType<Node>[number]) => ({
       width: column.width,
-      onResize: handleResize(index) as React.ReactEventHandler<any>,
+      onResize: handleResize(index) as React.ReactEventHandler<unknown>,
     }),
   }));
 

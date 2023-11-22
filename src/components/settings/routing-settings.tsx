@@ -1,5 +1,4 @@
 import { Select } from 'antd';
-import clsx from 'clsx';
 import { SettingItemLine } from 'pages/settings';
 
 const RoutingSettings = () => {
