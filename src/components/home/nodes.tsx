@@ -25,121 +25,124 @@ const Nodes = () => {
   );
 
   // nodes table
-  const columns: ColumnsType<Node> = [
-    {
-      title: 'ID',
-      ellipsis: true,
-      key: 'nodeId',
-      width: 50,
-      render: (_, _node, i) => (
-        <div className={clsx('text-ellipsis', 'break-keep overflow-hidden')}>
-          {i + 1}
-        </div>
-      ),
-    },
-    {
-      title: 'Name',
-      dataIndex: 'ps',
-      ellipsis: true,
-      key: 'ps',
-      width: 300,
-      sorter: (a, b) => a.ps.localeCompare(b.ps),
-      render: (addr) => (
-        <div className="overflow-hidden text-ellipsis">{addr}</div>
-      ),
-    },
-    {
-      title: 'Address',
-      dataIndex: 'add',
-      key: 'add',
-      ellipsis: true,
-      width: 100,
-      render: (addr) => (
-        <div className="overflow-hidden text-ellipsis">{addr}</div>
-      ),
-    },
-    {
-      title: 'Port',
-      dataIndex: 'port',
-      key: 'port',
-      width: 80,
-      ellipsis: true,
-    },
-    {
-      title: 'Delay',
-      dataIndex: 'delay',
-      key: 'delay',
-      width: 80,
-      ellipsis: true,
-      render: (delay) => (
-        <div className="overflow-hidden text-ellipsis">
-          {delay != null && `${delay}ms`}
-        </div>
-      ),
-    },
-    {
-      title: 'Speed',
-      dataIndex: 'speed',
-      key: 'speed',
-      width: 80,
-      ellipsis: true,
-      render: (speed) => (
-        <div className="overflow-hidden text-ellipsis">
-          {speed != null && `${speed}MB/s`}
-        </div>
-      ),
-    },
-    {
-      title: 'Connectivity',
-      dataIndex: 'connectivity',
-      key: 'connectivity',
-      width: 80,
-      ellipsis: true,
-      render: (connectivity: boolean, record: Node) => {
-        const current = nodeLoading.find((n) => n.id === record.nodeId)
-          ?.loading;
-        return (
-          <div
-            className={clsx(
-              'overflow-hidden text-ellipsis flex',
-              'items-center',
-            )}
-          >
-            {current ? (
-              <LoadingIcon />
-            ) : connectivity == null ? (
-              ''
-            ) : connectivity ? (
-              <BsCheckCircleFill />
-            ) : (
-              <BsFillDashCircleFill />
-            )}
+  const columns: ColumnsType<Node> = useMemo(
+    () => [
+      {
+        title: 'ID',
+        ellipsis: true,
+        key: 'nodeId',
+        width: 50,
+        render: (_, _node, i) => (
+          <div className={clsx('text-ellipsis', 'break-keep overflow-hidden')}>
+            {i + 1}
           </div>
-        );
+        ),
       },
-    },
-    {
-      title: 'Net Type',
-      dataIndex: 'net',
-      key: 'net',
-      width: 80,
-      ellipsis: true,
-    },
-    {
-      title: 'TLS',
-      dataIndex: 'tls',
-      key: 'tls',
-      width: 80,
-      ellipsis: true,
-    },
-    {
-      title: 'Subscription',
-      dataIndex: 'subs',
-      key: 'subs',
-      width: 100,
-      ellipsis: true,
-    },
-  ];
+      {
+        title: 'Name',
+        dataIndex: 'ps',
+        ellipsis: true,
+        key: 'ps',
+        width: 300,
+        sorter: (a, b) => a.ps.localeCompare(b.ps),
+        render: (addr) => (
+          <div className="overflow-hidden text-ellipsis">{addr}</div>
+        ),
+      },
+      {
+        title: 'Address',
+        dataIndex: 'add',
+        key: 'add',
+        ellipsis: true,
+        width: 100,
+        render: (addr) => (
+          <div className="overflow-hidden text-ellipsis">{addr}</div>
+        ),
+      },
+      {
+        title: 'Port',
+        dataIndex: 'port',
+        key: 'port',
+        width: 80,
+        ellipsis: true,
+      },
+      {
+        title: 'Delay',
+        dataIndex: 'delay',
+        key: 'delay',
+        width: 80,
+        ellipsis: true,
+        render: (delay) => (
+          <div className="overflow-hidden text-ellipsis">
+            {delay != null && `${delay}ms`}
+          </div>
+        ),
+      },
+      {
+        title: 'Speed',
+        dataIndex: 'speed',
+        key: 'speed',
+        width: 80,
+        ellipsis: true,
+        render: (speed) => (
+          <div className="overflow-hidden text-ellipsis">
+            {speed != null && `${speed}MB/s`}
+          </div>
+        ),
+      },
+      {
+        title: 'Connectivity',
+        dataIndex: 'connectivity',
+        key: 'connectivity',
+        width: 80,
+        ellipsis: true,
+        render: (connectivity: boolean, record: Node) => {
+          const current = nodeLoading.find((n) => n.id === record.nodeId)
+            ?.loading;
+          return (
+            <div
+              className={clsx(
+                'overflow-hidden text-ellipsis flex',
+                'items-center',
+              )}
+            >
+              {current ? (
+                <LoadingIcon />
+              ) : connectivity == null ? (
+                ''
+              ) : connectivity ? (
+                <BsCheckCircleFill />
+              ) : (
+                <BsFillDashCircleFill />
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        title: 'Net Type',
+        dataIndex: 'net',
+        key: 'net',
+        width: 80,
+        ellipsis: true,
+      },
+      {
+        title: 'TLS',
+        dataIndex: 'tls',
+        key: 'tls',
+        width: 80,
+        ellipsis: true,
+      },
+      {
+        title: 'Subscription',
+        dataIndex: 'subs',
+        key: 'subs',
+        width: 100,
+        ellipsis: true,
+      },
+    ],
+    [nodeLoading],
+  );
 
   // Select node
   const current = useStore((s) => s.rua.currentId);

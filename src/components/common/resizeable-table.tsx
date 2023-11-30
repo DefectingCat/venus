@@ -1,7 +1,7 @@
 import { TableProps } from 'antd';
 import Table, { ColumnsType } from 'antd/es/table';
 import dynamic from 'next/dynamic';
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import styles from 'styles/index.module.scss';
 
@@ -60,4 +60,4 @@ const ResizableTable = <T,>({ columns, ...rest }: ResizableTable<T>) => {
   );
 };
 
-export default ResizableTable;
+export default memo(ResizableTable);
