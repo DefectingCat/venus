@@ -44,6 +44,7 @@ const RoutingSettings = () => {
         ellipsis: true,
         key: 'ip',
         dataIndex: 'ip',
+        width: 80,
         render: (ip) => (
           <div className="overflow-hidden text-ellipsis">
             {JSON.stringify(ip)}
@@ -55,6 +56,7 @@ const RoutingSettings = () => {
         ellipsis: true,
         key: 'domain',
         dataIndex: 'domain',
+        width: 80,
         render: (domain) => (
           <div className="overflow-hidden text-ellipsis">
             {JSON.stringify(domain)}
@@ -64,6 +66,7 @@ const RoutingSettings = () => {
       {
         title: 'Outbound Tag',
         ellipsis: true,
+        width: 90,
         key: 'outboundTag',
         dataIndex: 'outboundTag',
         render: (outboundTag) => (
@@ -75,6 +78,7 @@ const RoutingSettings = () => {
         ellipsis: true,
         key: 'port',
         dataIndex: 'port',
+        width: 70,
         render: (port) => (
           <div className="overflow-hidden text-ellipsis">{port}</div>
         ),
@@ -84,6 +88,7 @@ const RoutingSettings = () => {
         ellipsis: true,
         key: 'network',
         dataIndex: 'network',
+        width: 80,
         render: (network) => (
           <div className="overflow-hidden text-ellipsis">{network}</div>
         ),
@@ -93,6 +98,7 @@ const RoutingSettings = () => {
         ellipsis: true,
         key: 'source',
         dataIndex: 'source',
+        width: 80,
         render: (source) => (
           <div className="overflow-hidden text-ellipsis">
             {JSON.stringify(source)}
@@ -104,6 +110,7 @@ const RoutingSettings = () => {
         ellipsis: true,
         key: 'inboundTag',
         dataIndex: 'inboundTag',
+        width: 80,
         render: (inboundTag) => (
           <div className="overflow-hidden text-ellipsis">
             {JSON.stringify(inboundTag)}
@@ -115,6 +122,7 @@ const RoutingSettings = () => {
         ellipsis: true,
         key: 'protocol',
         dataIndex: 'protocol',
+        width: 80,
         render: (protocol) => (
           <div className="overflow-hidden text-ellipsis">
             {JSON.stringify(protocol)}
@@ -126,6 +134,7 @@ const RoutingSettings = () => {
         ellipsis: true,
         key: 'attrs',
         dataIndex: 'attrs',
+        width: 80,
         render: (attrs) => (
           <div className="overflow-hidden text-ellipsis">{attrs}</div>
         ),
@@ -135,6 +144,7 @@ const RoutingSettings = () => {
         ellipsis: true,
         key: 'balancerTag',
         dataIndex: 'balancerTag',
+        width: 80,
         render: (balancerTag) => (
           <div className="overflow-hidden text-ellipsis">{balancerTag}</div>
         ),
