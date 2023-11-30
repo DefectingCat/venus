@@ -14,7 +14,7 @@ const ApplyBtn = () => {
       toggleUI((ui) => {
         ui.venus.coreStatus = 'Restarting';
       });
-      writeConfig('rua');
+      writeConfig(['rua', 'core']);
     } catch (err) {
       message.error(err);
     }
