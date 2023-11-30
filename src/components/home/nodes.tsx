@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import { App, Table } from 'antd';
+import { App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
@@ -8,10 +8,9 @@ import { BsCheckCircleFill, BsFillDashCircleFill } from 'react-icons/bs';
 import { ResizeCallbackData } from 'react-resizable';
 import useStore from 'store';
 import type { Node } from 'store/config-store';
-import styles from 'styles/index.module.scss';
 
-const ResizableTitle = dynamic(
-  () => import('components/pages/resizable-title'),
+const ResizableTable = dynamic(
+  () => import('components/common/resizeable-table'),
 );
 const NodeDrawer = dynamic(() => import('components/home/node-drawer'));
 const LoadingIcon = dynamic(() => import('components/common/loading-icon'));
@@ -228,21 +227,15 @@ const Nodes = () => {
 
   return (
     <>
-      <Table
-        className={styles.table}
-        components={{
-          header: {
-            cell: ResizableTitle,
-          },
-        }}
+      <ResizableTable
         pagination={false}
-        rowKey={(record) => record.add + record.ps}
+        rowKey={(record: Node) => record.add + record.ps}
         scroll={{
           y: '100%',
         }}
         columns={mergeColumns}
         dataSource={nodes}
-        onRow={(record) => ({
+        onRow={(record: Node) => ({
           onDoubleClick: () => {
             handleSelect(record);
           },
