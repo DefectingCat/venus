@@ -8,7 +8,17 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  transpilePackages: ['ahooks'],
+  transpilePackages: [
+    'ahooks',
+    'antd',
+    'rc-util',
+    '@ant-design/icons',
+    '@ant-design/icons-svg',
+    'rc-pagination',
+    'rc-picker',
+    'rc-tree',
+    'rc-table',
+  ],
 };
 
 module.exports = nextConfig;
