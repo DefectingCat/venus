@@ -204,6 +204,7 @@ export interface Routing {
 }
 
 export interface Rule {
+  id?: number;
   type: string;
   domain?: string[];
   ip?: string[];

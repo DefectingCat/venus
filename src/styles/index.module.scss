@@ -19,4 +19,8 @@
   :global(.ant-table-body) {
     flex: 1;
   }
+
+  :global(tr .ant-table-cell) {
+    background-color: unset !important;
+  }
 }

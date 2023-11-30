@@ -185,17 +185,10 @@ const Nodes = () => {
         ellipsis: true,
       },
     ];
-    return tableCols.map((col) => {
-      const target = colWidth.find((item) => item.key === col.key);
-      if (!target) {
-        console.error('connot find target column');
-        return col;
-      }
-      return {
-        ...col,
-        width: target.width,
-      };
-    });
+    return tableCols.map((col) => ({
+      ...col,
+      width: colWidth.find((c) => c.key === col.key)?.width,
+    }));
   }, [colWidth, nodeLoading]);
   const handleResize =
     (index: number) =>
