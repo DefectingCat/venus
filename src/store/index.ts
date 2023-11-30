@@ -1,13 +1,18 @@
-import { StoreApi, UseBoundStore, create } from 'zustand';
+import { StoreApi, UseBoundStore } from 'zustand';
+import { shallow } from 'zustand/shallow';
+import { createWithEqualityFn } from 'zustand/traditional';
 import createConfigSlice, { ConfigSlice } from './config-store';
 import createLogSlice, { LogSlice } from './log-store';
 import createUISlice, { UISlice } from './ui-store';
 
-const useStore = create<ConfigSlice & LogSlice & UISlice>()((...a) => ({
-  ...createConfigSlice(...a),
-  ...createLogSlice(...a),
-  ...createUISlice(...a),
-}));
+const useStore = createWithEqualityFn<ConfigSlice & LogSlice & UISlice>()(
+  (...a) => ({
+    ...createConfigSlice(...a),
+    ...createLogSlice(...a),
+    ...createUISlice(...a),
+  }),
+  shallow,
+);
 
 type WithSelectors<S> = S extends { getState: () => infer T }
   ? S & { use: { [K in keyof T]: () => T[K] } }
