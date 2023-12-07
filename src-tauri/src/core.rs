@@ -1,12 +1,9 @@
 use crate::{
-    commands::speed_test,
-    config::{change_connectivity, outbouds_builder},
-    event::{RUAEvents, SpeedTestPayload},
     message::{ConfigMsg, MSG_TX},
     store::ui::CoreStatus,
-    CONFIG, CORE, CORE_SHUTDOWN,
+    CORE, CORE_SHUTDOWN,
 };
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use anyhow::{Context, Ok as AOk};
 use log::{error, info, warn};
 use std::{
@@ -15,7 +12,7 @@ use std::{
 };
 use tauri::{
     api::process::{Command, CommandChild, CommandEvent},
-    async_runtime, Window,
+    async_runtime,
 };
 
 #[derive(Debug)]
@@ -112,78 +109,6 @@ impl VCore {
             info!("Exiting core");
             child.kill()?;
         };
-        Ok(())
-    }
-
-    pub async fn speed_test_old(&mut self, node_ids: Vec<String>, window: Window) -> Result<()> {
-        let config = CONFIG.lock().await;
-        let mut current_outbound = config.core.as_ref().map(|core| core.outbounds.clone());
-        let target_proxy = config
-            .core
-            .as_ref()
-            .and_then(|core| core.inbounds.iter().find(|inbound| inbound.tag == "http"))
-            .ok_or(anyhow!("cannot find http inbound"))?;
-        let proxy = format!("http://{}:{}", target_proxy.listen, target_proxy.port);
-        drop(config);
-
-        for id in node_ids {
-            let ev = RUAEvents::SpeedTest;
-            let mut payload = SpeedTestPayload {
-                id: &id,
-                loading: true,
-            };
-            window.emit(ev.as_str(), &payload)?;
-
-            let mut config = CONFIG.lock().await;
-            let rua = &mut config.rua;
-
-            let mut target = None;
-            rua.subscriptions.iter_mut().for_each(|sub| {
-                target = sub
-                    .nodes
-                    .iter_mut()
-                    .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &id);
-            });
-            let target = target.ok_or(anyhow!("cannot find target node"))?;
-
-            let outbounds = outbouds_builder(target)?;
-            let core = config
-                .core
-                .as_mut()
-                .ok_or(anyhow!("core config is empty"))?;
-
-            core.outbounds = outbounds;
-            config.write_core()?;
-            drop(config);
-
-            self.restart().await?;
-            match speed_test(&proxy, id.clone()).await {
-                Ok(_) => {
-                    change_connectivity(&id, true).await?;
-                }
-                Err(_) => {
-                    change_connectivity(&id, false).await?;
-                }
-            }
-
-            // speed_test(&proxy, write_config.clone(), id, ).await?;
-            // restore the outbounds before speed test
-            let mut config = CONFIG.lock().await;
-            if let Some(outbounds) = current_outbound.take() {
-                let core = config
-                    .core
-                    .as_mut()
-                    .ok_or(anyhow!("core config is empty"))?;
-                core.outbounds = outbounds;
-                config.write_core()?;
-            }
-
-            payload.loading = false;
-            window.emit(ev.as_str(), payload)?;
-            config.write_rua()?;
-            MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
-        }
-
         Ok(())
     }
 }

@@ -51,12 +51,18 @@
     {
       "protocol": "freedom",
       "settings": {},
-      "tag": "direct"
+      "tag": "direct",
+      "streamSettings": null,
+      "proxySetting": null,
+      "mux": null
     },
     {
       "protocol": "blackhole",
       "settings": {},
-      "tag": "blocked"
+      "tag": "blocked",
+      "streamSettings": null,
+      "proxySetting": null,
+      "mux": null
     }
   ],
   "routing": {

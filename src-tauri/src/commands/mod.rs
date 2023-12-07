@@ -1,12 +1,13 @@
 use crate::{
+    config::{find_node, proxy_builder},
     message::{ConfigMsg, MSG_TX},
     utils::error::VResult,
-    CONFIG, CORE,
+    CONFIG,
 };
 use anyhow::{anyhow, Ok as AOk, Result};
 use log::{info, warn};
 use std::{sync::Arc, thread, time::Duration};
-use tauri::{async_runtime, Window};
+use tauri::async_runtime;
 use tokio::{sync::Mutex, time::Instant};
 
 pub mod config;
@@ -15,6 +16,7 @@ pub mod subs;
 pub mod ui;
 
 pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
+    dbg!(proxy);
     let start = Instant::now();
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
@@ -36,20 +38,19 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     let check_len = len.clone();
     let bytes = bytes_per_second.clone();
     let check_done = done.clone();
+
     async_runtime::spawn(async move {
         loop {
             let mut config = CONFIG.lock().await;
+            let rua = &mut config.rua;
             let mut node = None;
-            config.rua.subscriptions.iter_mut().for_each(|sub| {
+            rua.subscriptions.iter_mut().for_each(|sub| {
                 node = sub
                     .nodes
                     .iter_mut()
-                    .find(|n| n.node_id.as_ref().unwrap_or(&"".to_owned()) == &node_id);
+                    .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id);
             });
-            let node = match node {
-                Some(n) => n,
-                None => break,
-            };
+            let node = node.ok_or(anyhow!("node {} not found", node_id))?;
             node.delay = Some(latency as u64);
             // update config to frontend per 500ms
             thread::sleep(Duration::from_millis(500));
@@ -69,8 +70,8 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
                 "Node {} download speed {} MB/s, {}%",
                 node.host, speed, percentage
             );
-            drop(config);
 
+            drop(config);
             MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
             let check_done = check_done.lock().await;
             if *check_done {
@@ -94,6 +95,7 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     *done = true;
     let mut config = CONFIG.lock().await;
     config.write_rua()?;
+    drop(config);
     MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
     Ok(())
 }
@@ -102,18 +104,46 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
 ///
 /// ## Argments
 ///
-/// `nodes`: select nodes id
+/// `node_id`: selected node id
 /// `window`: tauri window
 #[tauri::command]
-pub async fn node_speed(nodes: Vec<String>, window: Window) -> VResult<()> {
-    let mut config = CONFIG.lock().await;
-    let config = &mut *config;
-    let rua = &mut config.rua;
+pub async fn node_speed(node_id: String) -> VResult<()> {
+    let mut orgin_config = CONFIG.lock().await;
+    let config = &mut *orgin_config;
+    let rua = &config.rua;
     let core = &mut config.core;
-    let mut core = core
+    let core = core
         .as_mut()
         .ok_or(anyhow!("cannont found config config"))?;
-    // core.outbounds
+
+    let node = find_node(&node_id, rua)?;
+    let speed_outbound = core
+        .outbounds
+        .iter()
+        .position(|outbound| outbound.tag == "speed");
+    if let Some(index) = speed_outbound {
+        core.outbounds[index] = proxy_builder(node, "speed".into())?;
+    } else {
+        core.outbounds.push(proxy_builder(node, "speed".into())?);
+    }
+
+    config.write_core()?;
+    drop(orgin_config);
+    MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
+
+    let mut config = CONFIG.lock().await;
+    let core = &config
+        .core
+        .as_mut()
+        .ok_or(anyhow!("cannont found config config"))?;
+    let target_proxy = core
+        .inbounds
+        .iter()
+        .find(|inbound| inbound.tag == "http")
+        .ok_or(anyhow!("cannot find http inbound"))?;
+    let proxy = format!("http://{}:{}", target_proxy.listen, target_proxy.port);
+    drop(config);
+    speed_test(&proxy, node_id).await?;
 
     Ok(())
 }

@@ -188,6 +188,28 @@ fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> Result<()>
     Ok(())
 }
 
+/// Find target node by node id.
+///
+/// ## Argments
+///
+/// `node_id`: target node's id
+/// `rua`: RConfig reference
+///
+/// ## Return
+///
+/// Option, if target node is found return a reference, or None.
+pub fn find_node<'a>(node_id: &String, rua: &'a RConfig) -> Result<&'a Node> {
+    let mut node = None;
+    rua.subscriptions.iter().for_each(|sub| {
+        node = sub
+            .nodes
+            .iter()
+            .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == node_id);
+    });
+    let node = node.ok_or(anyhow!("node {} not found", node_id))?;
+    Ok(node)
+}
+
 pub fn proxy_builder(node: &Node, tag: String) -> Result<Outbound> {
     let vmess = Vmess {
         address: node.add.clone(),

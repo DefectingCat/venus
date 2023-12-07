@@ -185,7 +185,7 @@ const Nodes = () => {
                 x: e.clientX,
                 y: e.clientY,
               };
-              ui.menus.clickNode = [record];
+              ui.menus.clickNode = record;
             });
             setCurrentNode(record);
           },

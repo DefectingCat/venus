@@ -40,9 +40,6 @@ pub enum VError {
     /// Tauri App error
     #[error("Tauri runtime error: {0}")]
     RunTimeError(#[from] tauri::Error),
-    /// Target is None
-    #[error("Target is empty: {0}")]
-    EmptyError(&'static str),
     /// Convert int to string
     #[error("Failed to parse to int: {0}")]
     ParseIntError(#[from] ParseIntError),

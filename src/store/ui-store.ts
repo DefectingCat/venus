@@ -19,7 +19,7 @@ export interface UI {
     // node menus
     node: NodeDrawerType | false;
     // right click node
-    clickNode: Node[];
+    clickNode: Node | null;
   };
 
   // loadings
@@ -73,7 +73,7 @@ const createUISlice: StateCreator<
   },
   menus: {
     node: false,
-    clickNode: [],
+    clickNode: null,
   },
   loading: {
     updateAll: false,

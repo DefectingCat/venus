@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/tauri';
+import { message } from 'antd';
 import clsx from 'clsx';
 import useStore from 'store';
 import { MenuType } from 'store/ui-store';
@@ -54,10 +55,14 @@ const ContextMenu = () => {
         <div className={MenuItemClass}>Delete</div>
         <div
           className={MenuItemClass}
-          onClick={() => {
-            invoke('node_speed', {
-              nodes: clickNode.map((n) => n.nodeId),
-            });
+          onClick={async () => {
+            try {
+              await invoke('node_speed', {
+                nodeId: clickNode.nodeId,
+              });
+            } catch (err) {
+              message.error(err.toString());
+            }
           }}
         >
           Test speed
