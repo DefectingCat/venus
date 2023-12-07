@@ -235,53 +235,6 @@ pub fn proxy_builder(node: &Node, tag: String) -> Result<Outbound> {
     Ok(proxy)
 }
 
-/// Deprecated
-///
-/// Build three outbounds
-///
-/// proxy, freedom and blackhole
-#[deprecated(note = "use proxy builder instead")]
-pub fn outbouds_builder(node: &Node) -> Result<Vec<Outbound>> {
-    let vmess = Vmess {
-        address: node.add.clone(),
-        port: node.port.parse()?,
-        users: vec![CoreUser {
-            id: node.id.clone(),
-            alter_id: node.aid.parse()?,
-            email: "rua@rua.rua".into(),
-            security: "auto".into(),
-        }],
-    };
-
-    let proxy = Outbound {
-        tag: "proxy".into(),
-        protocol: "vmess".into(),
-        settings: OutboundSettings { vnext: vec![vmess] },
-        stream_settings: Some(stream_settings_builder(node)?),
-        proxy_setting: None,
-        mux: None,
-    };
-    let freedom = Outbound {
-        protocol: "freedom".into(),
-        settings: OutboundSettings { vnext: vec![] },
-        tag: "direct".into(),
-        proxy_setting: None,
-        stream_settings: None,
-        mux: None,
-    };
-    let blackhole = Outbound {
-        protocol: "blackhole".into(),
-        settings: OutboundSettings { vnext: vec![] },
-        tag: "blocked".into(),
-        proxy_setting: None,
-        stream_settings: None,
-        mux: None,
-    };
-
-    let outbounds = vec![proxy, freedom, blackhole];
-    Ok(outbounds)
-}
-
 /// Build outbound stream setting with node in subscription
 pub fn stream_settings_builder(node: &Node) -> Result<StreamSettings> {
     let setting = StreamSettings {

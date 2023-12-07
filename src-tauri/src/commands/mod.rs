@@ -1,5 +1,6 @@
 use crate::{
     config::{change_connectivity, find_node, proxy_builder},
+    event::{RUAEvents, SpeedTestPayload},
     message::{ConfigMsg, MSG_TX},
     utils::error::VResult,
     CONFIG,
@@ -7,7 +8,7 @@ use crate::{
 use anyhow::{anyhow, Ok as AOk, Result};
 use log::{info, warn};
 use std::{sync::Arc, thread, time::Duration};
-use tauri::async_runtime;
+use tauri::{async_runtime, Window};
 use tokio::{sync::Mutex, time::Instant};
 
 pub mod config;
@@ -106,7 +107,7 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
 /// `node_id`: selected node id
 /// `window`: tauri window
 #[tauri::command]
-pub async fn node_speed(node_id: String) -> VResult<()> {
+pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
     let mut orgin_config = CONFIG.lock().await;
     let config = &mut *orgin_config;
     let rua = &config.rua;
@@ -145,6 +146,13 @@ pub async fn node_speed(node_id: String) -> VResult<()> {
     let proxy = format!("http://{}:{}", target_proxy.listen, target_proxy.port);
     drop(config);
 
+    // test speed and change loading state
+    let ev = RUAEvents::SpeedTest;
+    let mut payload = SpeedTestPayload {
+        id: &node_id,
+        loading: true,
+    };
+    window.emit(ev.as_str(), &payload)?;
     match speed_test(&proxy, node_id.clone()).await {
         Ok(_) => {
             change_connectivity(&node_id, true).await?;
@@ -153,6 +161,7 @@ pub async fn node_speed(node_id: String) -> VResult<()> {
             change_connectivity(&node_id, false).await?;
         }
     }
-
+    payload.loading = false;
+    window.emit(ev.as_str(), &payload)?;
     Ok(())
 }
