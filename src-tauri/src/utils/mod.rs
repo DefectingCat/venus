@@ -2,6 +2,7 @@ use anyhow::{anyhow, Result};
 use tauri::Manager;
 use tauri::{App, Window};
 
+pub mod consts;
 pub mod error;
 
 /// Get main window by app

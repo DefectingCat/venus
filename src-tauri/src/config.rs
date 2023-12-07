@@ -1,13 +1,15 @@
 use crate::commands::subs::NodeType;
+use crate::utils::consts::SPEED_URL;
 use crate::{CONFIG, LOGGING, NAME, VERSION};
 use anyhow::{anyhow, Result};
 use log::error;
 use serde::{Deserialize, Serialize};
-use std::fs::{self, OpenOptions};
-use std::io::Read;
-use std::path::{Path, PathBuf};
-use std::sync::atomic::Ordering;
-use std::{fs::File, io::Write};
+use std::{
+    fs::{self, File, OpenOptions},
+    io::{Read, Write},
+    path::{Path, PathBuf},
+    sync::atomic::Ordering,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -25,7 +27,7 @@ pub struct RUABasicSetting {
 impl Default for RUABasicSetting {
     fn default() -> Self {
         Self {
-            speed_url: "https://sabnzbd.org/tests/internetspeed/20MB.bin".into(),
+            speed_url: SPEED_URL.into(),
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::{
-    config::{find_node, proxy_builder},
+    config::{change_connectivity, find_node, proxy_builder},
     message::{ConfigMsg, MSG_TX},
     utils::error::VResult,
     CONFIG,
@@ -16,7 +16,6 @@ pub mod subs;
 pub mod ui;
 
 pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
-    dbg!(proxy);
     let start = Instant::now();
     let proxy = reqwest::Proxy::http(proxy)?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
@@ -116,6 +115,7 @@ pub async fn node_speed(node_id: String) -> VResult<()> {
         .as_mut()
         .ok_or(anyhow!("cannont found config config"))?;
 
+    // Change speed outbound
     let node = find_node(&node_id, rua)?;
     let speed_outbound = core
         .outbounds
@@ -131,6 +131,7 @@ pub async fn node_speed(node_id: String) -> VResult<()> {
     drop(orgin_config);
     MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
 
+    // prepare to test speed
     let mut config = CONFIG.lock().await;
     let core = &config
         .core
@@ -143,7 +144,15 @@ pub async fn node_speed(node_id: String) -> VResult<()> {
         .ok_or(anyhow!("cannot find http inbound"))?;
     let proxy = format!("http://{}:{}", target_proxy.listen, target_proxy.port);
     drop(config);
-    speed_test(&proxy, node_id).await?;
+
+    match speed_test(&proxy, node_id.clone()).await {
+        Ok(_) => {
+            change_connectivity(&node_id, true).await?;
+        }
+        Err(_) => {
+            change_connectivity(&node_id, false).await?;
+        }
+    }
 
     Ok(())
 }
