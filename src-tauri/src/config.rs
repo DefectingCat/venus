@@ -188,6 +188,35 @@ fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> Result<()>
     Ok(())
 }
 
+pub fn proxy_builder(node: &Node, tag: String) -> Result<Outbound> {
+    let vmess = Vmess {
+        address: node.add.clone(),
+        port: node.port.parse()?,
+        users: vec![CoreUser {
+            id: node.id.clone(),
+            alter_id: node.aid.parse()?,
+            email: "rua@rua.rua".into(),
+            security: "auto".into(),
+        }],
+    };
+
+    let proxy = Outbound {
+        tag,
+        protocol: "vmess".into(),
+        settings: OutboundSettings { vnext: vec![vmess] },
+        stream_settings: Some(stream_settings_builder(node)?),
+        proxy_setting: None,
+        mux: None,
+    };
+    Ok(proxy)
+}
+
+/// Deprecated
+///
+/// Build three outbounds
+///
+/// proxy, freedom and blackhole
+#[deprecated(note = "use proxy builder instead")]
 pub fn outbouds_builder(node: &Node) -> Result<Vec<Outbound>> {
     let vmess = Vmess {
         address: node.add.clone(),
@@ -199,6 +228,7 @@ pub fn outbouds_builder(node: &Node) -> Result<Vec<Outbound>> {
             security: "auto".into(),
         }],
     };
+
     let proxy = Outbound {
         tag: "proxy".into(),
         protocol: "vmess".into(),
@@ -207,7 +237,6 @@ pub fn outbouds_builder(node: &Node) -> Result<Vec<Outbound>> {
         proxy_setting: None,
         mux: None,
     };
-
     let freedom = Outbound {
         protocol: "freedom".into(),
         settings: OutboundSettings { vnext: vec![] },

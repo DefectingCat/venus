@@ -1,7 +1,7 @@
 use crate::{
-    config::outbouds_builder,
+    config::proxy_builder,
     message::{ConfigMsg, MSG_TX},
-    utils::error::{VError, VResult},
+    utils::error::VResult,
     CONFIG, CORE,
 };
 use anyhow::anyhow;
@@ -10,9 +10,12 @@ use anyhow::anyhow;
 #[tauri::command]
 pub async fn select_node(node_id: String) -> VResult<()> {
     let mut config = CONFIG.lock().await;
+    let config = &mut *config;
+    let rua = &mut config.rua;
+    let core = &mut config.core;
 
     let mut node = None;
-    config.rua.subscriptions.iter().for_each(|sub| {
+    rua.subscriptions.iter().for_each(|sub| {
         node = sub
             .nodes
             .iter()
@@ -20,13 +23,15 @@ pub async fn select_node(node_id: String) -> VResult<()> {
     });
     let node = node.ok_or(anyhow!("node {} not found", node_id))?;
 
-    let outbounds = outbouds_builder(node)?;
-
-    let core = config
-        .core
+    let core = core
         .as_mut()
-        .ok_or(VError::EmptyError("core config is empty"))?;
-    core.outbounds = outbounds;
+        .ok_or(anyhow!("cannont found config config"))?;
+    let proxy_outbound = core
+        .outbounds
+        .iter()
+        .position(|outbound| outbound.tag == "proxy")
+        .ok_or(anyhow!("cannot found proxy outbound"))?;
+    core.outbounds[proxy_outbound] = proxy_builder(node, "proxy".into())?;
     config.write_core()?;
 
     config.rua.current_id = node_id;

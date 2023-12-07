@@ -3,7 +3,7 @@ use crate::{
     utils::error::VResult,
     CONFIG, CORE,
 };
-use anyhow::{Ok as AOk, Result};
+use anyhow::{anyhow, Ok as AOk, Result};
 use log::{info, warn};
 use std::{sync::Arc, thread, time::Duration};
 use tauri::{async_runtime, Window};
@@ -98,13 +98,22 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     Ok(())
 }
 
+/// Test selected node speed
+///
+/// ## Argments
+///
+/// `nodes`: select nodes id
+/// `window`: tauri window
 #[tauri::command]
 pub async fn node_speed(nodes: Vec<String>, window: Window) -> VResult<()> {
-    async_runtime::spawn(async move {
-        let mut core = CORE.lock().await;
-        core.speed_test(nodes, window)
-            .await
-            .expect("Speed test failed");
-    });
+    let mut config = CONFIG.lock().await;
+    let config = &mut *config;
+    let rua = &mut config.rua;
+    let core = &mut config.core;
+    let mut core = core
+        .as_mut()
+        .ok_or(anyhow!("cannont found config config"))?;
+    // core.outbounds
+
     Ok(())
 }

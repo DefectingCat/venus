@@ -115,7 +115,7 @@ impl VCore {
         Ok(())
     }
 
-    pub async fn speed_test(&mut self, node_ids: Vec<String>, window: Window) -> Result<()> {
+    pub async fn speed_test_old(&mut self, node_ids: Vec<String>, window: Window) -> Result<()> {
         let config = CONFIG.lock().await;
         let mut current_outbound = config.core.as_ref().map(|core| core.outbounds.clone());
         let target_proxy = config
