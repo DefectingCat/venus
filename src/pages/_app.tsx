@@ -111,7 +111,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       if (id === ContextID) return;
       toggleUI((ui) => {
         ui.showMenu = null;
-        ui.menus.clickNode = [];
+        ui.menus.clickNode = null;
       });
     };
     document.addEventListener('click', contextClose);
