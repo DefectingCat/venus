@@ -4,13 +4,16 @@ import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
 import { SettingItemLine } from 'pages/settings';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import useStore from 'store';
 import { Rule } from 'store/config-store';
 import ApplyBtn from './apply-btn';
 
 const ResizableTable = dynamic(
   () => import('components/common/resizeable-table'),
+);
+const RoutingDrawer = dynamic(
+  () => import('components/settings/routing-drawer'),
 );
 
 const RoutingSettings = () => {
@@ -160,6 +163,9 @@ const RoutingSettings = () => {
     [routing.rules],
   );
 
+  // add custom rules
+  const [drawerType, setDrawerType] = useState<'' | 'Add' | 'Editor'>('');
+
   return (
     <>
       <div className="flex">
@@ -220,7 +226,11 @@ const RoutingSettings = () => {
             }}
           />
           <div className="absolute bottom-4 right-4">
-            <Button shape="circle" icon={<PlusOutlined />}></Button>
+            <Button
+              shape="circle"
+              icon={<PlusOutlined />}
+              onClick={() => setDrawerType('Add')}
+            />
           </div>
         </div>
       </div>
@@ -228,6 +238,13 @@ const RoutingSettings = () => {
       <div className="mt-4">
         <ApplyBtn />
       </div>
+
+      {!!drawerType && (
+        <RoutingDrawer
+          drawerType={drawerType}
+          onClose={() => setDrawerType('')}
+        />
+      )}
     </>
   );
 };
