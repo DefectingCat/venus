@@ -1,4 +1,5 @@
-import { Select } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { Button, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
@@ -153,6 +154,12 @@ const RoutingSettings = () => {
     [],
   );
 
+  // Custom rules
+  const customRules = useMemo(
+    () => routing.rules.slice(3).map((r) => ({ ...r, id: r.id + 1 })),
+    [routing.rules],
+  );
+
   return (
     <>
       <div className="flex">
@@ -171,8 +178,8 @@ const RoutingSettings = () => {
         </div>
       </div>
 
-      <div>
-        <div>Built-in rules</div>
+      <div className="mb-2">
+        <div className="mb-1">Built-in rules</div>
         <div className="flex">
           <ResizableTable
             pagination={false}
@@ -190,6 +197,31 @@ const RoutingSettings = () => {
               y: '100%',
             }}
           />
+        </div>
+      </div>
+
+      <div className="mb-2">
+        <div className="mb-1">Custom rules</div>
+        <div className="flex relative">
+          <ResizableTable
+            pagination={false}
+            rowKey={(record: Rule) => record.id}
+            columns={tableCols}
+            dataSource={customRules}
+            onRow={() => ({
+              className: clsx(
+                'cursor-pointer select-none',
+                'transition-all duration-300',
+                'hover:bg-[#fafafa] hover:dark:bg-gray-800',
+              ),
+            })}
+            scroll={{
+              y: '100%',
+            }}
+          />
+          <div className="absolute bottom-4 right-4">
+            <Button shape="circle" icon={<PlusOutlined />}></Button>
+          </div>
         </div>
       </div>
 
