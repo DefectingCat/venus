@@ -13,6 +13,7 @@ export const MenuItemClass = clsx(
   'px-4 py-1 select-none',
   'cursor-pointer rounded-lg',
   'mb-1 last:mb-0',
+  'dark:hover:bg-gray-700',
 );
 
 /**
