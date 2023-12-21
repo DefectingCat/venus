@@ -11,35 +11,30 @@ use crate::{
         subs::{add_subscription, update_all_subs, update_sub},
         ui::{exit_app, toggle_window},
     },
-    core::{core_version, exit_core, VCore},
-    event::RUAEvents,
+    core::{exit_core, VCore},
+    init::setup_app,
     logger::init_logger,
-    message::{message_handler, ConfigMsg, MSG_TX},
-    store::ui::CoreStatus,
+    message::{ConfigMsg, MSG_TX},
     tray::tray_menu,
-    utils::get_main_window,
 };
-use anyhow::{anyhow, Ok as AOk};
+use anyhow::Ok as AOk;
 use config::VConfig;
 use log::{error, info};
 use once_cell::sync::Lazy;
-use std::{
-    env,
-    error::Error,
-    sync::atomic::{AtomicBool, Ordering},
-};
+use std::{env, sync::atomic::AtomicBool};
 use store::ui::UI;
 use tauri::{
-    async_runtime, App, AppHandle, Manager, RunEvent, SystemTray, SystemTrayEvent, WindowEvent,
+    async_runtime, AppHandle, Manager, RunEvent, SystemTray, SystemTrayEvent, WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
+use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 use tokio::sync::Mutex;
 
 mod commands;
 mod config;
 mod core;
 mod event;
+mod init;
 mod logger;
 mod message;
 mod store;
@@ -83,80 +78,6 @@ fn main() {
 
     info!("Starting up.");
     info!("Venus - {}", VERSION);
-
-    // App handler. handle app startup
-    let handle_app = move |app: &mut App| -> Result<(), Box<dyn Error>> {
-        #[cfg(target_os = "macos")]
-        app.set_activation_policy(tauri::ActivationPolicy::Accessory);
-
-        let resources_path = app
-            .handle()
-            .path_resolver()
-            .resolve_resource("resources/")
-            .ok_or(anyhow!("resource path is empty"))?;
-        // Init config and core
-        let window = get_main_window(app)?;
-        // Start config and core
-        async_runtime::spawn(async move {
-            let mut config = CONFIG.lock().await;
-            info!("Start init config");
-            match config.init(&resources_path) {
-                Ok(_) => info!("Config init sucess"),
-                Err(err) => {
-                    error!("Init config failed {}", err);
-                    return AOk(());
-                }
-            }
-            // Restore alll window status.
-            if config.rua.save_windows {
-                window.restore_state(StateFlags::all())?;
-            }
-
-            info!("Start core");
-            let mut core = CORE.lock().await;
-            // Set v2ray assert location with environment
-            env::set_var("V2RAY_LOCATION_ASSET", &resources_path);
-
-            let mut ui = UI.lock().await;
-            match core.init(&config.core_path).await {
-                Ok(_) => {
-                    ui.core_status = CoreStatus::Started;
-                    info!("Core started");
-                }
-                Err(err) => {
-                    error!("Core start failed {err:?}");
-                    CORE_SHUTDOWN.store(false, Ordering::Relaxed);
-                    ui.core_status = CoreStatus::Stopped;
-                }
-            }
-            ui.core_version = core_version()?;
-            AOk(())
-        });
-
-        let window = get_main_window(app)?;
-        app.listen_global("ready", move |_e| {
-            use RUAEvents::*;
-            info!("Frontend ready");
-            let window = window.get_window("main").unwrap();
-            let task = async move {
-                let config = CONFIG.lock().await;
-                let ui = UI.lock().await;
-                window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
-                window.emit_all(UpdateCoreConfig.into(), &config.core)?;
-                window.emit_all(UpdateUI.into(), &*ui)?;
-                info!("Reload config succeeded");
-                AOk(())
-            };
-            async_runtime::spawn(task);
-        });
-
-        let window = get_main_window(app)?;
-        // The config will use receiver here
-        // when got a message, config will update and
-        // emit a event to notify frontend to update global state
-        message_handler(window)?;
-        Ok(())
-    };
 
     // Used to runner to manage core process
     // Runner handler
@@ -255,7 +176,7 @@ fn main() {
                 }
             }
         })
-        .setup(handle_app)
+        .setup(setup_app)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(runner);
