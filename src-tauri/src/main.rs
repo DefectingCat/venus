@@ -11,23 +11,18 @@ use crate::{
         subs::{add_subscription, update_all_subs, update_sub},
         ui::{exit_app, toggle_window},
     },
-    core::{exit_core, VCore},
-    init::setup_app,
+    core::VCore,
+    init::{app_runtime, setup_app, single_instance_init, window_event_handler},
     logger::init_logger,
-    message::{ConfigMsg, MSG_TX},
     tray::tray_menu,
 };
-use anyhow::Ok as AOk;
 use config::VConfig;
-use log::{error, info};
+use log::info;
 use once_cell::sync::Lazy;
 use std::{env, sync::atomic::AtomicBool};
 use store::ui::UI;
-use tauri::{
-    async_runtime, AppHandle, Manager, RunEvent, SystemTray, SystemTrayEvent, WindowEvent,
-};
+use tauri::{SystemTray, SystemTrayEvent};
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 use tokio::sync::Mutex;
 
 mod commands;
@@ -75,48 +70,8 @@ fn main() {
             eprintln!("Logger init failed {e}");
         }
     }
-
     info!("Starting up.");
     info!("Venus - {}", VERSION);
-
-    // Used to runner to manage core process
-    // Runner handler
-    let runner = move |app: &AppHandle, event: RunEvent| match event {
-        RunEvent::Exit => {
-            async_runtime::spawn(async move { exit_core().await });
-        }
-        RunEvent::ExitRequested { api, .. } => {
-            let _api = api;
-        }
-        RunEvent::WindowEvent {
-            label,
-            event: WindowEvent::CloseRequested { api, .. },
-            ..
-        } => {
-            let win = app.get_window(label.as_str()).expect("Cannot get window");
-            win.hide().expect("Cannot hide window");
-            api.prevent_close();
-
-            let app_handler = app.app_handle();
-            async_runtime::spawn(async move {
-                if label == "main" {
-                    {
-                        let mut ui = UI.lock().await;
-                        ui.main_visible = false;
-                    }
-                    MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
-                }
-                let config = CONFIG.lock().await;
-                if config.rua.save_windows {
-                    if let Err(err) = app_handler.save_window_state(StateFlags::all()) {
-                        error!("Save window status failed {}", err)
-                    };
-                }
-                AOk(())
-            });
-        }
-        _ => {}
-    };
 
     tauri::Builder::default()
         .system_tray(SystemTray::new())
@@ -149,35 +104,14 @@ fn main() {
         ])
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
-        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-            info!("{}, {argv:?}, {cwd}", app.package_info().name);
-            match app.emit_all("single-instance", Payload { args: argv, cwd }) {
-                Ok(_) => {
-                    let windows = app.windows();
-                    windows.iter().for_each(|(_, win)| {
-                        win.show().expect("Cannot show window");
-                        win.set_focus().expect("Cannot set focus on window");
-                    })
-                }
-                Err(err) => {
-                    error!("{err}");
-                }
-            };
-        }))
+        .plugin(tauri_plugin_single_instance::init(single_instance_init))
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
-        .on_window_event(|event| {
-            if let tauri::WindowEvent::Focused(is_focused) = event.event() {
-                let name = event.window().label();
-                if !is_focused && name == "menu" {
-                    event.window().hide().unwrap();
-                }
-            }
-        })
+        .on_window_event(window_event_handler)
         .setup(setup_app)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(runner);
+        .run(app_runtime);
 }

@@ -1,12 +1,18 @@
 use crate::{
-    core::core_version, event::RUAEvents, message::message_handler, store::ui::CoreStatus,
-    utils::get_main_window, CONFIG, CORE, CORE_SHUTDOWN, UI,
+    core::{core_version, exit_core},
+    event::RUAEvents,
+    message::{message_handler, ConfigMsg, MSG_TX},
+    store::ui::CoreStatus,
+    utils::get_main_window,
+    Payload, CONFIG, CORE, CORE_SHUTDOWN, UI,
 };
 use anyhow::{anyhow, Ok as AOk, Result};
 use log::{error, info};
 use std::{env, error::Error, path::PathBuf, sync::atomic::Ordering, thread};
-use tauri::{async_runtime, App, Manager, Window};
-use tauri_plugin_window_state::{StateFlags, WindowExt};
+use tauri::{
+    async_runtime, App, AppHandle, GlobalWindowEvent, Manager, RunEvent, Window, WindowEvent,
+};
+use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 
 /// Setup app and init configs. used for `tauri::Builder::default().setup()`
 ///
@@ -102,4 +108,79 @@ async fn init_core_and_config(resources_path: &PathBuf, window: &Window) -> Resu
     }
     ui.core_version = core_version()?;
     AOk(())
+}
+
+/// App runtime handler. used for `tauri::Builder::default().run()`
+/// for handle runtime events
+///
+/// ## Arguments
+///
+/// `app`: current tauri app handler
+/// `event`: tauri runtime events
+pub fn app_runtime(app: &AppHandle, event: RunEvent) {
+    match event {
+        RunEvent::Exit => {
+            async_runtime::spawn(async move { exit_core().await });
+        }
+        RunEvent::ExitRequested { api, .. } => {
+            let _api = api;
+        }
+        RunEvent::WindowEvent {
+            label,
+            event: WindowEvent::CloseRequested { api, .. },
+            ..
+        } => {
+            let win = app.get_window(label.as_str()).expect("Cannot get window");
+            win.hide().expect("Cannot hide window");
+            api.prevent_close();
+
+            let app_handler = app.app_handle();
+            let window_task = async move {
+                if label == "main" {
+                    {
+                        let mut ui = UI.lock().await;
+                        ui.main_visible = false;
+                    }
+                    MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
+                }
+                let config = CONFIG.lock().await;
+                if config.rua.save_windows {
+                    if let Err(err) = app_handler.save_window_state(StateFlags::all()) {
+                        error!("Save window status failed {}", err)
+                    };
+                }
+                AOk(())
+            };
+            async_runtime::spawn(window_task);
+        }
+        _ => {}
+    }
+}
+
+/// Hanlde rumtime global tauri window event
+/// used for `tauri::Builder::default().on_window_event()`
+pub fn window_event_handler(event: GlobalWindowEvent) {
+    if let tauri::WindowEvent::Focused(is_focused) = event.event() {
+        let name = event.window().label();
+        if !is_focused && name == "menu" {
+            event.window().hide().unwrap();
+        }
+    }
+}
+
+/// Init tauri_plugin_single_instance plugin
+pub fn single_instance_init(app: &AppHandle, argv: Vec<String>, cwd: String) {
+    info!("{}, {argv:?}, {cwd}", app.package_info().name);
+    match app.emit_all("single-instance", Payload { args: argv, cwd }) {
+        Ok(_) => {
+            let windows = app.windows();
+            windows.iter().for_each(|(_, win)| {
+                win.show().expect("Cannot show window");
+                win.set_focus().expect("Cannot set focus on window");
+            })
+        }
+        Err(err) => {
+            error!("{err}");
+        }
+    };
 }

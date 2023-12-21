@@ -102,6 +102,5 @@ pub fn handle_tray_menu(app: &AppHandle) -> Result<()> {
 //         main_visible
 //     };
 //     toggle_windows(windows, !show)?;
-
 //     Ok(())
 // }
