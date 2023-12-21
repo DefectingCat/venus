@@ -35,21 +35,24 @@ impl VConfig {
     }
 
     /// Re-read config from file
+    ///
+    /// ## Arguments
+    ///
+    /// `resource_path`: the store path of `config.json` and `config.toml`
     pub fn init(&mut self, resource_path: &Path) -> Result<()> {
         let mut core_default = PathBuf::from(resource_path);
         core_default.push("config.json");
 
-        let home = match home::home_dir() {
-            Some(path) => {
+        let home = home::home_dir()
+            .map(|path| {
                 let mut path = path;
                 path.push(format!(".config/{}", NAME));
                 path
-            }
-            None => {
+            })
+            .unwrap_or_else(|| {
                 error!("Cannot detect user home folder, use /usr/local instead");
                 PathBuf::from(format!("/usr/local/{}", NAME))
-            }
-        };
+            });
         let mut core_path = PathBuf::from(&home);
         core_path.push("config.json");
         let mut rua_path = PathBuf::from(&home);
@@ -89,7 +92,7 @@ impl VConfig {
         Ok(())
     }
 
-    /// Reload core config file to VConfig
+    /// Reload core config file from VConfig
     pub fn reload_core(&mut self) -> Result<()> {
         let core_file = File::open(&self.core_path)?;
         let core_config: CoreConfig = serde_json::from_reader(core_file)?;
@@ -121,11 +124,16 @@ impl VConfig {
 /// Detect target config path exists
 /// If not exists, create all parent folders
 /// and copy default config file to target path.
+///
+/// ## Arguments
+///
+/// `target_path`: target config file path
+/// `default_path`: if target path is not exist then use this default path
 fn detect_and_create(target_path: &PathBuf, default_path: PathBuf) -> Result<()> {
     if !target_path.exists() {
         let parent = target_path
             .parent()
-            .ok_or(anyhow!("Core path parent is empty"))?;
+            .ok_or(anyhow!("config path parent is empty"))?;
         fs::create_dir_all(parent)?;
         fs::copy(default_path, target_path)?;
     }
@@ -154,6 +162,13 @@ pub fn find_node<'a>(node_id: &String, rua: &'a RConfig) -> Result<&'a Node> {
     Ok(node)
 }
 
+/// Build core outbound item.
+/// now only support vemss protocol
+///
+/// ## Arguments
+///
+/// `node`: node info from subscription
+/// `tag`: outbound tag name
 pub fn proxy_builder(node: &Node, tag: String) -> Result<Outbound> {
     let vmess = Vmess {
         address: node.add.clone(),
