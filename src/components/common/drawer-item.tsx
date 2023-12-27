@@ -1,6 +1,8 @@
+import { EditorProps } from '@monaco-editor/react';
 import { useBoolean } from 'ahooks';
 import { Input, theme } from 'antd';
 import clsx from 'clsx';
+import Monaco from 'components/monaco';
 import { ReactNode } from 'react';
 
 const { useToken } = theme;
@@ -89,8 +91,14 @@ export const DrawerInputArea = ({
   );
 };
 
-export const DrawerMonaco = () => {
-  return <></>;
+export const DrawerMonaco = ({ label }: { label: string } & EditorProps) => {
+  const [focused, setFocused] = useBoolean(false);
+
+  return (
+    <DrawerItem label={label} focused={focused}>
+      <Monaco onFocus={setFocused.setTrue} onBlur={setFocused.setFalse} />
+    </DrawerItem>
+  );
 };
 
 export default DrawerItem;

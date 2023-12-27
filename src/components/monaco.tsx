@@ -1,20 +1,33 @@
 import Editor, { EditorProps } from '@monaco-editor/react';
-import debounce from 'lodash/debounce';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-const Monaco = (props: EditorProps) => {
+type MonacoProps = {
+  onFocus?: () => void;
+  onBlur?: () => void;
+} & EditorProps;
+
+const Monaco = (props: MonacoProps) => {
   const wrapper = useRef<HTMLDivElement>(null);
-  const editor = useRef<monaco.editor.IStandaloneCodeEditor>(null);
+  const [editor, setEditor] =
+    useState<monaco.editor.IStandaloneCodeEditor>(null);
 
+  // Init events
   useEffect(() => {
-    if (!editor.current || !wrapper.current) return;
-    const mona = editor.current;
+    if (!editor) return;
+    editor.onDidFocusEditorWidget(props?.onFocus);
+    editor.onDidBlurEditorWidget(props?.onBlur);
+  }, [editor, props]);
+
+  const { options, ...rest } = props;
+
+  /* useEffect(() => {
+    if (!editor || !wrapper.current) return;
     const resetLayout = () => {
-      mona.layout({ width: 0, height: 0 });
+      editor.layout({ width: 0, height: 0 });
       window.requestAnimationFrame(() => {
         const rect = wrapper.current.getBoundingClientRect();
-        mona.layout({ width: rect.width, height: rect.height });
+        editor.layout({ width: rect.width, height: rect.height });
       });
     };
     const debounced = debounce(resetLayout, 300);
@@ -23,12 +36,12 @@ const Monaco = (props: EditorProps) => {
     return () => {
       window.removeEventListener('resize', resetLayout);
     };
-  }, []);
+  }, [editor]); */
 
   return (
     <div ref={wrapper}>
       <Editor
-        onMount={(monaco) => (editor.current = monaco)}
+        onMount={(monaco) => setEditor(monaco)}
         height="20vh"
         options={{
           minimap: {
@@ -40,8 +53,9 @@ const Monaco = (props: EditorProps) => {
           lineDecorationsWidth: 0,
           lineNumbersMinChars: 0,
           contextmenu: false,
+          ...options,
         }}
-        {...props}
+        {...rest}
       />
     </div>
   );

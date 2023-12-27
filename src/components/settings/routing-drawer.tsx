@@ -1,7 +1,6 @@
 import { useBoolean } from 'ahooks';
 import { Drawer } from 'antd';
-import DrawerItem, { DrawerInput } from 'components/common/drawer-item';
-import Monaco from 'components/monaco';
+import { DrawerInput, DrawerMonaco } from 'components/common/drawer-item';
 
 const RoutingDrawer = ({
   drawerType,
@@ -25,9 +24,7 @@ const RoutingDrawer = ({
       keyboard={false}
       maskClosable={false}
     >
-      <DrawerItem label="IP">
-        <Monaco />
-      </DrawerItem>
+      <DrawerMonaco label="IP" defaultLanguage="json" />
       <DrawerInput />
     </Drawer>
   );
