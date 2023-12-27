@@ -1,11 +1,9 @@
 import { useBoolean } from 'ahooks';
 import { Drawer, QRCode } from 'antd';
-import dynamic from 'next/dynamic';
+import { DrawerInput } from 'components/common/drawer-item';
 import useStore from 'store';
 import { Node } from 'store/config-store';
 import { NodeDrawerType } from 'store/ui-store';
-
-const DrawerItem = dynamic(() => import('components/home/drawer-item'));
 
 const NodeDrawer = ({ node }: { node: Node }) => {
   const [open, setOpen] = useBoolean(true);
@@ -15,23 +13,23 @@ const NodeDrawer = ({ node }: { node: Node }) => {
   const typeMap: { [key in NodeDrawerType]: JSX.Element } = {
     editor: (
       <>
-        <DrawerItem label="Protocol" value={node.nodeType} />
-        <DrawerItem label="Name" value={node.ps} />
-        <DrawerItem label="Address" value={node.add} />
-        <DrawerItem label="Port" value={node.port} />
-        <DrawerItem label="Net Type" value={node.net} />
-        <DrawerItem label="AlertID" value={node.aid} />
-        <DrawerItem label="Host" value={node.host} />
-        <DrawerItem label="Path" value={node.path} />
-        <DrawerItem label="TLS" value={node.tls} />
-        <DrawerItem label="Alpn" value={node.alpn} />
-        <DrawerItem label="Link" value={node.rawLink} />
+        <DrawerInput label="Protocol" value={node.nodeType} />
+        <DrawerInput label="Name" value={node.ps} />
+        <DrawerInput label="Address" value={node.add} />
+        <DrawerInput label="Port" value={node.port} />
+        <DrawerInput label="Net Type" value={node.net} />
+        <DrawerInput label="AlertID" value={node.aid} />
+        <DrawerInput label="Host" value={node.host} />
+        <DrawerInput label="Path" value={node.path} />
+        <DrawerInput label="TLS" value={node.tls} />
+        <DrawerInput label="Alpn" value={node.alpn} />
+        <DrawerInput label="Link" value={node.rawLink} />
       </>
     ),
     share: (
       <>
-        <DrawerItem label="Name" value={node.ps} />
-        <DrawerItem label="Link" value={node.rawLink} />
+        <DrawerInput label="Name" value={node.ps} />
+        <DrawerInput label="Link" value={node.rawLink} />
         <div className="flex items-center justify-center w-full">
           <QRCode size={330} value={node.rawLink} />
         </div>
