@@ -163,7 +163,7 @@ const Nodes = () => {
   const [currentNode, setCurrentNode] = useState<Node>(null);
 
   return (
-    <>
+    <div className="overflow-auto flex-1">
       <ResizableTable
         pagination={false}
         rowKey={(record: Node) => record.add + record.ps}
@@ -200,7 +200,7 @@ const Nodes = () => {
       />
 
       {!!drawerType && <NodeDrawer node={currentNode} />}
-    </>
+    </div>
   );
 };
 

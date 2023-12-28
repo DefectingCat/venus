@@ -33,7 +33,7 @@ const Subscriptions = () => {
   };
 
   return (
-    <>
+    <div>
       <div className="flex items-center">
         <Button className="mr-2" onClick={setOpen.setTrue}>
           Add
@@ -57,7 +57,7 @@ const Subscriptions = () => {
       </div>
 
       {open && <SubscriptionAdder onCancel={setOpen.setFalse} />}
-    </>
+    </div>
   );
 };
 
