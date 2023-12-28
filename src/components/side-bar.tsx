@@ -26,6 +26,16 @@ const navi = [
     name: 'Logging',
     path: '/logging',
   },
+  {
+    id: 3,
+    name: 'Editor',
+    path: '/editor',
+  },
+  {
+    id: 4,
+    name: 'About',
+    path: '/about',
+  },
 ];
 
 export default function SideBar() {

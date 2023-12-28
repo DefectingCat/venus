@@ -30,7 +30,7 @@ function App() {
   return (
     <>
       <MainLayout>
-        <div className={clsx('flex flex-col h-full', 'overflow-hidden')}>
+        <div className={clsx('flex flex-col h-full')}>
           <div className="">
             <div className="mt-1 mb-4">
               <Title>Proxies</Title>
@@ -47,7 +47,7 @@ function App() {
             />
           </div>
 
-          <div className="flex-1 rounded-lg overflow-hidden">
+          <div className="flex-1 rounded-lg">
             {/* <div className="h-full overflow-auto">{childrenMap[current]}</div> */}
             {childrenMap[current]}
           </div>

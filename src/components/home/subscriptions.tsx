@@ -46,7 +46,7 @@ const Subscriptions = () => {
           Update All
         </Button>
       </div>
-      <div className={clsx('mt-4 flex flex-wrap', 'items-center ')}>
+      <div className={clsx('mt-4 flex flex-wrap', 'items-center')}>
         {!!subscriptions.length ? (
           subscriptions.map((sub) => (
             <SubscriptionCard key={sub.url} sub={sub} />
