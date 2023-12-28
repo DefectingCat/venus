@@ -5,9 +5,6 @@ import MainLayout from 'layouts/main-layout';
 import dynamic from 'next/dynamic';
 import useStore from 'store';
 
-// tailwind names for each setting line
-export const SettingItemLine = clsx('grid grid-cols-2', 'items-center gap-4');
-
 const BasicSettings = dynamic(
   () => import('components/settings/basic-settings'),
 );

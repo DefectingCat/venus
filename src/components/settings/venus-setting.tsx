@@ -1,6 +1,6 @@
 import { useBoolean, useMount } from 'ahooks';
 import { Checkbox, Input, Select } from 'antd';
-import clsx from 'clsx';
+import Setting, { SettingLine } from 'components/common/setting-line';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import useStore from 'store';
@@ -28,53 +28,57 @@ const VenusSetting = () => {
 
   return (
     <div className="flex">
-      <div className={clsx('grid grid-cols-2', 'items-center gap-4')}>
-        <div>Theme</div>
-        <Select
-          className="w-24"
-          value={mounted ? theme : 'system'}
-          options={[
-            { value: 'system', label: 'System' },
-            { value: 'light', label: 'Light' },
-            { value: 'dark', label: 'Dark' },
-          ]}
-          onChange={(value) => setTheme(value)}
-        />
+      <Setting>
+        <SettingLine title="Theme">
+          <Select
+            className="w-24"
+            value={mounted ? theme : 'system'}
+            options={[
+              { value: 'system', label: 'System' },
+              { value: 'light', label: 'Light' },
+              { value: 'dark', label: 'Dark' },
+            ]}
+            onChange={(value) => setTheme(value)}
+          />
+        </SettingLine>
 
-        <div>Rember window size</div>
-        <Checkbox
-          checked={rua.saveWindows}
-          onChange={(e) =>
-            updateConfig((config) => {
-              config.rua.saveWindows = e.target.checked;
-            })
-          }
-        />
+        <SettingLine title="Rember window size">
+          <Checkbox
+            checked={rua.saveWindows}
+            onChange={(e) =>
+              updateConfig((config) => {
+                config.rua.saveWindows = e.target.checked;
+              })
+            }
+          />
+        </SettingLine>
 
-        <div>Auto start</div>
-        <Checkbox
-          checked={isAuto}
-          onClick={async () => {
-            isAuto ? await disable() : await enable();
-            await updateAuto();
-          }}
-        />
+        <SettingLine title="Auto start">
+          <Checkbox
+            checked={isAuto}
+            onClick={async () => {
+              isAuto ? await disable() : await enable();
+              await updateAuto();
+            }}
+          />
+        </SettingLine>
 
-        <div>Speed test url</div>
-        <Input
-          value={rua.settings.speedUrl}
-          className="w-60"
-          onChange={(e) => {
-            updateConfig((config) => {
-              config.rua.settings.speedUrl = e.target.value;
-            });
-          }}
-        />
+        <SettingLine title="Speed test url">
+          <Input
+            value={rua.settings.speedUrl}
+            className="w-60"
+            onChange={(e) => {
+              updateConfig((config) => {
+                config.rua.settings.speedUrl = e.target.value;
+              });
+            }}
+          />
+        </SettingLine>
 
         <div>
           <ApplyBtn />
         </div>
-      </div>
+      </Setting>
     </div>
   );
 };

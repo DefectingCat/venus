@@ -1,14 +1,14 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Select, Tooltip } from 'antd';
+import { Button, Radio, Select, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
+import Setting, { SettingLine } from 'components/common/setting-line';
 import dynamic from 'next/dynamic';
-import { SettingItemLine } from 'pages/settings';
 import { useMemo, useState } from 'react';
 import useStore from 'store';
 import { Rule } from 'store/config-store';
-import ApplyBtn from './apply-btn';
 import { DEFAULT_ROUTING_RULE } from 'utils/consts';
+import ApplyBtn from './apply-btn';
 
 const ResizableTable = dynamic(
   () => import('components/common/resizeable-table'),
@@ -26,11 +26,6 @@ const RoutingSettings = () => {
     });
   };
 
-  // Built in rules
-  const builtInRules = useMemo(
-    () => routing.rules.slice(0, 3).map((r, i) => ({ ...r, id: i + 1 })),
-    [routing.rules],
-  );
   const tableCols: ColumnsType<Rule> = useMemo(
     () => [
       {
@@ -205,37 +200,27 @@ const RoutingSettings = () => {
     [],
   );
 
+  // Built in rules
+  const builtInRules = useMemo(
+    () => routing.rules.slice(0, 3).map((r, i) => ({ ...r, id: i + 1 })),
+    [routing.rules],
+  );
+
   // Custom rules
   const customRules = useMemo(
     () => routing.rules.slice(3).map((r, i) => ({ ...r, id: i + 1 })),
     [routing.rules],
   );
-
   // add custom rules
   const [drawerType, setDrawerType] = useState<'' | 'Add' | 'Editor'>('');
   // current edit custom rule's index
   const [current, setCurrent] = useState(-1);
 
-  return (
-    <>
-      <div className="flex">
-        <div className={SettingItemLine}>
-          <div>Domain strategy</div>
-          <Select
-            className="w-32"
-            value={routing.domainStrategy}
-            onChange={changeStrategy}
-            options={[
-              { value: 'AsIs', label: 'AsIs' },
-              { value: 'IPIfNonMatch', label: 'IPIfNonMatch' },
-              { value: 'IPOnDemand', label: 'IPOnDemand' },
-            ]}
-          ></Select>
-        </div>
-      </div>
-
+  // switch rule between [b]uilt-in and [c]ustom
+  const [radio, setRadio] = useState<'b' | 'c'>('b');
+  const RuleChildren = {
+    b: (
       <div className="mb-2">
-        <div className="mb-1">Built-in rules</div>
         <div className="flex">
           <ResizableTable
             pagination={false}
@@ -255,9 +240,10 @@ const RoutingSettings = () => {
           />
         </div>
       </div>
+    ),
 
+    c: (
       <div className="mb-2">
-        <div className="mb-1">Custom rules</div>
         <div className="flex relative">
           <ResizableTable
             pagination={false}
@@ -289,6 +275,41 @@ const RoutingSettings = () => {
             />
           </div>
         </div>
+      </div>
+    ),
+  };
+
+  return (
+    <>
+      <div className="flex">
+        <Setting>
+          <SettingLine title="Domain strategy">
+            <Select
+              className="w-32"
+              value={routing.domainStrategy}
+              onChange={changeStrategy}
+              options={[
+                { value: 'AsIs', label: 'AsIs' },
+                { value: 'IPIfNonMatch', label: 'IPIfNonMatch' },
+                { value: 'IPOnDemand', label: 'IPOnDemand' },
+              ]}
+            />
+          </SettingLine>
+        </Setting>
+      </div>
+
+      <div className="my-2">
+        <div className="mb-1">Rules</div>
+        <div className="mb-2">
+          <Radio.Group
+            defaultValue={radio}
+            onChange={(e) => setRadio(e.target.value)}
+          >
+            <Radio.Button value="b">Built-in</Radio.Button>
+            <Radio.Button value="c">Custom</Radio.Button>
+          </Radio.Group>
+        </div>
+        <div>{RuleChildren[radio]}</div>
       </div>
 
       <div className="mt-4">
