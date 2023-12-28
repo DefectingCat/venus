@@ -5,14 +5,14 @@ export const URL_VALID =
 
 export const DEFAULT_ROUTING_RULE: Rule = {
   type: 'field',
-  ip: [],
-  domain: [],
-  outboundTag: '',
+  ip: null,
+  domain: null,
+  outboundTag: 'proxy',
   port: '',
   network: '',
-  source: [],
-  inboundTag: [],
-  protocol: [],
+  source: null,
+  inboundTag: null,
+  protocol: null,
   attrs: '',
   balancerTag: '',
 };

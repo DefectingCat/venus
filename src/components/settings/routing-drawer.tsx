@@ -10,6 +10,8 @@ import useStore from 'store';
 import { Rule } from 'store/config-store';
 import { useImmer } from 'use-immer';
 
+const keys = ['ip', 'domain', 'source', 'inboundTag', 'attrs', 'protocol'];
+
 const RoutingDrawer = ({
   drawerType,
   onClose,
@@ -25,7 +27,6 @@ const RoutingDrawer = ({
   const rules = useStore((s) => s.core.routing.rules);
   const [open, setOpen] = useBoolean(true);
 
-  const keys = ['ip', 'domain', 'source', 'inboundTag', 'attrs', 'protocol'];
   const rule = rules[index];
   const [buffer, setBuffer] = useImmer(
     /**
