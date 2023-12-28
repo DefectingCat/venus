@@ -1,7 +1,7 @@
 use crate::{
     core::{core_version, exit_core},
     event::RUAEvents,
-    message::{message_handler, ConfigMsg, MSG_TX},
+    message::message_handler,
     store::ui::CoreStatus,
     utils::get_main_window,
     Payload, CONFIG, CORE, CORE_SHUTDOWN, UI,
@@ -136,13 +136,6 @@ pub fn app_runtime(app: &AppHandle, event: RunEvent) {
 
             let app_handler = app.app_handle();
             let window_task = async move {
-                if label == "main" {
-                    {
-                        let mut ui = UI.lock().await;
-                        ui.main_visible = false;
-                    }
-                    MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
-                }
                 let config = CONFIG.lock().await;
                 if config.rua.save_windows {
                     if let Err(err) = app_handler.save_window_state(StateFlags::all()) {
@@ -160,32 +153,14 @@ pub fn app_runtime(app: &AppHandle, event: RunEvent) {
 /// Hanlde rumtime global tauri window event
 /// used for `tauri::Builder::default().on_window_event()`
 pub fn window_event_handler(event: GlobalWindowEvent) {
-    let task = async move {
-        if let tauri::WindowEvent::Focused(is_focused) = event.event() {
-            let name = event.window().label();
-            match name {
-                "menu" => {
-                    if *is_focused {
-                        return;
-                    }
-                    if let Err(err) = event.window().hide() {
-                        error!("hide window failed {}", err)
-                    }
-                }
-                "main" => {
-                    UI.lock().await.main_visible = *is_focused;
-                    MSG_TX
-                        .lock()
-                        .await
-                        .send(ConfigMsg::EmitUI)
-                        .await
-                        .expect("send ui message failed");
-                }
-                _ => {}
+    if let tauri::WindowEvent::Focused(is_focused) = event.event() {
+        let name = event.window().label();
+        if !is_focused && name == "menu" {
+            if let Err(err) = event.window().hide() {
+                error!("hide window failed {}", err)
             }
         }
     };
-    async_runtime::spawn(task);
 }
 
 /// Init tauri_plugin_single_instance plugin

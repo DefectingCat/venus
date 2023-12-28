@@ -21,8 +21,8 @@ const SystemTray = () => {
   const handleShow = async () => {
     try {
       await Promise.all([
-        invoke('toggle_window', { label: 'main', show: !mainVisible }),
-        invoke('toggle_window', { label: 'menu', show: !mainVisible }),
+        invoke('toggle_window', { label: 'main', show: true }),
+        invoke('toggle_window', { label: 'menu', show: false }),
       ]);
     } catch (err) {
       message.error(err.toString());
@@ -59,7 +59,7 @@ const SystemTray = () => {
       >
         <div className={TrayMenu} onClick={handleShow}>
           <BsWindowDesktop className="mr-2" />
-          <div>{mainVisible ? 'Hide all windows' : 'Show all windows'}</div>
+          <div>{mainVisible ? 'Hide all windows' : 'Show windows'}</div>
         </div>
         <div className={TrayMenu} onClick={handleCore}>
           <LuRefreshCcw className="mr-2" />

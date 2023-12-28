@@ -8,8 +8,6 @@ pub struct UI {
     pub core_status: CoreStatus,
     /// V2ray core version
     pub core_version: String,
-    /// The main window is visible
-    pub main_visible: bool,
 }
 
 impl Default for UI {
@@ -18,7 +16,6 @@ impl Default for UI {
         UI {
             core_status: Stopped,
             core_version: String::new(),
-            main_visible: true,
         }
     }
 }

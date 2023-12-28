@@ -30,8 +30,8 @@ pub enum ConfigMsg {
     EmitLog(String),
     /// emit core and rua config to frontend
     EmitConfig,
-    /// emit whole ui to fronted
-    EmitUI,
+    // emit whole ui to fronted
+    // EmitUI,
 }
 // pub struct ConfigMsg {
 //     pub msg: ConfigMsgType,
@@ -88,11 +88,10 @@ pub fn message_handler(window: Window) -> Result<()> {
                     let config = CONFIG.lock().await;
                     window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
                     window.emit_all(UpdateCoreConfig.into(), &config.core)?;
-                }
-                ConfigMsg::EmitUI => {
-                    let ui = UI.lock().await;
-                    window.emit_all(UpdateUI.into(), &*ui)?;
-                }
+                } /* ConfigMsg::EmitUI => {
+                      let ui = UI.lock().await;
+                      window.emit_all(UpdateUI.into(), &*ui)?;
+                  } */
             }
         }
         AOk(())

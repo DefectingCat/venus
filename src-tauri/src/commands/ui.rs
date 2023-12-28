@@ -1,9 +1,4 @@
-use crate::{
-    core::exit_core,
-    message::{ConfigMsg, MSG_TX},
-    utils::error::VResult,
-    UI,
-};
+use crate::{core::exit_core, utils::error::VResult};
 use anyhow::anyhow;
 use tauri::{AppHandle, Manager};
 
@@ -25,11 +20,6 @@ pub async fn toggle_window(app: AppHandle, label: String, show: bool) -> VResult
     } else {
         win.hide()?;
     }
-    if label == "main" {
-        let mut ui = UI.lock().await;
-        ui.main_visible = show;
-    }
-    MSG_TX.lock().await.send(ConfigMsg::EmitUI).await?;
     Ok(())
 }
 
