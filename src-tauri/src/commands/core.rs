@@ -2,7 +2,7 @@ use crate::{
     config::{find_node, proxy_builder},
     message::{ConfigMsg, MSG_TX},
     utils::error::VResult,
-    CONFIG, CORE,
+    CONFIG,
 };
 use anyhow::anyhow;
 
@@ -37,6 +37,6 @@ pub async fn select_node(node_id: String) -> VResult<()> {
 
 #[tauri::command]
 pub async fn restart_core() -> VResult<()> {
-    CORE.lock().await.restart().await?;
+    MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     Ok(())
 }

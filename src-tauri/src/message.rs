@@ -73,6 +73,11 @@ pub fn message_handler(window: Window) -> Result<()> {
                         }
                         Err(err) => {
                             error!("Core restart failed {err}");
+                            let config = CONFIG.lock().await;
+                            ui.core_status = CoreStatus::Stopped;
+                            window.emit_all(UpdateUI.into(), &*ui)?;
+                            window.emit_all(UpdateCoreConfig.into(), &config.core)?;
+                            window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
                         }
                     }
                 }
