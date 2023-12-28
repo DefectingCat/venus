@@ -213,6 +213,8 @@ const RoutingSettings = () => {
 
   // add custom rules
   const [drawerType, setDrawerType] = useState<'' | 'Add' | 'Editor'>('');
+  // current edit custom rule's index
+  const [current, setCurrent] = useState(-1);
 
   return (
     <>
@@ -277,7 +279,13 @@ const RoutingSettings = () => {
             <Button
               shape="circle"
               icon={<PlusOutlined />}
-              onClick={() => setDrawerType('Add')}
+              onClick={() => {
+                setDrawerType('Add');
+                updateConfig((config) => {
+                  config.core.routing.rules.push(DEFAULT_ROUTING_RULE);
+                  setCurrent(config.core.routing.rules.length - 1);
+                });
+              }}
             />
           </div>
         </div>
@@ -290,11 +298,9 @@ const RoutingSettings = () => {
       {!!drawerType && (
         <RoutingDrawer
           drawerType={drawerType}
+          index={current}
           onClose={() => {
             setDrawerType('');
-            updateConfig((config) => {
-              config.core.routing.rules.push(DEFAULT_ROUTING_RULE);
-            });
           }}
         />
       )}

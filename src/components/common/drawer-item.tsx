@@ -1,6 +1,6 @@
 import { EditorProps } from '@monaco-editor/react';
 import { useBoolean } from 'ahooks';
-import { Input, Select, SelectProps, theme } from 'antd';
+import { Input, InputProps, Select, SelectProps, theme } from 'antd';
 import clsx from 'clsx';
 import Monaco from 'components/monaco';
 import { ReactNode } from 'react';
@@ -59,12 +59,11 @@ const DrawerItem = ({
 export const DrawerInput = ({
   label,
   value,
-  onChange,
+  ...rest
 }: {
   label: string;
   value?: string;
-  onChange?: () => void;
-}) => {
+} & InputProps) => {
   const [focused, setFocused] = useBoolean(false);
 
   return (
@@ -72,9 +71,9 @@ export const DrawerInput = ({
       <Input
         bordered={false}
         value={value}
-        onChange={onChange}
         onFocus={setFocused.setTrue}
         onBlur={setFocused.setFalse}
+        {...rest}
       />
     </DrawerItem>
   );
