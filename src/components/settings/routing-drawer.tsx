@@ -37,7 +37,7 @@ const RoutingDrawer = ({
         placeholder="Select a outbound"
         options={outbounds.map((out) => ({ label: out.tag, value: out.tag }))}
       />
-      <DrawerInput />
+      <DrawerInput label="Port" />
     </Drawer>
   );
 };

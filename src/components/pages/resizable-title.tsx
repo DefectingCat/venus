@@ -1,3 +1,5 @@
+import { Tooltip } from 'antd';
+import { DetailedHTMLProps, ThHTMLAttributes } from 'react';
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 
 const ResizableTitle = ({
@@ -10,9 +12,20 @@ const ResizableTitle = ({
     data: ResizeCallbackData,
   ) => void;
   width: number;
-}) => {
+} & DetailedHTMLProps<
+  ThHTMLAttributes<HTMLTableHeaderCellElement>,
+  HTMLTableHeaderCellElement
+>) => {
+  const { children, ...props } = rest;
+
+  const Th = (
+    <th {...props}>
+      <Tooltip title={children}>{children}</Tooltip>
+    </th>
+  );
+
   if (!width) {
-    return <th {...rest} />;
+    return Th;
   }
 
   return (
@@ -30,7 +43,7 @@ const ResizableTitle = ({
       onResize={onResize}
       draggableOpts={{ enableUserSelectHack: false }}
     >
-      <th {...rest} />
+      {Th}
     </Resizable>
   );
 };

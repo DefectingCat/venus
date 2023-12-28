@@ -61,7 +61,7 @@ export const DrawerInput = ({
   value,
   onChange,
 }: {
-  label?: string;
+  label: string;
   value?: string;
   onChange?: () => void;
 }) => {
@@ -85,7 +85,7 @@ export const DrawerInputArea = ({
   value,
   onChange,
 }: {
-  label?: string;
+  label: string;
   value?: string;
   onChange?: () => void;
 }) => {

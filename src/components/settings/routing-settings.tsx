@@ -1,5 +1,5 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Select } from 'antd';
+import { Button, Select, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
@@ -57,15 +57,20 @@ const RoutingSettings = () => {
       },
       {
         title: 'Domain',
-        ellipsis: true,
+        ellipsis: {
+          showTitle: false,
+        },
         key: 'domain',
         dataIndex: 'domain',
         width: 80,
-        render: (domain) => (
-          <div className="overflow-hidden text-ellipsis">
-            {JSON.stringify(domain)}
-          </div>
-        ),
+        render: (domain) => {
+          const value = JSON.stringify(domain);
+          return (
+            <Tooltip title={value}>
+              <div className="overflow-hidden text-ellipsis">{value}</div>
+            </Tooltip>
+          );
+        },
       },
       {
         title: 'Outbound Tag',
