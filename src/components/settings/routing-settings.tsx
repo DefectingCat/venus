@@ -34,7 +34,9 @@ const RoutingSettings = () => {
     () => [
       {
         title: 'ID',
-        ellipsis: true,
+        ellipsis: {
+          showTitle: false,
+        },
         key: 'type',
         width: 50,
         render: (_, rule) => (
@@ -45,15 +47,20 @@ const RoutingSettings = () => {
       },
       {
         title: 'IP',
-        ellipsis: true,
+        ellipsis: {
+          showTitle: false,
+        },
         key: 'ip',
         dataIndex: 'ip',
         width: 80,
-        render: (ip) => (
-          <div className="overflow-hidden text-ellipsis">
-            {JSON.stringify(ip)}
-          </div>
-        ),
+        render: (ip) => {
+          const value = JSON.stringify(ip);
+          return (
+            <Tooltip title={value}>
+              <div className="overflow-hidden text-ellipsis">{value}</div>
+            </Tooltip>
+          );
+        },
       },
       {
         title: 'Domain',
@@ -74,88 +81,123 @@ const RoutingSettings = () => {
       },
       {
         title: 'Outbound Tag',
-        ellipsis: true,
+        ellipsis: {
+          showtitle: false,
+        },
         width: 90,
         key: 'outboundTag',
         dataIndex: 'outboundTag',
         render: (outboundTag) => (
-          <div className="overflow-hidden text-ellipsis">{outboundTag}</div>
+          <Tooltip title={outboundTag}>
+            <div className="overflow-hidden text-ellipsis">{outboundTag}</div>
+          </Tooltip>
         ),
       },
       {
         title: 'Port',
-        ellipsis: true,
+        ellipsis: {
+          showtitle: false,
+        },
         key: 'port',
         dataIndex: 'port',
         width: 70,
         render: (port) => (
-          <div className="overflow-hidden text-ellipsis">{port}</div>
+          <Tooltip title={port}>
+            <div className="overflow-hidden text-ellipsis">{port}</div>
+          </Tooltip>
         ),
       },
       {
         title: 'Network',
-        ellipsis: true,
+        ellipsis: {
+          showtitle: false,
+        },
         key: 'network',
         dataIndex: 'network',
         width: 80,
         render: (network) => (
-          <div className="overflow-hidden text-ellipsis">{network}</div>
+          <Tooltip title={network}>
+            <div className="overflow-hidden text-ellipsis">{network}</div>
+          </Tooltip>
         ),
       },
       {
         title: 'Source',
-        ellipsis: true,
+        ellipsis: {
+          showtitle: false,
+        },
         key: 'source',
         dataIndex: 'source',
         width: 80,
-        render: (source) => (
-          <div className="overflow-hidden text-ellipsis">
-            {JSON.stringify(source)}
-          </div>
-        ),
+        render: (source) => {
+          const value = JSON.stringify(source);
+          return (
+            <Tooltip title={value}>
+              <div className="overflow-hidden text-ellipsis">{value}</div>
+            </Tooltip>
+          );
+        },
       },
       {
         title: 'Inbound Tag',
-        ellipsis: true,
+        ellipsis: {
+          showtitle: false,
+        },
         key: 'inboundTag',
         dataIndex: 'inboundTag',
         width: 80,
-        render: (inboundTag) => (
-          <div className="overflow-hidden text-ellipsis">
-            {JSON.stringify(inboundTag)}
-          </div>
-        ),
+        render: (inboundTag) => {
+          const value = JSON.stringify(inboundTag);
+          return (
+            <Tooltip title={value}>
+              <div className="overflow-hidden text-ellipsis">{value}</div>
+            </Tooltip>
+          );
+        },
       },
       {
         title: 'Protocol',
-        ellipsis: true,
+        ellipsis: {
+          showtitle: false,
+        },
         key: 'protocol',
         dataIndex: 'protocol',
         width: 80,
-        render: (protocol) => (
-          <div className="overflow-hidden text-ellipsis">
-            {JSON.stringify(protocol)}
-          </div>
-        ),
+        render: (protocol) => {
+          const value = JSON.stringify(protocol);
+          return (
+            <Tooltip title={value}>
+              <div className="overflow-hidden text-ellipsis">{value}</div>
+            </Tooltip>
+          );
+        },
       },
       {
         title: 'Attrs',
-        ellipsis: true,
+        ellipsis: {
+          showtitle: false,
+        },
         key: 'attrs',
         dataIndex: 'attrs',
         width: 80,
         render: (attrs) => (
-          <div className="overflow-hidden text-ellipsis">{attrs}</div>
+          <Tooltip title={attrs}>
+            <div className="overflow-hidden text-ellipsis">{attrs}</div>
+          </Tooltip>
         ),
       },
       {
         title: 'Balancer Tag',
-        ellipsis: true,
+        ellipsis: {
+          showtitle: false,
+        },
         key: 'balancerTag',
         dataIndex: 'balancerTag',
         width: 80,
         render: (balancerTag) => (
-          <div className="overflow-hidden text-ellipsis">{balancerTag}</div>
+          <Tooltip title={balancerTag}>
+            <div className="overflow-hidden text-ellipsis">{balancerTag}</div>
+          </Tooltip>
         ),
       },
     ],
