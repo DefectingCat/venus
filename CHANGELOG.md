@@ -1,5 +1,22 @@
 # ChangeLog
 
+## [0.1.2] - 2023-12-28
+
+### Added
+
+- Routing setting page
+- Custom routing rule table
+- Add custom routing rules
+- Update core to 5.13.0
+- Update dependencies
+
+### Fixed
+
+- Change speed test node connectivity
+- Change loading state when test speed
+- Defaut core config error
+- System tray menu hover color in dark mode
+
 ## [0.1.1] - 2023-11-30
 
 ### Fixed
