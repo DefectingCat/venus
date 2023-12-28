@@ -14,7 +14,8 @@ const { terminal } = kit;
 const unixCommand = async (filename) => {
   log(`Start extract ${filename}`);
   log(
-    (await execa('unzip', [`downloads/${filename}`, '-d', 'downloads/'])).stdout
+    (await execa('unzip', [`downloads/${filename}`, '-d', 'downloads/']))
+      .stdout,
   );
   log('Start copy file');
 
@@ -24,7 +25,7 @@ const unixCommand = async (filename) => {
   log(
     'Copy v2ary',
     (await execa('cp', [`downloads/${binName}`, 'src-tauri/binaries/core/']))
-      .stdout
+      .stdout,
   );
   log(
     'Copy geoip-only-cn-private.dat',
@@ -33,16 +34,16 @@ const unixCommand = async (filename) => {
         'downloads/geoip-only-cn-private.dat',
         'src-tauri/resources/',
       ])
-    ).stdout
+    ).stdout,
   );
   log(
     'Copy geosite.dat',
     (await execa('cp', ['downloads/geosite.dat', 'src-tauri/resources/']))
-      .stdout
+      .stdout,
   );
   log(
     'Copy geoip.dat',
-    (await execa('cp', ['downloads/geoip.dat', 'src-tauri/resources/'])).stdout
+    (await execa('cp', ['downloads/geoip.dat', 'src-tauri/resources/'])).stdout,
   );
 };
 const winCommand = async (filename) => {
@@ -58,7 +59,7 @@ const winCommand = async (filename) => {
     await execa('powershell -command Expand-Archive', [
       `-Force -LiteralPath downloads/${filename}`,
       `-DestinationPath downloads/`,
-    ])
+    ]),
   );
   log('Start copy file');
 
@@ -72,7 +73,7 @@ const winCommand = async (filename) => {
         'downloads/v2ray.exe',
         'src-tauri/binaries/core/',
       ])
-    ).stdout
+    ).stdout,
   );
   log(
     'Copy geoip-only-cn-private.dat',
@@ -81,7 +82,7 @@ const winCommand = async (filename) => {
         'downloads/geoip-only-cn-private.dat',
         'src-tauri/resources/',
       ])
-    ).stdout
+    ).stdout,
   );
   log(
     'Copy geosite.dat',
@@ -90,7 +91,7 @@ const winCommand = async (filename) => {
         'downloads/geosite.dat',
         'src-tauri/resources/',
       ])
-    ).stdout
+    ).stdout,
   );
   log(
     'Copy geoip.dat',
@@ -99,7 +100,7 @@ const winCommand = async (filename) => {
         'downloads/geoip.dat',
         'src-tauri/resources/',
       ])
-    ).stdout
+    ).stdout,
   );
 };
 
@@ -153,13 +154,13 @@ async function downloadFile(url, filename = '.') {
             this.push(chunk);
             callback();
           },
-        })
+        }),
       )
-      .pipe(fileStream)
+      .pipe(fileStream),
   );
 }
 
-async function downloadCore(manual, manualPlat) {
+async function downloadCore(manual, manualPlat, skipDownload) {
   const { arch, platform } = process;
   log('Current platform: ', platform, 'current arch: ', arch);
   const targetName = `v2ray-${manual ? manualPlat : platformMap[platform]}-${
@@ -168,24 +169,26 @@ async function downloadCore(manual, manualPlat) {
   log('Target file: ', targetName);
 
   try {
-    const result = await (
-      await fetch(
-        'https://api.github.com/repos/v2fly/v2ray-core/releases?per_page=1&page=1'
-      )
-    ).json();
-    const assets = result[0].assets;
-    const url = assets.reduce((prev, asset) => {
-      return asset.name === targetName ? asset.browser_download_url : prev;
-    }, '');
-    if (!url) throw new Error('Cannot find taget url');
-    log('Start downloading: ', url);
-    await downloadFile(url, targetName);
-    log(`Download ${targetName} sucess`);
+    if (!skipDownload) {
+      const result = await (
+        await fetch(
+          'https://api.github.com/repos/v2fly/v2ray-core/releases?per_page=1&page=1',
+        )
+      ).json();
+      const assets = result[0].assets;
+      const url = assets.reduce((prev, asset) => {
+        return asset.name === targetName ? asset.browser_download_url : prev;
+      }, '');
+      if (!url) throw new Error('Cannot find taget url');
+      log('Start downloading: ', url);
+      await downloadFile(url, targetName);
+      log(`Download ${targetName} sucess`);
+    }
 
     const command = platformCommand[process.platform];
     if (!command) {
       throw new Error(
-        `Cannot found target platform command ${process.platform}`
+        `Cannot found target platform command ${process.platform}`,
       );
     }
     await command(targetName);
@@ -202,6 +205,7 @@ async function main() {
   const args = process.argv.slice(2);
 
   const manual = args.includes('-m');
+  const skipDownload = args.includes('--skip-download');
 
   terminal.clear();
   if (manual) {
@@ -223,12 +227,12 @@ async function main() {
             targetTriple = 'x86_64-pc-windows-msvc';
             break;
         }
-        await downloadCore(manual, res.selectedText);
+        await downloadCore(manual, res.selectedText, skipDownload);
         process.exit();
-      }
+      },
     );
   } else {
-    downloadCore();
+    downloadCore(false, null, skipDownload);
   }
 }
 
