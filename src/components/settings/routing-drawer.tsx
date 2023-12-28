@@ -16,6 +16,7 @@ const RoutingDrawer = ({
 }) => {
   const [open, setOpen] = useBoolean(true);
   const outbounds = useStore((s) => s.core.outbounds);
+  const inbounds = useStore((s) => s.core.inbounds);
 
   return (
     <Drawer
@@ -38,6 +39,53 @@ const RoutingDrawer = ({
         options={outbounds.map((out) => ({ label: out.tag, value: out.tag }))}
       />
       <DrawerInput label="Port" />
+      <DrawerSelect
+        label="Network"
+        placeholder="Select a network"
+        options={[
+          {
+            label: 'Tcp',
+            value: 'tcp',
+          },
+          {
+            label: 'Udp',
+            value: 'udp',
+          },
+          {
+            label: 'Tcp and udp',
+            value: 'tcp,udp',
+          },
+        ]}
+      />
+      <DrawerMonaco label="Source" language="json" />
+      <DrawerSelect
+        label="Inbound tag"
+        placeholder="Select a inbound"
+        options={inbounds.map((inbound) => ({
+          label: inbound.tag,
+          value: inbound.tag,
+        }))}
+      />
+      <DrawerSelect
+        label="Protocol"
+        placeholder="Select a protocol"
+        options={[
+          {
+            label: 'Http',
+            value: 'http',
+          },
+          {
+            label: 'Tls',
+            value: 'tls',
+          },
+          {
+            label: 'Bittorrent',
+            value: 'bittorrent',
+          },
+        ]}
+      />
+      <DrawerMonaco label="Attr" language="starlark" />
+      <DrawerInput label="Balance tag" />
     </Drawer>
   );
 };
