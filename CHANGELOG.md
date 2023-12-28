@@ -1,5 +1,15 @@
 # ChangeLog
 
+## [0.1.1] - 2023-11-30
+
+### Fixed
+
+- Built-in rule table title resize
+- Add shadow to zustand
+- Antd module transpile
+- Table title bar color
+- Apply button not working for core setting
+
 ## [0.1.0] - 2023-11-15
 
 ### Added
