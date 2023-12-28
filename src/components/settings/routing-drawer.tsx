@@ -1,6 +1,11 @@
 import { useBoolean } from 'ahooks';
 import { Drawer } from 'antd';
-import { DrawerInput, DrawerMonaco } from 'components/common/drawer-item';
+import {
+  DrawerInput,
+  DrawerMonaco,
+  DrawerSelect,
+} from 'components/common/drawer-item';
+import useStore from 'store';
 
 const RoutingDrawer = ({
   drawerType,
@@ -10,6 +15,7 @@ const RoutingDrawer = ({
   onClose: () => void;
 }) => {
   const [open, setOpen] = useBoolean(true);
+  const outbounds = useStore((s) => s.core.outbounds);
 
   return (
     <Drawer
@@ -24,7 +30,13 @@ const RoutingDrawer = ({
       keyboard={false}
       maskClosable={false}
     >
-      <DrawerMonaco label="IP" defaultLanguage="json" />
+      <DrawerMonaco label="IP" language="json" />
+      <DrawerMonaco label="Domain" language="json" />
+      <DrawerSelect
+        label="Outbounds"
+        placeholder="Select a outbound"
+        options={outbounds.map((out) => ({ label: out.tag, value: out.tag }))}
+      />
       <DrawerInput />
     </Drawer>
   );

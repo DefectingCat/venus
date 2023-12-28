@@ -1,6 +1,6 @@
 import { EditorProps } from '@monaco-editor/react';
 import { useBoolean } from 'ahooks';
-import { Input, theme } from 'antd';
+import { Input, Select, SelectProps, theme } from 'antd';
 import clsx from 'clsx';
 import Monaco from 'components/monaco';
 import { ReactNode } from 'react';
@@ -14,15 +14,17 @@ const DrawerItem = ({
   label,
   children,
   focused,
+  className,
 }: {
   label: string;
   children: ReactNode;
   focused?: boolean;
+  className?: string;
 }) => {
   const token = useToken();
 
   return (
-    <div className={clsx('relative flex items-center', 'mb-4')}>
+    <div className={clsx('relative flex items-center', 'mb-4', className)}>
       <div
         className={clsx(
           'outline-gray-300 flex-1',
@@ -51,6 +53,9 @@ const DrawerItem = ({
   );
 };
 
+/**
+ * Input
+ */
 export const DrawerInput = ({
   label,
   value,
@@ -91,12 +96,45 @@ export const DrawerInputArea = ({
   );
 };
 
-export const DrawerMonaco = ({ label }: { label: string } & EditorProps) => {
+export const DrawerMonaco = ({
+  label,
+  ...rest
+}: { label: string } & EditorProps) => {
   const [focused, setFocused] = useBoolean(false);
 
   return (
     <DrawerItem label={label} focused={focused}>
-      <Monaco onFocus={setFocused.setTrue} onBlur={setFocused.setFalse} />
+      <Monaco
+        onFocus={setFocused.setTrue}
+        onBlur={setFocused.setFalse}
+        {...rest}
+      />
+    </DrawerItem>
+  );
+};
+
+export const DrawerSelect = ({
+  label,
+  ...rest
+}: { label: string } & SelectProps) => {
+  const [focused, setFocused] = useBoolean(false);
+  const { onFocus, onBlur, ...props } = rest;
+
+  return (
+    <DrawerItem label={label} focused={focused}>
+      <Select
+        className="block"
+        bordered={false}
+        onFocus={(e) => {
+          setFocused.setTrue();
+          onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setFocused.setFalse();
+          onBlur?.(e);
+        }}
+        {...props}
+      />
     </DrawerItem>
   );
 };
