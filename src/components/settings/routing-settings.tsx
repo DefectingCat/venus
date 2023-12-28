@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import useStore from 'store';
 import { Rule } from 'store/config-store';
 import ApplyBtn from './apply-btn';
+import { DEFAULT_ROUTING_RULE } from 'utils/consts';
 
 const ResizableTable = dynamic(
   () => import('components/common/resizeable-table'),
@@ -206,7 +207,7 @@ const RoutingSettings = () => {
 
   // Custom rules
   const customRules = useMemo(
-    () => routing.rules.slice(3).map((r) => ({ ...r, id: r.id + 1 })),
+    () => routing.rules.slice(3).map((r, i) => ({ ...r, id: i + 1 })),
     [routing.rules],
   );
 
@@ -289,7 +290,12 @@ const RoutingSettings = () => {
       {!!drawerType && (
         <RoutingDrawer
           drawerType={drawerType}
-          onClose={() => setDrawerType('')}
+          onClose={() => {
+            setDrawerType('');
+            updateConfig((config) => {
+              config.core.routing.rules.push(DEFAULT_ROUTING_RULE);
+            });
+          }}
         />
       )}
     </>
