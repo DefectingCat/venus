@@ -160,12 +160,32 @@ pub fn app_runtime(app: &AppHandle, event: RunEvent) {
 /// Hanlde rumtime global tauri window event
 /// used for `tauri::Builder::default().on_window_event()`
 pub fn window_event_handler(event: GlobalWindowEvent) {
-    if let tauri::WindowEvent::Focused(is_focused) = event.event() {
-        let name = event.window().label();
-        if !is_focused && name == "menu" {
-            event.window().hide().unwrap();
+    let task = async move {
+        if let tauri::WindowEvent::Focused(is_focused) = event.event() {
+            let name = event.window().label();
+            match name {
+                "menu" => {
+                    if *is_focused {
+                        return;
+                    }
+                    if let Err(err) = event.window().hide() {
+                        error!("hide window failed {}", err)
+                    }
+                }
+                "main" => {
+                    UI.lock().await.main_visible = *is_focused;
+                    MSG_TX
+                        .lock()
+                        .await
+                        .send(ConfigMsg::EmitUI)
+                        .await
+                        .expect("send ui message failed");
+                }
+                _ => {}
+            }
         }
-    }
+    };
+    async_runtime::spawn(task);
 }
 
 /// Init tauri_plugin_single_instance plugin
