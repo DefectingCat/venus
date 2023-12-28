@@ -1,6 +1,6 @@
 [package]
 name = "venus"
-version = "0.0.9"
+version = "0.1.2"
 description = "A v2ray GUI client."
 authors = ["xfy"]
 license = ""
@@ -36,12 +36,12 @@ tauri = { version = "1.5", features = [
   "system-tray",
   "macos-private-api",
 ] }
-anyhow = "1.0.75"
+anyhow = "1.0.77"
 reqwest = { version = "0.11.23", features = ["json"] }
 tokio = { version = "1.35.1", features = ["full"] }
 log = "0.4"
 env_logger = "0.10.1"
-thiserror = "1.0.51"
+thiserror = "1.0.52"
 base64 = "0.21.5"
 serde_derive = "1.0.193"
 toml = "0.4.10"
@@ -55,7 +55,7 @@ tauri-plugin-positioner = { git = "https://github.com/tauri-apps/plugins-workspa
 ] }
 pluto = { git = "https://github.com/DefectingCat/pluto", branch = 'master' }
 chrono = "0.4.31"
-sysinfo = "0.29.11"
+sysinfo = "0.30.1"
 once_cell = "1.19.0"
 
 [features]

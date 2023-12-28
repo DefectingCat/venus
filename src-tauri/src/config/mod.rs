@@ -105,7 +105,7 @@ impl VConfig {
         let config = self.core.as_ref().ok_or(anyhow!("core config is empty"))?;
         let core_file = OpenOptions::new().write(true).open(&self.core_path)?;
         core_file.set_len(0)?;
-        serde_json::to_writer(&core_file, &config)?;
+        serde_json::to_writer_pretty(&core_file, &config)?;
         Ok(())
     }
 
