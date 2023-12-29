@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { error, log } from 'console';
 import { execa } from 'execa';
 import fs from 'fs';
@@ -165,6 +166,14 @@ async function downloadFile(url, filename = '.') {
       .pipe(fileStream),
   );
 }
+async function downloadWithWget(url, filename) {
+  if (fs.existsSync(downloadFolder)) {
+    await rm(downloadFolder, { recursive: true, force: true });
+  }
+  await mkdir(downloadFolder);
+  const { stdout } = await execa(`wget ${url} ${downloadFolder}/${filename}`);
+  log(stdout);
+}
 
 async function downloadCore(manual, manualPlat, skipDownload) {
   const { arch, platform } = process;
@@ -186,7 +195,7 @@ async function downloadCore(manual, manualPlat, skipDownload) {
         return asset.name === targetName ? asset.browser_download_url : prev;
       }, '');
       if (!url) throw new Error('Cannot find taget url');
-      log('Start downloading: ', url);
+      log('Start downloading: ', url, 'to', downloadFolder);
       await downloadFile(url, targetName);
       log(`Download ${targetName} sucess`);
     }
