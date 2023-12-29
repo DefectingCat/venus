@@ -4,8 +4,10 @@ import { immer } from 'zustand/middleware/immer';
 import { Node } from './config-store';
 import { LogSlice } from './log-store';
 
-export type MenuType = 'global' | 'node';
+export type MenuType = 'global' | 'node' | 'routing';
 export type NodeDrawerType = 'editor' | 'share';
+export type RoutingDrawerType = 'editor' | 'add';
+
 export interface UI {
   // content menu on right click
   showMenu: MenuType | null;
@@ -16,10 +18,14 @@ export interface UI {
   };
   // control by context menu
   menus: {
-    // node menus
+    // node menus drawer
     node: NodeDrawerType | false;
     // right click node
     clickNode: Node | null;
+    // routing menus drawer
+    routing: RoutingDrawerType | false;
+    // right clikc custom routing index
+    clickRule: number;
   };
 
   // loadings
@@ -74,6 +80,8 @@ const createUISlice: StateCreator<
   menus: {
     node: false,
     clickNode: null,
+    routing: false,
+    clickRule: -1,
   },
   loading: {
     updateAll: false,
@@ -96,7 +104,7 @@ const createUISlice: StateCreator<
   },
   closeMenus() {
     set((ui) => {
-      Object.keys(ui.menus).forEach((key) => {
+      ['node', 'routing'].forEach((key) => {
         ui.menus[key] = false;
       });
     });

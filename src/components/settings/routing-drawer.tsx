@@ -28,6 +28,7 @@ const RoutingDrawer = ({
   const [open, setOpen] = useBoolean(true);
 
   const rule = rules[index];
+  console.log(index, rule);
   const [buffer, setBuffer] = useImmer(
     /**
      * use `as` here, because the `JSON.stringify()` convert all fields to string

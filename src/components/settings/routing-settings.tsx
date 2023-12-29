@@ -20,6 +20,11 @@ const RoutingDrawer = dynamic(
 const RoutingSettings = () => {
   const routing = useStore((s) => s.core.routing);
   const updateConfig = useStore((s) => s.updateConfig);
+  const toggleUI = useStore((s) => s.toggleUI);
+  const drawerType = useStore((s) => s.menus.routing);
+  const clickRule = useStore((s) => s.menus.clickRule);
+  const closeMenus = useStore((s) => s.closeMenus);
+
   const changeStrategy = (value: string) => {
     updateConfig((config) => {
       config.core.routing.domainStrategy = value;
@@ -211,11 +216,8 @@ const RoutingSettings = () => {
     () => routing.rules.slice(3).map((r, i) => ({ ...r, id: i + 1 })),
     [routing.rules],
   );
-  // add custom rules
-  const [drawerType, setDrawerType] = useState<'' | 'Add' | 'Editor'>('');
-  // current edit custom rule's index
-  const [current, setCurrent] = useState(-1);
 
+  console.log(drawerType);
   // switch rule between [b]uilt-in and [c]ustom
   const [radio, setRadio] = useState<'b' | 'c'>('b');
   const RuleChildren = {
@@ -250,12 +252,26 @@ const RoutingSettings = () => {
             rowKey={(record: Rule) => record.id}
             columns={tableCols}
             dataSource={customRules}
-            onRow={() => ({
+            onRow={(record: Rule) => ({
               className: clsx(
                 'cursor-pointer select-none',
                 'transition-all duration-300',
                 'hover:bg-[#fafafa] hover:dark:bg-gray-800',
               ),
+              onContextMenu: (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                toggleUI((ui) => {
+                  ui.menus.clickRule =
+                    customRules.findIndex((r, i) => record.id === i + 1) +
+                    builtInRules.length;
+                  ui.mousePos = {
+                    x: e.clientX,
+                    y: e.clientY,
+                  };
+                  ui.showMenu = 'routing';
+                });
+              },
             })}
             scroll={{
               y: '100%',
@@ -266,10 +282,12 @@ const RoutingSettings = () => {
               shape="circle"
               icon={<PlusOutlined />}
               onClick={() => {
-                setDrawerType('Add');
                 updateConfig((config) => {
                   config.core.routing.rules.push(DEFAULT_ROUTING_RULE);
-                  setCurrent(config.core.routing.rules.length - 1);
+                });
+                toggleUI((ui) => {
+                  ui.menus.routing = 'add';
+                  ui.menus.clickRule = routing.rules.length - 1;
                 });
               }}
             />
@@ -319,10 +337,8 @@ const RoutingSettings = () => {
       {!!drawerType && (
         <RoutingDrawer
           drawerType={drawerType}
-          index={current}
-          onClose={() => {
-            setDrawerType('');
-          }}
+          index={clickRule}
+          onClose={closeMenus}
         />
       )}
     </>

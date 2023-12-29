@@ -29,6 +29,21 @@ const ContextMenu = () => {
   }));
 
   const menuMap: { [key in MenuType]: JSX.Element } = {
+    routing: (
+      <>
+        <div
+          className={MenuItemClass}
+          onClick={() => {
+            closeMenus();
+            toggleUI((ui) => {
+              ui.menus.routing = 'editor';
+            });
+          }}
+        >
+          Edit
+        </div>
+      </>
+    ),
     node: (
       <>
         <div
