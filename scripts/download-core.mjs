@@ -11,39 +11,49 @@ import { reanmeFile } from './rename-sidecar.mjs';
 
 const { terminal } = kit;
 
+const rootPath = process.cwd();
+const downloadFolder = path.resolve(rootPath, './downloads');
+const coreFolder = path.resolve(rootPath, './src-tauri/binaries/core/');
+const resourcesFolder = path.resolve(rootPath, './src-tauri/resources');
+
 const unixCommand = async (filename) => {
   log(`Start extract ${filename}`);
   log(
-    (await execa('unzip', [`downloads/${filename}`, '-d', 'downloads/']))
-      .stdout,
+    (
+      await execa('unzip', [
+        `${downloadFolder}/${filename}`,
+        '-d',
+        downloadFolder,
+      ])
+    ).stdout,
   );
   log('Start copy file');
 
-  if (!fs.existsSync('src-tauri/binaries/core/')) {
-    await mkdir('src-tauri/binaries/core/', { recursive: true });
+  if (!fs.existsSync(coreFolder)) {
+    await mkdir(coreFolder, { recursive: true });
   }
   log(
     'Copy v2ary',
-    (await execa('cp', [`downloads/${binName}`, 'src-tauri/binaries/core/']))
-      .stdout,
+    (await execa('cp', [`${downloadFolder}/${binName}`, coreFolder])).stdout,
   );
   log(
     'Copy geoip-only-cn-private.dat',
     (
       await execa('cp', [
-        'downloads/geoip-only-cn-private.dat',
-        'src-tauri/resources/',
+        `${downloadFolder}/geoip-only-cn-private.dat`,
+        resourcesFolder,
       ])
     ).stdout,
   );
   log(
     'Copy geosite.dat',
-    (await execa('cp', ['downloads/geosite.dat', 'src-tauri/resources/']))
+    (await execa('cp', [`${downloadFolder}/geosite.dat`, resourcesFolder]))
       .stdout,
   );
   log(
     'Copy geoip.dat',
-    (await execa('cp', ['downloads/geoip.dat', 'src-tauri/resources/'])).stdout,
+    (await execa('cp', [`${downloadFolder}/geoip.dat`, resourcesFolder]))
+      .stdout,
   );
 };
 const winCommand = async (filename) => {
@@ -63,24 +73,20 @@ const winCommand = async (filename) => {
   );
   log('Start copy file');
 
-  if (!fs.existsSync('src-tauri/binaries/core/')) {
-    await mkdir('src-tauri/binaries/core/', { recursive: true });
+  if (!fs.existsSync(coreFolder)) {
+    await mkdir(coreFolder, { recursive: true });
   }
   log(
     'Copy v2ary',
-    (
-      await execa('powershell -command cp', [
-        'downloads/v2ray.exe',
-        'src-tauri/binaries/core/',
-      ])
-    ).stdout,
+    (await execa('powershell -command cp', ['downloads/v2ray.exe', coreFolder]))
+      .stdout,
   );
   log(
     'Copy geoip-only-cn-private.dat',
     (
       await execa('powershell -command cp', [
         'downloads/geoip-only-cn-private.dat',
-        'src-tauri/resources/',
+        resourcesFolder,
       ])
     ).stdout,
   );
@@ -89,7 +95,7 @@ const winCommand = async (filename) => {
     (
       await execa('powershell -command cp', [
         'downloads/geosite.dat',
-        'src-tauri/resources/',
+        resourcesFolder,
       ])
     ).stdout,
   );
@@ -98,7 +104,7 @@ const winCommand = async (filename) => {
     (
       await execa('powershell -command cp', [
         'downloads/geoip.dat',
-        'src-tauri/resources/',
+        resourcesFolder,
       ])
     ).stdout,
   );
@@ -128,12 +134,12 @@ async function downloadFile(url, filename = '.') {
   const fileSize = res.headers.get('content-length');
   log('File size: ', fileSize);
 
-  if (fs.existsSync('downloads')) {
-    await rm('downloads', { recursive: true, force: true });
+  if (fs.existsSync(downloadFolder)) {
+    await rm(downloadFolder, { recursive: true, force: true });
   }
-  await mkdir('downloads');
+  await mkdir(downloadFolder);
 
-  const destination = path.resolve('./downloads', filename);
+  const destination = path.resolve(downloadFolder, filename);
   const fileStream = fs.createWriteStream(destination, { flags: 'wx' });
 
   const progressBar = terminal.progressBar({

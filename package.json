@@ -3,8 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "tauri dev",
-    "build": "tauri build",
+    "dev": "node scripts/dev.mjs && pnpm dev:before",
+    "dev:before": "tauri dev",
+    "build": "node scripts/build.mjs && pnpm build:before",
+    "build:before": "tauri build",
     "dev:web": "next dev -p 1420",
     "build:web": "next build",
     "tauri": "tauri",

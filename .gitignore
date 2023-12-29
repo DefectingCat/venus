@@ -18,6 +18,7 @@ dist
 dist-ssr
 *.local
 .next
+public/vs
 
 # Editor directories and files
 .vscode/*

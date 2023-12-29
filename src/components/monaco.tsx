@@ -1,4 +1,4 @@
-import Editor, { EditorProps } from '@monaco-editor/react';
+import Editor, { EditorProps, loader } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { useEffect, useRef, useState } from 'react';
 
@@ -6,6 +6,12 @@ type MonacoProps = {
   onFocus?: () => void;
   onBlur?: () => void;
 } & EditorProps;
+
+loader.config({
+  paths: {
+    vs: '/vs',
+  },
+});
 
 const Monaco = (props: MonacoProps) => {
   const wrapper = useRef<HTMLDivElement>(null);
