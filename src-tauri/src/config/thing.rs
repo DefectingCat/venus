@@ -122,7 +122,9 @@ pub struct CoreConfig {
 #[serde(rename_all = "camelCase")]
 pub struct Log {
     pub loglevel: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub access: Option<PathBuf>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<PathBuf>,
 }
 
@@ -136,12 +138,14 @@ pub struct Inbound {
     pub protocol: String,
     pub settings: InboundSettings,
     // Traffic sniffing
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sniffing: Option<Sniffing>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InboundSettings {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub auth: Option<String>,
     pub udp: bool,
     // pub ip: String,
@@ -155,6 +159,7 @@ pub struct InboundSettings {
 pub struct Sniffing {
     pub enabled: bool,
     pub dest_override: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub route_only: Option<bool>,
 }
 
@@ -164,8 +169,11 @@ pub struct Outbound {
     pub protocol: String,
     pub settings: OutboundSettings,
     pub tag: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub stream_settings: Option<StreamSettings>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub proxy_setting: Option<ProxySetting>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mux: Option<Mux>,
 }
 
@@ -174,13 +182,21 @@ pub struct Outbound {
 pub struct StreamSettings {
     pub network: String,
     pub security: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tls_settings: Option<TlsSettings>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tcp_settings: Option<TcpSettings>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub kcp_settings: Option<KcpSettings>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ws_settings: Option<WsSettings>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub http_settings: Option<HttpSettings>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ds_settings: Option<DsSettings>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub quic_settings: Option<QuicSettings>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sockopt: Option<Sockopt>,
 }
 
@@ -198,7 +214,9 @@ pub struct TlsSettings {
 #[serde(rename_all = "camelCase")]
 pub struct TcpSettings {
     pub header: KcpHeader,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub request: Option<Request>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub response: Option<Response>,
 }
 
@@ -364,17 +382,23 @@ pub struct Rule {
     #[serde(rename = "type")]
     pub type_field: String,
     #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ip: Option<Vec<String>>,
     #[serde(default)]
     pub domain: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub port: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub network: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<Vec<String>>,
     pub user: Option<Vec<String>>,
     pub inbound_tag: Option<Vec<String>>,
     pub protocol: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub attrs: Option<String>,
     pub outbound_tag: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub balancer_tag: Option<String>,
 }
 

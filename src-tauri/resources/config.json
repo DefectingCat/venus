@@ -1,4 +1,5 @@
 {
+  "$schema": "https://github.com/EHfive/v2ray-jsonschema/raw/main/v5-config.schema.json",
   "log": {
     "loglevel": "warning"
   },
@@ -51,18 +52,12 @@
     {
       "protocol": "freedom",
       "settings": {},
-      "tag": "direct",
-      "streamSettings": null,
-      "proxySetting": null,
-      "mux": null
+      "tag": "direct"
     },
     {
       "protocol": "blackhole",
       "settings": {},
-      "tag": "blocked",
-      "streamSettings": null,
-      "proxySetting": null,
-      "mux": null
+      "tag": "blocked"
     }
   ],
   "routing": {
