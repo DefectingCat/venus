@@ -11,6 +11,11 @@ loader.config({
   paths: {
     vs: '/vs',
   },
+  'vs/nls': {
+    availableLanguages: {
+      '*': '',
+    },
+  },
 });
 
 const Monaco = (props: MonacoProps) => {
