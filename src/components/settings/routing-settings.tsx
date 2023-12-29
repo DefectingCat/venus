@@ -287,7 +287,7 @@ const RoutingSettings = () => {
                 });
                 toggleUI((ui) => {
                   ui.menus.routing = 'add';
-                  ui.menus.clickRule = routing.rules.length - 1;
+                  ui.menus.clickRule = routing.rules.length;
                 });
               }}
             />

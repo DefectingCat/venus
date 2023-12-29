@@ -27,6 +27,8 @@ const ContextMenu = () => {
     toggleUI: s.toggleUI,
     closeMenus: s.closeMenus,
   }));
+  const updateConfig = useStore((s) => s.updateConfig);
+  const menus = useStore((s) => s.menus);
 
   const menuMap: { [key in MenuType]: JSX.Element } = {
     routing: (
@@ -41,6 +43,17 @@ const ContextMenu = () => {
           }}
         >
           Edit
+        </div>
+        <div
+          className={MenuItemClass}
+          onClick={() => {
+            closeMenus();
+            updateConfig((config) => {
+              config.core.routing.rules.splice(menus.clickRule, 1);
+            });
+          }}
+        >
+          Delete
         </div>
       </>
     ),
