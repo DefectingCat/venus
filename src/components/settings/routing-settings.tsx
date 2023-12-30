@@ -217,7 +217,6 @@ const RoutingSettings = () => {
     [routing.rules],
   );
 
-  console.log(drawerType);
   // switch rule between [b]uilt-in and [c]ustom
   const [radio, setRadio] = useState<'b' | 'c'>('b');
   const RuleChildren = {

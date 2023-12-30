@@ -1,5 +1,7 @@
 import Editor, { EditorProps, loader } from '@monaco-editor/react';
+import { useBoolean, useMount } from 'ahooks';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
 
 type MonacoProps = {
@@ -18,6 +20,11 @@ loader.config({
   },
 });
 
+const vsThemeMap = {
+  light: 'light',
+  dark: 'vs-dark',
+};
+
 const Monaco = (props: MonacoProps) => {
   const wrapper = useRef<HTMLDivElement>(null);
   const [editor, setEditor] =
@@ -31,6 +38,12 @@ const Monaco = (props: MonacoProps) => {
   }, [editor, props]);
 
   const { options, ...rest } = props;
+
+  // adapt theme
+  const [mounted, setMounted] = useBoolean(false);
+  useMount(setMounted.setTrue);
+  const { theme, systemTheme } = useTheme();
+  const currentTheme = theme === 'system' ? systemTheme : theme;
 
   /* useEffect(() => {
     if (!editor || !wrapper.current) return;
@@ -54,6 +67,7 @@ const Monaco = (props: MonacoProps) => {
       <Editor
         onMount={(monaco) => setEditor(monaco)}
         height="20vh"
+        theme={mounted ? vsThemeMap[currentTheme] : 'light'}
         options={{
           minimap: {
             enabled: false,
