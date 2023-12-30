@@ -32,7 +32,8 @@ const DrawerItem = ({
           'outline transition-all',
           focused && '!outline-[3px]',
           'border border-gray-300 border-solid',
-          'overflow-hidden',
+          'overflow-hidden dark:border-gray-600',
+          'dark:outline-gray-600',
         )}
       >
         {children}
