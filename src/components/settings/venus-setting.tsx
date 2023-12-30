@@ -1,5 +1,5 @@
 import { useBoolean, useMount } from 'ahooks';
-import { Checkbox, Input, Select } from 'antd';
+import { Checkbox, Input, Select, Tooltip } from 'antd';
 import Setting, { SettingLine } from 'components/common/setting-line';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
@@ -42,7 +42,13 @@ const VenusSetting = () => {
           />
         </SettingLine>
 
-        <SettingLine title="Rember window size">
+        <SettingLine
+          title={
+            <Tooltip title="Restore last window position and size">
+              Restore window
+            </Tooltip>
+          }
+        >
           <Checkbox
             checked={rua.saveWindows}
             onChange={(e) =>

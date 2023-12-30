@@ -13,7 +13,7 @@ export const SettingLine = ({
   title,
   children,
 }: {
-  title: string;
+  title: ReactNode;
   children: ReactNode;
 }) => {
   return (
