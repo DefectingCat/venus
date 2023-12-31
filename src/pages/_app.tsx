@@ -50,7 +50,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             if (log.logs.length > 1_000) {
               log.logs.shift();
             }
-            log.logs.push(e.payload);
+            log.total += 1;
+            log.logs.push({
+              id: log.total,
+              content: e.payload,
+            });
           });
         }),
       );

@@ -3,21 +3,24 @@ import clsx from 'clsx';
 import Title from 'components/pages/page-title';
 import useBackend from 'hooks/use-backend';
 import MainLayout from 'layouts/main-layout';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useStore from 'store';
 
 const Logging = () => {
   const logs = useStore((s) => s.logs);
+  const total = useStore((s) => s.total);
   const enable = useStore((s) => s.rua.logging);
 
   const updateConfig = useStore((s) => s.updateConfig);
   const { writeConfig } = useBackend();
 
-  // scroll to bottom
+  // auto scroll to bottom
+  const [autoScroll, setAutoScroll] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (!autoScroll) return;
     ref.current.scrollTop = ref.current.scrollHeight;
-  }, [logs]);
+  }, [autoScroll, total]);
 
   return (
     <MainLayout>
@@ -27,8 +30,8 @@ const Logging = () => {
         </div>
 
         <div className="flex items-center mb-2">
-          <div className="mr-2">Logging</div>
-          <div>
+          <div className="flex items-center mr-4">
+            <div className="mr-2">Logging</div>
             <Switch
               checked={enable}
               onChange={async (checked) => {
@@ -39,7 +42,16 @@ const Logging = () => {
               }}
             />
           </div>
+
+          <div className="flex items-center">
+            <div className="mr-2">Auto scroll</div>
+            <Switch
+              checked={autoScroll}
+              onChange={(checked) => setAutoScroll(checked)}
+            />
+          </div>
         </div>
+
         <div
           className={clsx(
             'flex-1 rounded-lg bg-gray-200',
@@ -50,9 +62,9 @@ const Logging = () => {
           ref={ref}
         >
           <pre className="m-0">
-            {logs.map((log, i) => (
-              <div key={i} className={clsx('px-2', 'pb-2 last:pb-0')}>
-                <code>{log}</code>
+            {logs.map((log) => (
+              <div key={log.id} className={clsx('px-2', 'pb-2 last:pb-0')}>
+                <code>{log.content}</code>
               </div>
             ))}
           </pre>

@@ -1,10 +1,15 @@
 import { StateCreator } from 'zustand';
-import { ConfigSlice } from './config-store';
 import { immer } from 'zustand/middleware/immer';
+import { ConfigSlice } from './config-store';
 import { UISlice } from './ui-store';
 
+type VenusLog = {
+  id: number;
+  content: string;
+};
 export interface Logging {
-  logs: string[];
+  total: number;
+  logs: VenusLog[];
 }
 export interface LoggingAction {
   updateLogging: (callback: (log: Logging) => void) => void;
@@ -18,6 +23,7 @@ const createLogSlice: StateCreator<
   [['zustand/immer', never]],
   LogSlice
 > = immer<LogSlice>((set) => ({
+  total: 0,
   logs: [],
   updateLogging(callback) {
     set(callback);
