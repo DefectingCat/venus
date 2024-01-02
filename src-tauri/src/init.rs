@@ -4,7 +4,7 @@ use crate::{
     message::message_handler,
     store::ui::CoreStatus,
     utils::get_main_window,
-    Payload, CONFIG, CORE, CORE_SHUTDOWN, UI,
+    CONFIG, CORE, CORE_SHUTDOWN, UI,
 };
 use anyhow::{anyhow, Ok as AOk, Result};
 use log::{error, info};
@@ -163,10 +163,16 @@ pub fn window_event_handler(event: GlobalWindowEvent) {
     };
 }
 
+#[derive(Clone, serde::Serialize)]
+struct SingleInstancePayload {
+    args: Vec<String>,
+    cwd: String,
+}
+
 /// Init tauri_plugin_single_instance plugin
 pub fn single_instance_init(app: &AppHandle, argv: Vec<String>, cwd: String) {
     info!("{}, {argv:?}, {cwd}", app.package_info().name);
-    match app.emit_all("single-instance", Payload { args: argv, cwd }) {
+    match app.emit_all("single-instance", SingleInstancePayload { args: argv, cwd }) {
         Ok(_) => {
             let windows = app.windows();
             windows.iter().for_each(|(_, win)| {

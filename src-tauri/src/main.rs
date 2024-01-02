@@ -36,12 +36,6 @@ mod store;
 mod tray;
 mod utils;
 
-#[derive(Clone, serde::Serialize)]
-struct Payload {
-    args: Vec<String>,
-    cwd: String,
-}
-
 /// Determine the core is manual killed or it's got killed by not expected.
 /// if manual killed will be true, otherwise false.
 static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
