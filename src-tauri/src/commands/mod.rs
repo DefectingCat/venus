@@ -6,10 +6,14 @@ use crate::{
     CONFIG,
 };
 use anyhow::{anyhow, Ok as AOk, Result};
-use log::{info, warn};
+use log::{error, info, warn};
 use std::{sync::Arc, thread, time::Duration};
 use tauri::{async_runtime, Window};
-use tokio::{sync::Mutex, time::Instant};
+use tokio::{
+    sync::Mutex,
+    time::{sleep, Instant},
+};
+use url::Url;
 
 pub mod config;
 pub mod core;
@@ -18,8 +22,12 @@ pub mod ui;
 
 pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     let start = Instant::now();
-    let proxy = reqwest::Proxy::http(proxy)?;
-    let client = reqwest::Client::builder().proxy(proxy).build()?;
+    let http = reqwest::Proxy::http(proxy)?;
+    let https = reqwest::Proxy::https(proxy)?;
+    let client = reqwest::Client::builder()
+        .proxy(http)
+        .proxy(https)
+        .build()?;
     let c_config = CONFIG.lock().await;
     let mut response = client.get(&c_config.rua.settings.speed_url).send().await?;
     let latency = start.elapsed().as_millis();
@@ -140,13 +148,16 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
             core.routing.rules.len() - 1
         });
     let speed_rule = &mut core.routing.rules[rule_index];
+    let domain_rule = Url::parse(SPEED_URL).map_err(|err| anyhow!("{}", err))?;
+    let domain_rule = domain_rule.host().ok_or(anyhow!(""))?;
     match &mut speed_rule.domain {
         None => {
-            speed_rule.domain = Some(vec![SPEED_URL.into()]);
+            speed_rule.domain = Some(vec![domain_rule.to_string()]);
         }
         Some(domain) => {
-            if domain[0] != SPEED_URL {
-                domain[0] = SPEED_URL.into()
+            let domain_string = domain_rule.to_string();
+            if domain[0] != domain_string {
+                domain[0] = domain_string;
             }
         }
     }
@@ -164,11 +175,13 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
     let target_proxy = core
         .inbounds
         .iter()
-        .find(|inbound| inbound.tag == "http")
-        .ok_or(anyhow!("cannot find http inbound"))?;
-    let proxy = format!("http://{}:{}", target_proxy.listen, target_proxy.port);
+        .find(|inbound| inbound.tag == "socks")
+        .ok_or(anyhow!("cannot find socks inbound"))?;
+    let proxy = format!("socks5://{}:{}", target_proxy.listen, target_proxy.port);
     drop(config);
 
+    // TODO core restart notification
+    sleep(Duration::from_secs(1)).await;
     // test speed and change loading state
     let ev = RUAEvents::SpeedTest;
     let mut payload = SpeedTestPayload {
@@ -180,7 +193,8 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
         Ok(_) => {
             change_connectivity(&node_id, true).await?;
         }
-        Err(_) => {
+        Err(err) => {
+            error!("Speed test failed {}", err);
             change_connectivity(&node_id, false).await?;
         }
     }
