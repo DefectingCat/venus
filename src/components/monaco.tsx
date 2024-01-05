@@ -65,7 +65,12 @@ const Monaco = (props: MonacoProps) => {
   return (
     <div ref={wrapper}>
       <Editor
-        onMount={(monaco) => setEditor(monaco)}
+        onMount={(editor) => {
+          setTimeout(() => {
+            editor.getAction('editor.action.formatDocument').run();
+          }, 0);
+          setEditor(editor);
+        }}
         height="20vh"
         theme={mounted ? vsThemeMap[currentTheme] : 'light'}
         options={{
@@ -77,7 +82,6 @@ const Monaco = (props: MonacoProps) => {
           folding: false,
           lineDecorationsWidth: 0,
           lineNumbersMinChars: 0,
-          contextmenu: false,
           ...options,
         }}
         {...rest}
