@@ -16,3 +16,5 @@ export const DEFAULT_ROUTING_RULE: Rule = {
   attrs: null,
   balancerTag: null,
 };
+
+export const BUILTIN_RULE_LENGTH = 4;

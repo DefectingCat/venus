@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 import useStore from 'store';
 import { Rule } from 'store/config-store';
-import { DEFAULT_ROUTING_RULE } from 'utils/consts';
+import { BUILTIN_RULE_LENGTH, DEFAULT_ROUTING_RULE } from 'utils/consts';
 import ApplyBtn from './apply-btn';
 
 const ResizableTable = dynamic(
@@ -207,13 +207,19 @@ const RoutingSettings = () => {
 
   // Built in rules
   const builtInRules = useMemo(
-    () => routing.rules.slice(0, 3).map((r, i) => ({ ...r, id: i + 1 })),
+    () =>
+      routing.rules
+        .slice(0, BUILTIN_RULE_LENGTH)
+        .map((r, i) => ({ ...r, id: i + 1 })),
     [routing.rules],
   );
 
   // Custom rules
   const customRules = useMemo(
-    () => routing.rules.slice(3).map((r, i) => ({ ...r, id: i + 1 })),
+    () =>
+      routing.rules
+        .slice(BUILTIN_RULE_LENGTH)
+        .map((r, i) => ({ ...r, id: i + 1 })),
     [routing.rules],
   );
 
