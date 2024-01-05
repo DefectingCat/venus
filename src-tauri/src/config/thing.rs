@@ -392,6 +392,7 @@ pub struct Rule {
     pub network: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<Vec<String>>,
     pub inbound_tag: Option<Vec<String>>,
     pub protocol: Option<Vec<String>>,
@@ -400,6 +401,24 @@ pub struct Rule {
     pub outbound_tag: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub balancer_tag: Option<String>,
+}
+impl Rule {
+    pub fn new(outbound_tag: String) -> Self {
+        Self {
+            type_field: "field".into(),
+            ip: None,
+            domain: None,
+            port: None,
+            network: None,
+            source: None,
+            user: None,
+            inbound_tag: None,
+            protocol: None,
+            attrs: None,
+            outbound_tag,
+            balancer_tag: None,
+        }
+    }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

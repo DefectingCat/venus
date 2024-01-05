@@ -77,6 +77,11 @@
         "type": "field",
         "domain": ["geosite:category-ads"],
         "outboundTag": "blocked"
+      },
+      {
+        "type": "field",
+        "domain": [""],
+        "outboundTag": "speed"
       }
     ],
     "balancers": []

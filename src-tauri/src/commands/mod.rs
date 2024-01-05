@@ -1,8 +1,8 @@
 use crate::{
-    config::{change_connectivity, find_node, proxy_builder},
+    config::{change_connectivity, find_node, proxy_builder, Rule},
     event::{RUAEvents, SpeedTestPayload},
     message::{ConfigMsg, MSG_TX},
-    utils::error::VResult,
+    utils::{consts::SPEED_URL, error::VResult},
     CONFIG,
 };
 use anyhow::{anyhow, Ok as AOk, Result};
@@ -68,7 +68,7 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
             };
             info!(
                 "Node {} download speed {} MB/s, {}%",
-                node.host, speed, percentage
+                node.add, speed, percentage
             );
 
             drop(config);
@@ -126,6 +126,29 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
         core.outbounds[index] = proxy_builder(node, "speed".into())?;
     } else {
         core.outbounds.push(proxy_builder(node, "speed".into())?);
+    }
+    // add speed outbound routing rule
+    let rule_index = core
+        .routing
+        .rules
+        .iter()
+        .position(|rule| rule.outbound_tag == "speed")
+        .unwrap_or_else(|| {
+            let mut speed_rule = Rule::new("speed".into());
+            speed_rule.domain = Some(vec![rua.settings.speed_url.clone()]);
+            core.routing.rules.push(speed_rule);
+            core.routing.rules.len() - 1
+        });
+    let speed_rule = &mut core.routing.rules[rule_index];
+    match &mut speed_rule.domain {
+        None => {
+            speed_rule.domain = Some(vec![SPEED_URL.into()]);
+        }
+        Some(domain) => {
+            if domain[0] != SPEED_URL {
+                domain[0] = SPEED_URL.into()
+            }
+        }
     }
 
     config.write_core()?;
