@@ -63,7 +63,7 @@ fn start_core(path: &Path) -> Result<CommandChild> {
                     warn!("{line}");
                 }
                 CommandEvent::Terminated(line) => {
-                    CORE_MSG_TX.send(CoreMessage::Starting)?;
+                    CORE_MSG_TX.send(CoreMessage::Stopping)?;
                     if CORE_SHUTDOWN.load(Ordering::Relaxed) {
                         info!("Kill core succeed");
                         CORE_MSG_TX.send(CoreMessage::Stopped)?;
