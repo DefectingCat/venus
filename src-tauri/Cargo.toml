@@ -36,14 +36,14 @@ tauri = { version = "1.5", features = [
   "system-tray",
   "macos-private-api",
 ] }
-anyhow = "1.0.77"
+anyhow = "1.0.79"
 reqwest = { version = "0.11.23", features = ["json", "socks"] }
 tokio = { version = "1.35.1", features = ["full"] }
 log = "0.4"
 env_logger = "0.10.1"
-thiserror = "1.0.52"
+thiserror = "1.0.56"
 base64 = "0.21.5"
-serde_derive = "1.0.193"
+serde_derive = "1.0.195"
 toml = "0.8.8"
 md5 = "0.7.0"
 home = "0.5.9"
@@ -55,7 +55,7 @@ tauri-plugin-positioner = { git = "https://github.com/tauri-apps/plugins-workspa
 ] }
 pluto = { git = "https://github.com/DefectingCat/pluto", branch = 'master' }
 chrono = "0.4.31"
-sysinfo = "0.30.1"
+sysinfo = "0.30.5"
 once_cell = "1.19.0"
 url = "2.5.0"
 
