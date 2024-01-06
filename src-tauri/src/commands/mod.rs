@@ -1,5 +1,6 @@
 use crate::{
     config::{change_connectivity, find_node, proxy_builder, Rule},
+    core::{CoreMessage, CORE_MSG_TX},
     event::{RUAEvents, SpeedTestPayload},
     message::{ConfigMsg, MSG_TX},
     utils::{consts::SPEED_URL, error::VResult},
@@ -9,10 +10,7 @@ use anyhow::{anyhow, Ok as AOk, Result};
 use log::{error, info, warn};
 use std::{sync::Arc, thread, time::Duration};
 use tauri::{async_runtime, Window};
-use tokio::{
-    sync::Mutex,
-    time::{sleep, Instant},
-};
+use tokio::{sync::Mutex, time::Instant};
 use url::Url;
 
 pub mod config;
@@ -164,7 +162,6 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
 
     config.write_core()?;
     drop(orgin_config);
-    MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
 
     // prepare to test speed
     let mut config = CONFIG.lock().await;
@@ -180,25 +177,33 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
     let proxy = format!("socks5://{}:{}", target_proxy.listen, target_proxy.port);
     drop(config);
 
-    // TODO core restart notification
-    sleep(Duration::from_secs(1)).await;
+    let mut rx = CORE_MSG_TX.subscribe();
+    MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     // test speed and change loading state
-    let ev = RUAEvents::SpeedTest;
-    let mut payload = SpeedTestPayload {
-        id: &node_id,
-        loading: true,
-    };
-    window.emit(ev.as_str(), &payload)?;
-    match speed_test(&proxy, node_id.clone()).await {
-        Ok(_) => {
-            change_connectivity(&node_id, true).await?;
-        }
-        Err(err) => {
-            error!("Speed test failed {}", err);
-            change_connectivity(&node_id, false).await?;
+    // TODO tokio select
+    while let Ok(msg) = rx.recv().await {
+        if let CoreMessage::Started = msg {
+            let ev = RUAEvents::SpeedTest;
+            let mut payload = SpeedTestPayload {
+                id: &node_id,
+                loading: true,
+            };
+            window.emit(ev.as_str(), &payload)?;
+            match speed_test(&proxy, node_id.clone()).await {
+                Ok(_) => {
+                    change_connectivity(&node_id, true).await?;
+                }
+                Err(err) => {
+                    error!("Speed test failed {}", err);
+                    change_connectivity(&node_id, false).await?;
+                }
+            }
+            payload.loading = false;
+            window.emit(ev.as_str(), &payload)?;
+            return Ok(());
+        } else {
+            continue;
         }
     }
-    payload.loading = false;
-    window.emit(ev.as_str(), &payload)?;
     Ok(())
 }
