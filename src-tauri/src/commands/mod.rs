@@ -9,17 +9,11 @@ use crate::{
     },
     CONFIG,
 };
-use anyhow::{anyhow, Ok as AOk, Result};
+use anyhow::{anyhow, Result};
 use log::{error, info, warn};
-use std::sync::Arc;
-use tauri::{
-    async_runtime::{self, JoinHandle},
-    Window,
-};
-use tokio::{
-    sync::Mutex,
-    time::{sleep, Duration, Instant},
-};
+
+use tauri::Window;
+use tokio::time::{sleep, Duration, Instant};
 use url::Url;
 
 pub mod config;
@@ -27,7 +21,7 @@ pub mod core;
 pub mod subs;
 pub mod ui;
 
-pub async fn speed_test(proxy: &str, node_id: String) -> Result<JoinHandle<()>> {
+pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     let start = Instant::now();
     let http = reqwest::Proxy::http(proxy)?;
     let https = reqwest::Proxy::https(proxy)?;
@@ -35,83 +29,52 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<JoinHandle<()>> 
         .proxy(http)
         .proxy(https)
         .build()?;
-    let c_config = CONFIG.lock().await;
-    let mut response = client.get(&c_config.rua.settings.speed_url).send().await?;
+    let mut config = CONFIG.lock().await;
+    let mut response = client.get(&config.rua.settings.speed_url).send().await?;
     let latency = start.elapsed().as_millis();
-    info!("Latency {}", latency);
-    drop(c_config);
+    info!("Latency {}ms", latency);
 
     // download length per chunk
-    let len = Arc::new(Mutex::new(0_usize));
-    // current download speed per second
-    let bytes_per_second = Arc::new(Mutex::new(0.0));
-
-    let total: Option<u64> = response.content_length();
-
-    let check_len = len.clone();
-    let bytes = bytes_per_second.clone();
-
-    let task = async_runtime::spawn(async move {
-        loop {
-            let calculate_time = async {
-                let mut config = CONFIG.lock().await;
-                let rua = &mut config.rua;
-                let mut node = None;
-                rua.subscriptions.iter_mut().for_each(|sub| {
-                    node = sub
-                        .nodes
-                        .iter_mut()
-                        .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id);
-                });
-                let node = node.ok_or(anyhow!("node {} not found", node_id))?;
-                node.delay = Some(latency as u64);
-                // update config to frontend per 500ms
-                sleep(Duration::from_millis(500)).await;
-                let check_len = check_len.lock().await;
-                let bytes = bytes.lock().await;
-                let speed = *bytes / 1_000_000_f64;
-                let speed = format!("{:.2}", speed).parse().unwrap_or(speed);
-                node.speed = Some(speed);
-                let percentage = if let Some(t) = total {
-                    let p = (*check_len as f64) / (t as f64) * 100.0;
-                    p.round() as u8
-                } else {
-                    warn!("Content-length is empty");
-                    0
-                };
-                info!(
-                    "Node {} download speed {} MB/s, {}%",
-                    node.add, speed, percentage
-                );
-
-                drop(config);
-                MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
-                AOk(())
-            };
-            match calculate_time.await {
-                Ok(_) => {}
-                Err(err) => {
-                    error!("calculate speed failed {}", err);
-                }
-            }
-        }
+    let mut len = 0_usize;
+    let total = response.content_length().unwrap_or_else(|| {
+        warn!("Content-length is empty");
+        0
     });
 
+    let msg_tx = MSG_TX.lock().await;
     let download_start = Instant::now();
-    MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
+    msg_tx.send(ConfigMsg::EmitConfig).await?;
     while let Ok(Some(c)) = response.chunk().await {
         // milliseconds
         let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000_f64;
-        let mut len = len.lock().await;
-        let mut bytes_per_second = bytes_per_second.lock().await;
-        *len += c.len();
-        *bytes_per_second = *len as f64 / time;
+        len += c.len();
+        let bytes_per_second = len as f64 / time;
+
+        let rua = &mut config.rua;
+        let mut node = None;
+        rua.subscriptions.iter_mut().for_each(|sub| {
+            node = sub
+                .nodes
+                .iter_mut()
+                .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id);
+        });
+        let node = node.ok_or(anyhow!("node {} not found", node_id))?;
+        let speed = bytes_per_second / 1_000_000_f64;
+        let speed = format!("{:.2}", speed).parse().unwrap_or(speed);
+        node.speed = Some(speed);
+        let percentage = {
+            let p = (len as f64) / (total as f64) * 100.0;
+            p.round() as u8
+        };
+        info!(
+            "Node {} download speed {} MB/s, {}%",
+            node.add, speed, percentage
+        );
+        // MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
     }
-    let mut config = CONFIG.lock().await;
     config.write_rua()?;
-    drop(config);
-    MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
-    Ok(task)
+    msg_tx.send(ConfigMsg::EmitConfig).await?;
+    Ok(())
 }
 
 /// Test selected node speed
@@ -199,8 +162,7 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
             if let CoreMessage::Started = msg {
                 window.emit(ev.as_str(), &payload)?;
                 match speed_test(&proxy, node_id.clone()).await {
-                    Ok(task) => {
-                        task.abort();
+                    Ok(_) => {
                         change_connectivity(&node_id, true).await?;
                         payload.loading = false;
                         window.emit(ev.as_str(), &payload)?;
@@ -227,7 +189,7 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
             change_connectivity(&node_id, false).await?;
             payload.loading = false;
             window.emit(ev.as_str(), &payload)?;
-            return Err(VError::CommonError(anyhow!("speed test timeout")))
+            return Err(VError::CommonError(anyhow!("Speed test timeout")))
         }
     }
     Ok(())
