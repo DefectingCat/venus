@@ -5,7 +5,7 @@
 
 use crate::{
     commands::{
-        config::{get_config, update_config},
+        config::{get_config, read_config_file, update_config},
         core::{restart_core, select_node},
         node_speed,
         subs::{add_subscription, update_all_subs, update_sub},
@@ -87,6 +87,7 @@ fn main() {
             // configs
             get_config,
             update_config,
+            read_config_file,
             // core
             select_node,
             restart_core,

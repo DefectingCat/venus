@@ -4,6 +4,8 @@ use crate::utils::error::VResult;
 use crate::{CONFIG, LOGGING};
 use log::info;
 use serde::{Deserialize, Serialize};
+use tokio::fs::File;
+use tokio::io::AsyncReadExt;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ReturnConfig {
@@ -58,4 +60,23 @@ pub async fn update_config(
         MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     }
     Ok(())
+}
+
+#[derive(Debug, Deserialize)]
+pub enum WhichConfig {
+    Rua,
+    Core,
+}
+#[tauri::command]
+pub async fn read_config_file(which: WhichConfig) -> VResult<String> {
+    let config = CONFIG.lock().await;
+    dbg!(&config.core_path, &which);
+    let path = match which {
+        WhichConfig::Rua => &config.rua_path,
+        WhichConfig::Core => &config.core_path,
+    };
+    let mut config_file = File::open(path).await?;
+    let mut buffer = String::new();
+    config_file.read_to_string(&mut buffer).await?;
+    Ok(buffer)
 }
