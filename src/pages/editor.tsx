@@ -10,11 +10,11 @@ import { useEffect, useState } from 'react';
  * Config file editor
  */
 const Editor = () => {
-  const [coreConfig, setCoreConfig] = useState();
+  const [coreConfig, setCoreConfig] = useState('');
   useEffect(() => {
     const read = async () => {
       try {
-        const config = await invoke('read_config_file', {
+        const config = await invoke<string>('read_config_file', {
           which: 'Core',
         });
         setCoreConfig(config);
