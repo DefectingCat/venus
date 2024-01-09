@@ -1,9 +1,9 @@
-import { Button, message } from 'antd';
+import { invoke } from '@tauri-apps/api/tauri';
+import { Alert, Button, message } from 'antd';
 import clsx from 'clsx';
 import Monaco from 'components/monaco';
 import Title from 'components/pages/page-title';
 import MainLayout from 'layouts/main-layout';
-import { invoke } from '@tauri-apps/api/tauri';
 import { useEffect, useState } from 'react';
 
 /**
@@ -29,9 +29,16 @@ const Editor = () => {
   return (
     <MainLayout>
       <div className="flex flex-col h-full">
-        <div className={clsx('mt-1 ')}>
+        <div className={clsx('mt-1')}>
           <Title>Settings</Title>
         </div>
+        <Alert
+          message="Edit config content will save to file directly"
+          type="warning"
+          showIcon
+          closable
+          className="mb-1"
+        />
         <Monaco
           wrapperClass="flex"
           height="100%"
