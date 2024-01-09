@@ -3,14 +3,20 @@ use crate::{
     core::{CoreMessage, CORE_MSG_TX},
     event::{RUAEvents, SpeedTestPayload},
     message::{ConfigMsg, MSG_TX},
-    utils::{consts::SPEED_URL, error::VResult},
+    utils::{
+        consts::SPEED_URL,
+        error::{VError, VResult},
+    },
     CONFIG,
 };
 use anyhow::{anyhow, Ok as AOk, Result};
 use log::{error, info, warn};
-use std::{sync::Arc, thread, time::Duration};
+use std::sync::Arc;
 use tauri::{async_runtime, Window};
-use tokio::{sync::Mutex, time::Instant};
+use tokio::{
+    sync::Mutex,
+    time::{sleep, Duration, Instant},
+};
 use url::Url;
 
 pub mod config;
@@ -59,7 +65,7 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
             let node = node.ok_or(anyhow!("node {} not found", node_id))?;
             node.delay = Some(latency as u64);
             // update config to frontend per 500ms
-            thread::sleep(Duration::from_millis(500));
+            sleep(Duration::from_millis(500)).await;
             let check_len = check_len.lock().await;
             let bytes = bytes.lock().await;
             let speed = *bytes / 1_000_000_f64;
@@ -181,28 +187,42 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
     MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     // test speed and change loading state
     // TODO tokio select
-    while let Ok(msg) = rx.recv().await {
-        if let CoreMessage::Started = msg {
-            let ev = RUAEvents::SpeedTest;
-            let mut payload = SpeedTestPayload {
-                id: &node_id,
-                loading: true,
-            };
-            window.emit(ev.as_str(), &payload)?;
-            match speed_test(&proxy, node_id.clone()).await {
-                Ok(_) => {
-                    change_connectivity(&node_id, true).await?;
+    let ev = RUAEvents::SpeedTest;
+    let mut payload = SpeedTestPayload {
+        id: &node_id,
+        loading: true,
+    };
+    let test_node_speed = async {
+        while let Ok(msg) = rx.recv().await {
+            if let CoreMessage::Started = msg {
+                window.emit(ev.as_str(), &payload)?;
+                match speed_test(&proxy, node_id.clone()).await {
+                    Ok(_) => {
+                        change_connectivity(&node_id, true).await?;
+                    }
+                    Err(err) => {
+                        error!("Speed test failed {}", err);
+                        change_connectivity(&node_id, false).await?;
+                    }
                 }
-                Err(err) => {
-                    error!("Speed test failed {}", err);
-                    change_connectivity(&node_id, false).await?;
-                }
+                payload.loading = false;
+                window.emit(ev.as_str(), &payload)?;
+                return AOk(());
+            } else {
+                continue;
             }
+        }
+        Ok(())
+    };
+    tokio::select! {
+        val = test_node_speed => {
+            val?;
+        }
+        _ = sleep(Duration::from_millis(20000)) => {
+            change_connectivity(&node_id, false).await?;
             payload.loading = false;
             window.emit(ev.as_str(), &payload)?;
-            return Ok(());
-        } else {
-            continue;
+            return Err(VError::CommonError(anyhow!("speed test timeout")))
         }
     }
     Ok(())
