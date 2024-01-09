@@ -12,7 +12,10 @@ use crate::{
 use anyhow::{anyhow, Ok as AOk, Result};
 use log::{error, info, warn};
 use std::sync::Arc;
-use tauri::{async_runtime, Window};
+use tauri::{
+    async_runtime::{self, JoinHandle},
+    Window,
+};
 use tokio::{
     sync::Mutex,
     time::{sleep, Duration, Instant},
@@ -24,7 +27,7 @@ pub mod core;
 pub mod subs;
 pub mod ui;
 
-pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
+pub async fn speed_test(proxy: &str, node_id: String) -> Result<JoinHandle<()>> {
     let start = Instant::now();
     let http = reqwest::Proxy::http(proxy)?;
     let https = reqwest::Proxy::https(proxy)?;
@@ -42,55 +45,56 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
     let len = Arc::new(Mutex::new(0_usize));
     // current download speed per second
     let bytes_per_second = Arc::new(Mutex::new(0.0));
-    // is download complete
-    let done = Arc::new(Mutex::new(false));
 
     let total: Option<u64> = response.content_length();
 
     let check_len = len.clone();
     let bytes = bytes_per_second.clone();
-    let check_done = done.clone();
 
-    async_runtime::spawn(async move {
+    let task = async_runtime::spawn(async move {
         loop {
-            let mut config = CONFIG.lock().await;
-            let rua = &mut config.rua;
-            let mut node = None;
-            rua.subscriptions.iter_mut().for_each(|sub| {
-                node = sub
-                    .nodes
-                    .iter_mut()
-                    .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id);
-            });
-            let node = node.ok_or(anyhow!("node {} not found", node_id))?;
-            node.delay = Some(latency as u64);
-            // update config to frontend per 500ms
-            sleep(Duration::from_millis(500)).await;
-            let check_len = check_len.lock().await;
-            let bytes = bytes.lock().await;
-            let speed = *bytes / 1_000_000_f64;
-            let speed = format!("{:.2}", speed).parse().unwrap_or(speed);
-            node.speed = Some(speed);
-            let percentage = if let Some(t) = total {
-                let p = (*check_len as f64) / (t as f64) * 100.0;
-                p.round() as u8
-            } else {
-                warn!("Content-length is empty");
-                0
-            };
-            info!(
-                "Node {} download speed {} MB/s, {}%",
-                node.add, speed, percentage
-            );
+            let calculate_time = async {
+                let mut config = CONFIG.lock().await;
+                let rua = &mut config.rua;
+                let mut node = None;
+                rua.subscriptions.iter_mut().for_each(|sub| {
+                    node = sub
+                        .nodes
+                        .iter_mut()
+                        .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id);
+                });
+                let node = node.ok_or(anyhow!("node {} not found", node_id))?;
+                node.delay = Some(latency as u64);
+                // update config to frontend per 500ms
+                sleep(Duration::from_millis(500)).await;
+                let check_len = check_len.lock().await;
+                let bytes = bytes.lock().await;
+                let speed = *bytes / 1_000_000_f64;
+                let speed = format!("{:.2}", speed).parse().unwrap_or(speed);
+                node.speed = Some(speed);
+                let percentage = if let Some(t) = total {
+                    let p = (*check_len as f64) / (t as f64) * 100.0;
+                    p.round() as u8
+                } else {
+                    warn!("Content-length is empty");
+                    0
+                };
+                info!(
+                    "Node {} download speed {} MB/s, {}%",
+                    node.add, speed, percentage
+                );
 
-            drop(config);
-            MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
-            let check_done = check_done.lock().await;
-            if *check_done {
-                break;
+                drop(config);
+                MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
+                AOk(())
+            };
+            match calculate_time.await {
+                Ok(_) => {}
+                Err(err) => {
+                    error!("calculate speed failed {}", err);
+                }
             }
         }
-        AOk(())
     });
 
     let download_start = Instant::now();
@@ -103,13 +107,11 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
         *len += c.len();
         *bytes_per_second = *len as f64 / time;
     }
-    let mut done = done.lock().await;
-    *done = true;
     let mut config = CONFIG.lock().await;
     config.write_rua()?;
     drop(config);
     MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
-    Ok(())
+    Ok(task)
 }
 
 /// Test selected node speed
@@ -197,17 +199,20 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
             if let CoreMessage::Started = msg {
                 window.emit(ev.as_str(), &payload)?;
                 match speed_test(&proxy, node_id.clone()).await {
-                    Ok(_) => {
+                    Ok(task) => {
+                        task.abort();
                         change_connectivity(&node_id, true).await?;
+                        payload.loading = false;
+                        window.emit(ev.as_str(), &payload)?;
+                        return Ok(());
                     }
                     Err(err) => {
-                        error!("Speed test failed {}", err);
+                        let err = format!("Speed test failed {}", err);
+                        error!("{err}");
                         change_connectivity(&node_id, false).await?;
+                        return Err(VError::CommonError(anyhow!(err)));
                     }
                 }
-                payload.loading = false;
-                window.emit(ev.as_str(), &payload)?;
-                return AOk(());
             } else {
                 continue;
             }
