@@ -1,5 +1,6 @@
 import Editor, { EditorProps, loader } from '@monaco-editor/react';
 import { useBoolean, useMount } from 'ahooks';
+import clsx from 'clsx';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
@@ -7,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 type MonacoProps = {
   onFocus?: () => void;
   onBlur?: () => void;
+  wrapperClass?: string;
 } & EditorProps;
 
 loader.config({
@@ -33,8 +35,8 @@ const Monaco = (props: MonacoProps) => {
   // Init events
   useEffect(() => {
     if (!editor) return;
-    editor.onDidFocusEditorWidget(props?.onFocus);
-    editor.onDidBlurEditorWidget(props?.onBlur);
+    props?.onFocus && editor.onDidFocusEditorWidget(props?.onFocus);
+    props?.onBlur && editor.onDidBlurEditorWidget(props?.onBlur);
   }, [editor, props]);
 
   const { options, ...rest } = props;
@@ -63,7 +65,10 @@ const Monaco = (props: MonacoProps) => {
   }, [editor]); */
 
   return (
-    <div ref={wrapper}>
+    <div
+      ref={wrapper}
+      className={clsx('h-full rounded-lg overflow-hidden', props.wrapperClass)}
+    >
       <Editor
         onMount={(editor) => {
           setTimeout(() => {

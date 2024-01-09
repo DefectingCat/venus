@@ -11,7 +11,7 @@
     "build:web": "next build",
     "tauri": "tauri",
     "pretty-check": "prettier \"./**/*.{js,jsx,ts,tsx,json,md,mdx,css}\" --ignore-unknown --check",
-    "pretty": "prettier --write \"./**/*.{js,jsx,ts,tsx,json,md,mdx,css}\" --ignore-unknown",
+    "pretty": "prettier --write \"./**/*.{js,jsx,ts,tsx,json,md,mdx,css}\" --ignore-unknown --config ./.prettierrc.json",
     "test": "vitest",
     "lint": "next lint",
     "prepare": "husky install",
