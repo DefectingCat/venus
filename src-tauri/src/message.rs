@@ -86,8 +86,8 @@ pub fn message_handler(window: Window) -> Result<()> {
                 }
                 ConfigMsg::EmitConfig => {
                     let config = CONFIG.lock().await;
-                    window.emit_all(UpdateRuaConfig.into(), &config.rua)?;
-                    window.emit_all(UpdateCoreConfig.into(), &config.core)?;
+                    window.emit(UpdateRuaConfig.into(), &config.rua)?;
+                    window.emit(UpdateCoreConfig.into(), &config.core)?;
                 } /* ConfigMsg::EmitUI => {
                       let ui = UI.lock().await;
                       window.emit_all(UpdateUI.into(), &*ui)?;

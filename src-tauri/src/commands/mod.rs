@@ -11,7 +11,6 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use log::{error, info, warn};
-
 use tauri::Window;
 use tokio::time::{sleep, Duration, Instant};
 use url::Url;
@@ -41,24 +40,23 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
         0
     });
 
-    let msg_tx = MSG_TX.lock().await;
     let download_start = Instant::now();
-    msg_tx.send(ConfigMsg::EmitConfig).await?;
+    let rua = &mut config.rua;
+    let mut node = None;
+    rua.subscriptions.iter_mut().for_each(|sub| {
+        node = sub
+            .nodes
+            .iter_mut()
+            .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id);
+    });
+    let node = node.ok_or(anyhow!("node {} not found", node_id))?;
+    node.delay = Some(latency as u64);
     while let Ok(Some(c)) = response.chunk().await {
         // milliseconds
         let time = download_start.elapsed().as_nanos() as f64 / 1_000_000_000_f64;
         len += c.len();
         let bytes_per_second = len as f64 / time;
 
-        let rua = &mut config.rua;
-        let mut node = None;
-        rua.subscriptions.iter_mut().for_each(|sub| {
-            node = sub
-                .nodes
-                .iter_mut()
-                .find(|n| n.node_id.as_ref().unwrap_or(&"".to_string()) == &node_id);
-        });
-        let node = node.ok_or(anyhow!("node {} not found", node_id))?;
         let speed = bytes_per_second / 1_000_000_f64;
         let speed = format!("{:.2}", speed).parse().unwrap_or(speed);
         node.speed = Some(speed);
@@ -73,7 +71,8 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
         // MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
     }
     config.write_rua()?;
-    msg_tx.send(ConfigMsg::EmitConfig).await?;
+    drop(config);
+    MSG_TX.lock().await.send(ConfigMsg::EmitConfig).await?;
     Ok(())
 }
 
