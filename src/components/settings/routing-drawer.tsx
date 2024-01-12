@@ -75,10 +75,13 @@ const RoutingDrawer = ({
     updateConfig((config) => {
       try {
         config.core.routing.rules[index] = Object.keys(buffer).reduce(
-          (prev, cur) => ({
-            ...prev,
-            [cur]: keys.includes(cur) ? JSON.parse(buffer[cur]) : buffer[cur],
-          }),
+          (prev, cur) => {
+            if (buffer[cur] == null) return prev;
+            return {
+              ...prev,
+              [cur]: keys.includes(cur) ? JSON.parse(buffer[cur]) : buffer[cur],
+            };
+          },
           rule,
         );
       } catch (err) {
