@@ -224,7 +224,7 @@ const RoutingSettings = () => {
   );
 
   // switch rule between [b]uilt-in and [c]ustom
-  const [radio, setRadio] = useState<'b' | 'c'>('b');
+  const [radio, setRadio] = useState<'b' | 'c'>('c');
   const RuleChildren = {
     b: (
       <div className="mb-2">
@@ -328,8 +328,8 @@ const RoutingSettings = () => {
             defaultValue={radio}
             onChange={(e) => setRadio(e.target.value)}
           >
-            <Radio.Button value="b">Built-in</Radio.Button>
             <Radio.Button value="c">Custom</Radio.Button>
+            <Radio.Button value="b">Built-in</Radio.Button>
           </Radio.Group>
         </div>
         <div>{RuleChildren[radio]}</div>
