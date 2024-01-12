@@ -16,6 +16,7 @@ pub struct Subscription {
 #[serde(rename_all = "camelCase")]
 pub struct RUABasicSetting {
     pub speed_url: String,
+    // TODO speed timeout
 }
 impl Default for RUABasicSetting {
     fn default() -> Self {

@@ -20,9 +20,6 @@ use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 ///
 /// `app`: current app instance
 pub fn setup_app(app: &mut App) -> Result<(), Box<dyn Error>> {
-    #[cfg(target_os = "macos")]
-    app.set_activation_policy(tauri::ActivationPolicy::Accessory);
-
     let resources_path = app
         .handle()
         .path_resolver()
@@ -32,9 +29,13 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn Error>> {
     let window = get_main_window(app)?;
     // Start config and core
     async_runtime::spawn(async move {
-        init_core_and_config(&resources_path, &window).await?;
+        init_core_and_config(&resources_path, window).await?;
         AOk(())
     });
+
+    /*
+    #[cfg(target_os = "macos")]
+    win.set_activation_policy(tauri::ActivationPolicy::Accessory); */
 
     let window = get_main_window(app)?;
     app.listen_global("ready", move |_e| {
@@ -74,7 +75,7 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn Error>> {
 /// ## Lock
 ///
 /// This function will lock the core and config until function end
-async fn init_core_and_config(resources_path: &PathBuf, window: &Window) -> Result<()> {
+async fn init_core_and_config(resources_path: &PathBuf, window: Window) -> Result<()> {
     let mut config = CONFIG.lock().await;
     info!("Start init config");
     match config.init(resources_path) {
@@ -84,6 +85,7 @@ async fn init_core_and_config(resources_path: &PathBuf, window: &Window) -> Resu
             return AOk(());
         }
     }
+
     // Restore alll window status.
     if config.rua.save_windows {
         window.restore_state(StateFlags::all())?;

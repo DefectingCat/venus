@@ -70,7 +70,6 @@ pub enum WhichConfig {
 #[tauri::command]
 pub async fn read_config_file(which: WhichConfig) -> VResult<String> {
     let config = CONFIG.lock().await;
-    dbg!(&config.core_path, &which);
     let path = match which {
         WhichConfig::Rua => &config.rua_path,
         WhichConfig::Core => &config.core_path,
