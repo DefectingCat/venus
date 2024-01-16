@@ -29,7 +29,7 @@ const SettingCard = ({
         className={clsx(
           'rounded-lg bg-white p-5',
           'overflow-hidden flex-1',
-          'mb-4 last:mb-0',
+          'mb-4 last:mb-0 dark:bg-rua-gray-800',
         )}
       >
         {children}
@@ -57,6 +57,7 @@ export const SettingLine = ({
           'border-t-0 border-l-0 border-r-0',
           'border-gray-100 last:border-none',
           'first:pt-0 last:pb-0',
+          'dark:border-rua-gray-700',
         )}
       >
         <div className="flex">{title}</div>
