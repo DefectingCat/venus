@@ -2,7 +2,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { Button, Radio, Select, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
-import Setting, { SettingLine } from 'components/common/setting-line';
+import SettingCard, { SettingLine } from 'components/common/setting-line';
 import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 import useStore from 'store';
@@ -305,7 +305,7 @@ const RoutingSettings = () => {
   return (
     <>
       <div className="flex">
-        <Setting>
+        <SettingCard>
           <SettingLine title="Domain strategy">
             <Select
               className="w-32"
@@ -318,7 +318,7 @@ const RoutingSettings = () => {
               ]}
             />
           </SettingLine>
-        </Setting>
+        </SettingCard>
       </div>
 
       <div className="my-2">

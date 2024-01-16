@@ -1,6 +1,9 @@
 import { useBoolean, useMount } from 'ahooks';
 import { Checkbox, Input, Select, Tooltip } from 'antd';
-import Setting, { SettingLine } from 'components/common/setting-line';
+import SettingCard, {
+  Setting,
+  SettingLine,
+} from 'components/common/setting-line';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import useStore from 'store';
@@ -27,65 +30,67 @@ const VenusSetting = () => {
   }, []);
 
   return (
-    <div className="flex">
+    <>
       <Setting>
-        <SettingLine title="Theme">
-          <Select
-            className="w-24"
-            value={mounted ? theme : 'system'}
-            options={[
-              { value: 'system', label: 'System' },
-              { value: 'light', label: 'Light' },
-              { value: 'dark', label: 'Dark' },
-            ]}
-            onChange={(value) => setTheme(value)}
-          />
-        </SettingLine>
+        <SettingCard>
+          <SettingLine title="Theme">
+            <Select
+              className="w-24"
+              value={mounted ? theme : 'system'}
+              options={[
+                { value: 'system', label: 'System' },
+                { value: 'light', label: 'Light' },
+                { value: 'dark', label: 'Dark' },
+              ]}
+              onChange={(value) => setTheme(value)}
+            />
+          </SettingLine>
 
-        <SettingLine
-          title={
-            <Tooltip title="Restore last window position and size">
-              Restore window
-            </Tooltip>
-          }
-        >
-          <Checkbox
-            checked={rua.saveWindows}
-            onChange={(e) =>
-              updateConfig((config) => {
-                config.rua.saveWindows = e.target.checked;
-              })
+          <SettingLine
+            title={
+              <Tooltip title="Restore last window position and size">
+                Restore window
+              </Tooltip>
             }
-          />
-        </SettingLine>
+          >
+            <Checkbox
+              checked={rua.saveWindows}
+              onChange={(e) =>
+                updateConfig((config) => {
+                  config.rua.saveWindows = e.target.checked;
+                })
+              }
+            />
+          </SettingLine>
 
-        <SettingLine title="Auto start">
-          <Checkbox
-            checked={isAuto}
-            onClick={async () => {
-              isAuto ? await disable() : await enable();
-              await updateAuto();
-            }}
-          />
-        </SettingLine>
+          <SettingLine title="Auto start">
+            <Checkbox
+              checked={isAuto}
+              onClick={async () => {
+                isAuto ? await disable() : await enable();
+                await updateAuto();
+              }}
+            />
+          </SettingLine>
 
-        <SettingLine title="Speed test url">
-          <Input
-            value={rua.settings.speedUrl}
-            className="w-60"
-            onChange={(e) => {
-              updateConfig((config) => {
-                config.rua.settings.speedUrl = e.target.value;
-              });
-            }}
-          />
-        </SettingLine>
-
-        <div>
-          <ApplyBtn />
-        </div>
+          <SettingLine title="Speed test url">
+            <Input
+              value={rua.settings.speedUrl}
+              className="w-60"
+              onChange={(e) => {
+                updateConfig((config) => {
+                  config.rua.settings.speedUrl = e.target.value;
+                });
+              }}
+            />
+          </SettingLine>
+        </SettingCard>
       </Setting>
-    </div>
+
+      <div>
+        <ApplyBtn />
+      </div>
+    </>
   );
 };
 
