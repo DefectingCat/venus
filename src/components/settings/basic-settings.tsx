@@ -1,5 +1,8 @@
 import { Input, Select, Switch } from 'antd';
-import SettingCard, { SettingLine } from 'components/common/setting-line';
+import SettingCard, {
+  Setting,
+  SettingLine,
+} from 'components/common/setting-line';
 import { useMemo } from 'react';
 import useStore from 'store';
 import { Inbound, InboundSettings, Sniffing } from 'store/config-store';
@@ -42,8 +45,8 @@ const BasicSettings = () => {
 
   return (
     <>
-      <div className="flex">
-        <SettingCard>
+      <Setting>
+        <SettingCard title="Common">
           <SettingLine title="Log level">
             <Select
               value={core.log.loglevel}
@@ -86,7 +89,9 @@ const BasicSettings = () => {
               }}
             />
           </SettingLine>
+        </SettingCard>
 
+        <SettingCard title="Features">
           <SettingLine title="Enable UDP">
             <div>
               <Switch
@@ -150,7 +155,7 @@ const BasicSettings = () => {
             </div>
           </SettingLine>
         </SettingCard>
-      </div>
+      </Setting>
 
       <div className="mt-4">
         <ApplyBtn />

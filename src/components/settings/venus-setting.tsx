@@ -32,7 +32,7 @@ const VenusSetting = () => {
   return (
     <>
       <Setting>
-        <SettingCard>
+        <SettingCard title="Windows">
           <SettingLine title="Theme">
             <Select
               className="w-24"

@@ -6,7 +6,7 @@ import { ReactNode } from 'react';
  */
 export const Setting = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center mb-4">
       <div className="max-w-4xl flex-1">{children}</div>
     </div>
   );
@@ -15,11 +15,26 @@ export const Setting = ({ children }: { children: ReactNode }) => {
 /**
  * The setting lines set
  */
-const SettingCard = ({ children }: { children: ReactNode }) => {
+const SettingCard = ({
+  children,
+  title,
+}: {
+  children: ReactNode;
+  title?: string;
+}) => {
   return (
-    <div className={clsx('rounded-lg bg-white p-5', 'overflow-hidden flex-1')}>
-      {children}
-    </div>
+    <>
+      {title && <div className="font-semibold pl-4 mb-1">{title}</div>}
+      <div
+        className={clsx(
+          'rounded-lg bg-white p-5',
+          'overflow-hidden flex-1',
+          'mb-4 last:mb-0',
+        )}
+      >
+        {children}
+      </div>
+    </>
   );
 };
 
