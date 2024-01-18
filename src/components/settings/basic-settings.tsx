@@ -25,12 +25,11 @@ const BasicSettings = () => {
   /**
    * Set inbound settings with specified key
    */
-  const changeTarget =
-    (
-      value: string | number | boolean,
-      target: (keyof Inbound | keyof InboundSettings | keyof Sniffing)[],
-    ) =>
-    (inbound: Inbound) => {
+  const changeTarget = (
+    value: string | number | boolean,
+    target: (keyof Inbound | keyof InboundSettings | keyof Sniffing)[],
+  ) => {
+    return (inbound: Inbound) => {
       const len = target.length;
       target.reduce<Inbound | InboundSettings | Sniffing>((prev, key, i) => {
         if (i === len - 1) {
@@ -39,6 +38,7 @@ const BasicSettings = () => {
         return prev[key];
       }, inbound);
     };
+  };
 
   // Apply settings
   const updateConfig = useStore((s) => s.updateConfig);
