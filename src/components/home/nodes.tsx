@@ -97,8 +97,9 @@ const Nodes = () => {
         width: 80,
         ellipsis: true,
         render: (connectivity: boolean, record: Node) => {
-          const current = nodeLoading.find((n) => n.id === record.nodeId)
-            ?.loading;
+          const current = nodeLoading.find(
+            (n) => n.id === record.nodeId,
+          )?.loading;
           return (
             <div
               className={clsx(
