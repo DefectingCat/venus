@@ -36,7 +36,7 @@ mod store;
 mod tray;
 mod utils;
 
-/// Determine the core is manual killed or it's got killed by not expected.
+/// Determine the core is manually killed, or it's got killed by not expected.
 /// if manual killed will be true, otherwise false.
 static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
 /// Is logging to frontend

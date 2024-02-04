@@ -78,19 +78,17 @@ pub async fn speed_test(proxy: &str, node_id: String) -> Result<()> {
 
 /// Test selected node speed
 ///
-/// ## Argments
+/// ## Arguments
 ///
 /// `node_id`: selected node id
 /// `window`: tauri window
 #[tauri::command]
 pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
-    let mut orgin_config = CONFIG.lock().await;
-    let config = &mut *orgin_config;
+    let mut origin_config = CONFIG.lock().await;
+    let config = &mut *origin_config;
     let rua = &config.rua;
     let core = &mut config.core;
-    let core = core
-        .as_mut()
-        .ok_or(anyhow!("cannont found config config"))?;
+    let core = core.as_mut().ok_or(anyhow!("cannot found config config"))?;
 
     // Change speed outbound
     let node = find_node(&node_id, rua)?;
@@ -131,14 +129,14 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
     }
 
     config.write_core()?;
-    drop(orgin_config);
+    drop(origin_config);
 
     // prepare to test speed
     let mut config = CONFIG.lock().await;
     let core = &config
         .core
         .as_mut()
-        .ok_or(anyhow!("cannont found config config"))?;
+        .ok_or(anyhow!("cannot found config config"))?;
     let target_proxy = core
         .inbounds
         .iter()
@@ -160,20 +158,20 @@ pub async fn node_speed(node_id: String, window: Window) -> VResult<()> {
         while let Ok(msg) = rx.recv().await {
             if let CoreMessage::Started = msg {
                 window.emit(ev.as_str(), &payload)?;
-                match speed_test(&proxy, node_id.clone()).await {
+                return match speed_test(&proxy, node_id.clone()).await {
                     Ok(_) => {
                         change_connectivity(&node_id, true).await?;
                         payload.loading = false;
                         window.emit(ev.as_str(), &payload)?;
-                        return Ok(());
+                        Ok(())
                     }
                     Err(err) => {
                         let err = format!("Speed test failed {}", err);
                         error!("{err}");
                         change_connectivity(&node_id, false).await?;
-                        return Err(VError::CommonError(anyhow!(err)));
+                        Err(VError::CommonError(anyhow!(err)))
                     }
-                }
+                };
             } else {
                 continue;
             }
