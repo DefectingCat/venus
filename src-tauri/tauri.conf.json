@@ -3,7 +3,7 @@
     "beforeDevCommand": "pnpm dev:web",
     "beforeBuildCommand": "pnpm build:web",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist",
+    "distDir": "../out",
     "withGlobalTauri": false
   },
   "package": {
@@ -24,7 +24,11 @@
         "open": true,
         "sidecar": true,
         "scope": [
-          { "name": "binaries/core/v2ray", "sidecar": true, "args": ["run"] }
+          {
+            "name": "binaries/core/v2ray",
+            "sidecar": true,
+            "args": ["run"]
+          }
         ]
       },
       "fs": {

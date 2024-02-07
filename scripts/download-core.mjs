@@ -24,9 +24,9 @@ const unixCommand = async (filename) => {
       await execa('unzip', [
         `${downloadFolder}/${filename}`,
         '-d',
-        downloadFolder,
+        downloadFolder
       ])
-    ).stdout,
+    ).stdout
   );
   log('Start copy file');
 
@@ -35,26 +35,26 @@ const unixCommand = async (filename) => {
   }
   log(
     'Copy v2ary',
-    (await execa('cp', [`${downloadFolder}/${binName}`, coreFolder])).stdout,
+    (await execa('cp', [`${downloadFolder}/${binName}`, coreFolder])).stdout
   );
   log(
     'Copy geoip-only-cn-private.dat',
     (
       await execa('cp', [
         `${downloadFolder}/geoip-only-cn-private.dat`,
-        resourcesFolder,
+        resourcesFolder
       ])
-    ).stdout,
+    ).stdout
   );
   log(
     'Copy geosite.dat',
     (await execa('cp', [`${downloadFolder}/geosite.dat`, resourcesFolder]))
-      .stdout,
+      .stdout
   );
   log(
     'Copy geoip.dat',
     (await execa('cp', [`${downloadFolder}/geoip.dat`, resourcesFolder]))
-      .stdout,
+      .stdout
   );
 };
 const winCommand = async (filename) => {
@@ -69,8 +69,8 @@ const winCommand = async (filename) => {
   log(
     await execa('powershell -command Expand-Archive', [
       `-Force -LiteralPath downloads/${filename}`,
-      `-DestinationPath downloads/`,
-    ]),
+      `-DestinationPath downloads/`
+    ])
   );
   log('Start copy file');
 
@@ -80,50 +80,50 @@ const winCommand = async (filename) => {
   log(
     'Copy v2ary',
     (await execa('powershell -command cp', ['downloads/v2ray.exe', coreFolder]))
-      .stdout,
+      .stdout
   );
   log(
     'Copy geoip-only-cn-private.dat',
     (
       await execa('powershell -command cp', [
         'downloads/geoip-only-cn-private.dat',
-        resourcesFolder,
+        resourcesFolder
       ])
-    ).stdout,
+    ).stdout
   );
   log(
     'Copy geosite.dat',
     (
       await execa('powershell -command cp', [
         'downloads/geosite.dat',
-        resourcesFolder,
+        resourcesFolder
       ])
-    ).stdout,
+    ).stdout
   );
   log(
     'Copy geoip.dat',
     (
       await execa('powershell -command cp', [
         'downloads/geoip.dat',
-        resourcesFolder,
+        resourcesFolder
       ])
-    ).stdout,
+    ).stdout
   );
 };
 
 const platformMap = {
   darwin: 'macos',
   win32: 'windows',
-  linux: 'linux',
+  linux: 'linux'
 };
 const archMap = {
   arm64: 'arm64-v8a',
-  x64: '64',
+  x64: '64'
 };
 const platformCommand = {
   darwin: unixCommand,
   win32: winCommand,
-  linux: unixCommand,
+  linux: unixCommand
 };
 
 const __filename = url.fileURLToPath(import.meta.url);
@@ -147,7 +147,7 @@ async function downloadFile(url, filename = '.') {
     width: 80,
     title: filename,
     eta: true,
-    precent: true,
+    precent: true
   });
   let totalBytes = 0;
   await finished(
@@ -160,12 +160,13 @@ async function downloadFile(url, filename = '.') {
             progressBar.update(Number(precent));
             this.push(chunk);
             callback();
-          },
-        }),
+          }
+        })
       )
-      .pipe(fileStream),
+      .pipe(fileStream)
   );
 }
+
 async function downloadWithWget(url, filename) {
   if (fs.existsSync(downloadFolder)) {
     await rm(downloadFolder, { recursive: true, force: true });
@@ -187,7 +188,7 @@ async function downloadCore(manual, manualPlat, skipDownload) {
     if (!skipDownload) {
       const result = await (
         await fetch(
-          'https://api.github.com/repos/v2fly/v2ray-core/releases?per_page=1&page=1',
+          'https://api.github.com/repos/v2fly/v2ray-core/releases?per_page=1&page=1'
         )
       ).json();
       const assets = result[0].assets;
@@ -203,7 +204,7 @@ async function downloadCore(manual, manualPlat, skipDownload) {
     const command = platformCommand[process.platform];
     if (!command) {
       throw new Error(
-        `Cannot found target platform command ${process.platform}`,
+        `Cannot found target platform command ${process.platform}`
       );
     }
     await command(targetName);
@@ -216,6 +217,7 @@ async function downloadCore(manual, manualPlat, skipDownload) {
 let binName = 'v2ray';
 let renameExt = '';
 let targetTriple = '';
+
 async function main() {
   const args = process.argv.slice(2);
 
@@ -244,10 +246,10 @@ async function main() {
         }
         await downloadCore(manual, res.selectedText, skipDownload);
         process.exit();
-      },
+      }
     );
   } else {
-    downloadCore(false, null, skipDownload);
+    await downloadCore(false, null, skipDownload);
   }
 }
 

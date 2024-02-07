@@ -9,4 +9,5 @@ src-tauri/target
 .next
 out
 src/assets
-dist/
+dist
+downloads
