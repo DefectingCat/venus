@@ -30,6 +30,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         await listen<RConfig>('rua://update-rua-config', (e) => {
           const rua = e.payload;
           toggleUI((ui) => {
+            if (!rua.subscriptions) return;
             ui.loading.subCrad = rua.subscriptions.map((sub) => ({
               url: sub.url,
               loading: false,

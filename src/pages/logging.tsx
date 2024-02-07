@@ -18,7 +18,7 @@ const Logging = () => {
   const [autoScroll, setAutoScroll] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!autoScroll) return;
+    if (!autoScroll || !ref.current) return;
     ref.current.scrollTop = ref.current.scrollHeight;
   }, [autoScroll, total]);
 

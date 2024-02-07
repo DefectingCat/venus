@@ -49,7 +49,7 @@ const ContextMenu = () => {
           onClick={() => {
             closeMenus();
             updateConfig((config) => {
-              config.core.routing.rules.splice(menus.clickRule, 1);
+              config.core?.routing.rules.splice(menus.clickRule, 1);
             });
           }}
         >
@@ -87,7 +87,7 @@ const ContextMenu = () => {
           onClick={async () => {
             try {
               await invoke('node_speed', {
-                nodeId: clickNode.nodeId,
+                nodeId: clickNode?.nodeId,
               });
             } catch (err) {
               message.error(err.toString());
@@ -117,7 +117,7 @@ const ContextMenu = () => {
       style={{ left: pos.x + 10, top: pos.y + 8, opacity: type ? 1 : 0 }}
       id={ContextID}
     >
-      {menuMap[type]}
+      {menuMap[type ?? '']}
     </div>
   );
 };

@@ -15,7 +15,19 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "baseUrl": "./src",
+    "plugins": [
+      {
+        "name": "next",
+      },
+    ],
+    "strictNullChecks": true,
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "dist/types/**/*.ts",
+    ".next/types/**/*.ts",
+  ],
   "exclude": ["node_modules"],
 }

@@ -49,7 +49,7 @@ const BasicSettings = () => {
         <SettingCard title="Common">
           <SettingLine title="Log level">
             <Select
-              value={core.log.loglevel}
+              value={core?.log.loglevel}
               options={[
                 { value: 'debug', label: 'Debug' },
                 { value: 'info', label: 'Info' },
@@ -60,6 +60,7 @@ const BasicSettings = () => {
               className="w-24"
               onChange={(value) => {
                 updateConfig((config) => {
+                  if (!config.core?.log.loglevel) return;
                   config.core.log.loglevel = value;
                 });
               }}

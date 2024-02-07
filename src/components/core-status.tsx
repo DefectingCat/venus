@@ -15,7 +15,7 @@ const CoreStatus = () => {
   return (
     <>
       <div className="flex items-center">
-        <div className="mr-2">{StatusMap[coreStatus]}</div>
+        <div className="mr-2">{StatusMap[coreStatus ?? '']}</div>
         <div className="">Core {version}</div>
       </div>
     </>

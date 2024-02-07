@@ -18,7 +18,7 @@ const RoutingDrawer = dynamic(
 );
 
 const RoutingSettings = () => {
-  const routing = useStore((s) => s.core.routing);
+  const routing = useStore((s) => s.core?.routing);
   const updateConfig = useStore((s) => s.updateConfig);
   const toggleUI = useStore((s) => s.toggleUI);
   const drawerType = useStore((s) => s.menus.routing);
@@ -27,6 +27,7 @@ const RoutingSettings = () => {
 
   const changeStrategy = (value: string) => {
     updateConfig((config) => {
+      if (!config.core?.routing.domainStrategy) return;
       config.core.routing.domainStrategy = value;
     });
   };
@@ -208,19 +209,19 @@ const RoutingSettings = () => {
   // Built in rules
   const builtInRules = useMemo(
     () =>
-      routing.rules
+      routing?.rules
         .slice(0, BUILTIN_RULE_LENGTH)
         .map((r, i) => ({ ...r, id: i + 1 })),
-    [routing.rules],
+    [routing?.rules],
   );
 
   // Custom rules
   const customRules = useMemo(
     () =>
-      routing.rules
+      routing?.rules
         .slice(BUILTIN_RULE_LENGTH)
         .map((r, i) => ({ ...r, id: i + 1 })),
-    [routing.rules],
+    [routing?.rules],
   );
 
   // switch rule between [b]uilt-in and [c]ustom
@@ -231,7 +232,7 @@ const RoutingSettings = () => {
         <div className="flex">
           <ResizableTable
             pagination={false}
-            rowKey={(record: Rule) => record.id}
+            rowKey={(record: Rule) => record.id ?? ''}
             columns={tableCols}
             dataSource={builtInRules}
             onRow={() => ({
@@ -254,7 +255,7 @@ const RoutingSettings = () => {
         <div className="flex relative">
           <ResizableTable
             pagination={false}
-            rowKey={(record: Rule) => record.id}
+            rowKey={(record: Rule) => record.id ?? ''}
             columns={tableCols}
             dataSource={customRules}
             onRow={(record: Rule) => ({
@@ -267,6 +268,7 @@ const RoutingSettings = () => {
                 e.stopPropagation();
                 e.preventDefault();
                 toggleUI((ui) => {
+                  if (!customRules || !builtInRules) return;
                   ui.menus.clickRule =
                     customRules.findIndex((r, i) => record.id === i + 1) +
                     builtInRules.length;
@@ -288,9 +290,10 @@ const RoutingSettings = () => {
               icon={<PlusOutlined />}
               onClick={() => {
                 updateConfig((config) => {
-                  config.core.routing.rules.push(DEFAULT_ROUTING_RULE);
+                  config.core?.routing.rules.push(DEFAULT_ROUTING_RULE);
                 });
                 toggleUI((ui) => {
+                  if (!routing) return;
                   ui.menus.routing = 'add';
                   ui.menus.clickRule = routing.rules.length;
                 });
@@ -309,7 +312,7 @@ const RoutingSettings = () => {
           <SettingLine title="Domain strategy">
             <Select
               className="w-32"
-              value={routing.domainStrategy}
+              value={routing?.domainStrategy}
               onChange={changeStrategy}
               options={[
                 { value: 'AsIs', label: 'AsIs' },

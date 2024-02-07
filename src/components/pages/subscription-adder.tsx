@@ -40,8 +40,8 @@ const SubscriptionAdder = ({ onCancel }: { onCancel: () => void }) => {
   const handlAdd = async () => {
     try {
       setLoading.setTrue();
-      const index = subs.findIndex((sub) => sub.url === subscripition.url);
-      if (~index) return message.warning('Subscription already added');
+      const index = subs?.findIndex((sub) => sub.url === subscripition.url);
+      if (index && ~index) return message.warning('Subscription already added');
       await invoke('add_subscription', {
         ...subscripition,
         name: subscripition.name || 'Unnamed',

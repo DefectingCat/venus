@@ -46,14 +46,14 @@ const createConfigSlice: StateCreator<
    */
   updateSocksInbound: (callback) => {
     set((config) => {
-      const socks = config.core.inbounds.find((i) => i.tag === 'socks');
+      const socks = config.core?.inbounds.find((i) => i.tag === 'socks');
       if (!socks) throw new Error('Cannot find socks inbound');
       callback(socks);
     });
   },
   updateHttpInbound: (callback) => {
     set((config) => {
-      const http = config.core.inbounds.find((i) => i.tag === 'http');
+      const http = config.core?.inbounds.find((i) => i.tag === 'http');
       if (!http) throw new Error('Cannot find http inbound');
       callback(http);
     });
@@ -65,6 +65,7 @@ export interface Subscription {
   url: string;
   nodes: Node[];
 }
+
 export interface Node {
   v: string;
   // Node name
@@ -206,17 +207,17 @@ export interface Routing {
 export interface Rule {
   id?: number;
   type: string;
-  domain?: string[];
-  ip?: string[];
-  port?: string;
-  network?: string;
-  source?: string[];
-  user?: string[];
-  inboundTag?: string[];
-  protocol?: string[];
-  attrs?: string;
+  domain?: string[] | null;
+  ip?: string[] | null;
+  port?: string | null;
+  network?: string | null;
+  source?: string[] | null;
+  user?: string[] | null;
+  inboundTag?: string[] | null;
+  protocol?: string[] | null;
+  attrs?: string | null;
   outboundTag: string;
-  balancerTag?: string;
+  balancerTag?: string | null;
 }
 
 export interface Balancer {
@@ -241,6 +242,7 @@ export interface VConfig {
   rua: RConfig;
   core: CoreConfig | null;
 }
+
 export interface Actions {
   /**
    * Set rua config from backend to global state
@@ -250,7 +252,7 @@ export interface Actions {
    * Set core config from backend to global state
    */
   updateCoreConfig: (config: CoreConfig) => void;
-  updateSubs: (callback: (subs: Subscription[]) => void) => void;
+  updateSubs: (callback: (subs: Subscription[] | null) => void) => void;
 
   /**
    * Update whole config with immer

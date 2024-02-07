@@ -67,6 +67,7 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
     updateSubs((subs) => {
       try {
         setLoading.setTrue();
+        if (!subs) return;
         const target = findSub(subs, sub.url);
         if (target.name !== buffer.name) {
           target.nodes.forEach((node) => {
@@ -88,13 +89,15 @@ const SubscriptionCard = ({ sub }: { sub: Subscription }) => {
   // delete state
   const handleDelete = () => {
     updateSubs((subs) => {
-      const index = subs.findIndex((s) => s.url === sub.url);
+      if (!subs) return;
+      const index = subs?.findIndex((s) => s.url === sub.url);
       if (!~index) {
         message.error('Cannot find target subscription');
       }
       subs.splice(index, 1);
     });
     updateConfig((config) => {
+      if (!config.core) return;
       if (config.core.outbounds.length === 3) {
         config.core.outbounds.shift();
       }

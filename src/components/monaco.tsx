@@ -30,7 +30,7 @@ const vsThemeMap = {
 const Monaco = (props: MonacoProps) => {
   const wrapper = useRef<HTMLDivElement>(null);
   const [editor, setEditor] =
-    useState<monaco.editor.IStandaloneCodeEditor>(null);
+    useState<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   // Init events
   useEffect(() => {
@@ -72,12 +72,12 @@ const Monaco = (props: MonacoProps) => {
       <Editor
         onMount={(editor) => {
           setTimeout(() => {
-            editor.getAction('editor.action.formatDocument').run();
+            editor.getAction('editor.action.formatDocument')?.run();
           }, 0);
           setEditor(editor);
         }}
         height="20vh"
-        theme={mounted ? vsThemeMap[currentTheme] : 'light'}
+        theme={mounted ? vsThemeMap[currentTheme ?? ''] : 'light'}
         options={{
           minimap: {
             enabled: false,

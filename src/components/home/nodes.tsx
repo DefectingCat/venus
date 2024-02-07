@@ -20,7 +20,7 @@ const Nodes = () => {
   const nodeLoading = useStore((s) => s.loading.node.speedTest);
 
   const nodes = useMemo(
-    () => subscriptions.flatMap((sub) => sub.nodes),
+    () => subscriptions?.flatMap((sub) => sub.nodes),
     [subscriptions],
   );
 
@@ -161,7 +161,7 @@ const Nodes = () => {
 
   // Edit or view node, open by context menu
   const drawerType = useStore((s) => s.menus.node);
-  const [currentNode, setCurrentNode] = useState<Node>(null);
+  const [currentNode, setCurrentNode] = useState<Node | null>(null);
 
   return (
     <div className="overflow-auto flex-1">
@@ -200,7 +200,7 @@ const Nodes = () => {
         })}
       />
 
-      {!!drawerType && <NodeDrawer node={currentNode} />}
+      {!!drawerType && currentNode && <NodeDrawer node={currentNode} />}
     </div>
   );
 };

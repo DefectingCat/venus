@@ -41,13 +41,13 @@ const Subscriptions = () => {
         <Button
           onClick={handleUpdate}
           loading={loading}
-          disabled={!subscriptions.length}
+          disabled={!subscriptions?.length}
         >
           Update All
         </Button>
       </div>
       <div className={clsx('mt-4 flex flex-wrap', 'items-center')}>
-        {!!subscriptions.length ? (
+        {!!subscriptions?.length ? (
           subscriptions.map((sub) => (
             <SubscriptionCard key={sub.url} sub={sub} />
           ))

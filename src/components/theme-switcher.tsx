@@ -21,7 +21,7 @@ const ThemeSwitcher = ({ Component, pageProps }: AppProps) => {
   return (
     <ConfigProvider
       theme={{
-        algorithm: themeMap[currentTheme],
+        algorithm: themeMap[currentTheme ?? ''],
         token: {
           ...defaultTheme,
         },
