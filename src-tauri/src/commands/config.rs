@@ -39,26 +39,27 @@ pub async fn update_config(
     core_config: Option<CoreConfig>,
     rua_config: Option<RConfig>,
 ) -> VResult<()> {
+    use std::sync::atomic::Ordering::Relaxed;
+
+    let mut config = CONFIG.lock().await;
     if let Some(c) = core_config {
         info!("Updating core config");
-        let mut config = CONFIG.lock().await;
         config.core = Some(c);
         config.write_core()?;
-        MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     }
 
     if let Some(r) = rua_config {
         info!("Updating rua config");
-        let mut config = CONFIG.lock().await;
         if r.logging {
-            LOGGING.store(true, std::sync::atomic::Ordering::Relaxed);
+            LOGGING.store(true, Relaxed);
         } else {
-            LOGGING.store(false, std::sync::atomic::Ordering::Relaxed);
+            LOGGING.store(false, Relaxed);
         }
+        dbg!(&r.settings.update_subs);
         config.rua = r;
         config.write_rua()?;
-        MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     }
+    MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     Ok(())
 }
 

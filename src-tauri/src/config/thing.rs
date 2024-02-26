@@ -13,15 +13,38 @@ pub struct Subscription {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum SubsAutoUpdate {
+    Off,
+    Startup,
+    Time(u16),
+}
+impl From<&str> for SubsAutoUpdate {
+    fn from(value: &str) -> Self {
+        use SubsAutoUpdate::*;
+
+        match value {
+            "off" => Off,
+            "startup" => Startup,
+            "time" => Time(0),
+            _ => Off,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RUABasicSetting {
     pub speed_url: String,
     // TODO speed timeout
+    pub update_subs: Option<SubsAutoUpdate>,
+    pub update_time: Option<u16>,
 }
 impl Default for RUABasicSetting {
     fn default() -> Self {
         Self {
             speed_url: SPEED_URL.into(),
+            update_subs: Some(SubsAutoUpdate::Off),
+            update_time: None,
         }
     }
 }

@@ -85,6 +85,25 @@ const VenusSetting = () => {
             />
           </SettingLine>
         </SettingCard>
+
+        <SettingCard title="Subscription">
+          <SettingLine title="Auto update">
+            <Select
+              className="w-24"
+              value={rua.settings.updateSubs || 'off'}
+              options={[
+                { value: 'Off', label: 'Off' },
+                { value: 'Startup', label: 'Startup' },
+                { value: 'Time', label: 'Each time' },
+              ]}
+              onChange={(value) => {
+                updateConfig((config) => {
+                  config.rua.settings.updateSubs = value;
+                });
+              }}
+            />
+          </SettingLine>
+        </SettingCard>
       </Setting>
 
       <div>

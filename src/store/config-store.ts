@@ -19,6 +19,8 @@ const createConfigSlice: StateCreator<
     subscriptions: [],
     settings: {
       speedUrl: '',
+      updateSubs: 'off',
+      updateTime: 0,
     },
   },
   core: null,
@@ -227,6 +229,8 @@ export interface Balancer {
 
 export interface RUABasicSetting {
   speedUrl: string;
+  updateSubs?: string;
+  updateTime?: number;
 }
 
 export interface RConfig {
