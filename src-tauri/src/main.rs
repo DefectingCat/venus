@@ -25,6 +25,7 @@ use store::ui::UI;
 use tauri::{SystemTray, SystemTrayEvent};
 use tauri_plugin_autostart::MacosLauncher;
 use tokio::sync::Mutex;
+use utils::timer::Timer;
 
 mod commands;
 mod config;
@@ -50,7 +51,7 @@ pub static CONFIG: Lazy<Mutex<VConfig>> = Lazy::new(|| Mutex::new(VConfig::new()
 /// Global UI state
 pub static UI: Lazy<Mutex<UI>> = Lazy::new(|| Mutex::new(UI::default()));
 /// Subscription auto update timer
-// pub static Timer: Lazy<>
+pub static UpdateTimer: Lazy<Mutex<Timer>> = Lazy::new(|| Mutex::new(Timer::new(0, || {})));
 
 fn main() {
     #[cfg(debug_assertions)]

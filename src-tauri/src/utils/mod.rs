@@ -4,6 +4,7 @@ use tauri::{App, Window};
 
 pub mod consts;
 pub mod error;
+pub mod timer;
 
 /// Get main window by app
 pub fn get_main_window(app: &App) -> Result<Window> {
