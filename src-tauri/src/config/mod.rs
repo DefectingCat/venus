@@ -1,5 +1,8 @@
 pub use self::thing::*;
-use crate::{CONFIG, LOGGING, NAME, VERSION};
+use crate::{
+    utils::consts::{NAME, VERSION},
+    CONFIG, LOGGING,
+};
 use anyhow::{anyhow, Result};
 use log::error;
 use std::{

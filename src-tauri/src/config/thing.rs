@@ -1,6 +1,5 @@
-use crate::commands::subs::NodeType;
 use crate::utils::consts::SPEED_URL;
-use crate::VERSION;
+use crate::{commands::subs::NodeType, utils::consts::VERSION};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 

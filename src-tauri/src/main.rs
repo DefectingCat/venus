@@ -15,6 +15,7 @@ use crate::{
     init::{app_runtime, setup_app, single_instance_init, window_event_handler},
     logger::init_logger,
     tray::tray_menu,
+    utils::consts::VERSION,
 };
 use config::VConfig;
 use log::info;
@@ -41,9 +42,6 @@ mod utils;
 static CORE_SHUTDOWN: AtomicBool = AtomicBool::new(false);
 /// Is logging to frontend
 static LOGGING: AtomicBool = AtomicBool::new(false);
-/// info from package
-static VERSION: &str = env!("CARGO_PKG_VERSION");
-static NAME: &str = env!("CARGO_PKG_NAME");
 
 /// Control v2ray-core
 pub static CORE: Lazy<Mutex<VCore>> = Lazy::new(|| Mutex::new(VCore::build()));
@@ -51,6 +49,8 @@ pub static CORE: Lazy<Mutex<VCore>> = Lazy::new(|| Mutex::new(VCore::build()));
 pub static CONFIG: Lazy<Mutex<VConfig>> = Lazy::new(|| Mutex::new(VConfig::new()));
 /// Global UI state
 pub static UI: Lazy<Mutex<UI>> = Lazy::new(|| Mutex::new(UI::default()));
+/// Subscription auto update timer
+// pub static Timer: Lazy<>
 
 fn main() {
     #[cfg(debug_assertions)]
@@ -74,8 +74,6 @@ fn main() {
             match event {
                 SystemTrayEvent::LeftClick { .. } => tray_menu(app),
                 SystemTrayEvent::RightClick { .. } => tray_menu(app),
-                // SystemTrayEvent::DoubleClick { .. } => {}
-                // SystemTrayEvent::MenuItemClick { id, .. } => handle_tray_click(app, id),
                 _ => {}
             }
         })

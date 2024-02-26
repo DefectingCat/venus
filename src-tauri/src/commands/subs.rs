@@ -1,8 +1,11 @@
 use crate::{
     config::{Node, Subscription},
     message::MSG_TX,
-    utils::error::VResult,
-    CONFIG, NAME, VERSION,
+    utils::{
+        consts::{NAME, VERSION},
+        error::VResult,
+    },
+    CONFIG,
 };
 use anyhow::anyhow;
 use base64::{engine::general_purpose, Engine};
