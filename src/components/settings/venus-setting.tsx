@@ -94,7 +94,7 @@ const VenusSetting = () => {
               options={[
                 { value: 'Off', label: 'Off' },
                 { value: 'Startup', label: 'Startup' },
-                { value: 'Time', label: 'Each time' },
+                { value: 'Time', label: 'Regularly' },
               ]}
               onChange={(value) => {
                 updateConfig((config) => {
@@ -103,6 +103,20 @@ const VenusSetting = () => {
               }}
             />
           </SettingLine>
+          {rua.settings.updateSubs === 'Time' && (
+            <SettingLine title="Update subscription regularly (Unit: hour)">
+              <Input
+                defaultValue={0}
+                value={rua.settings.updateTime}
+                className="w-24"
+                onChange={(e) => {
+                  updateConfig((config) => {
+                    config.rua.settings.updateTime = Number(e.target.value);
+                  });
+                }}
+              />
+            </SettingLine>
+          )}
         </SettingCard>
       </Setting>
 

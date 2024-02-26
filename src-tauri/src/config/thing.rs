@@ -16,7 +16,7 @@ pub struct Subscription {
 pub enum SubsAutoUpdate {
     Off,
     Startup,
-    Time(u16),
+    Time,
 }
 impl From<&str> for SubsAutoUpdate {
     fn from(value: &str) -> Self {
@@ -25,7 +25,7 @@ impl From<&str> for SubsAutoUpdate {
         match value {
             "off" => Off,
             "startup" => Startup,
-            "time" => Time(0),
+            "time" => Time,
             _ => Off,
         }
     }
