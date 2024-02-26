@@ -33,9 +33,8 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn Error>> {
         AOk(())
     });
 
-    /*
     #[cfg(target_os = "macos")]
-    win.set_activation_policy(tauri::ActivationPolicy::Accessory); */
+    app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
     let window = get_main_window(app)?;
     app.listen_global("ready", move |_e| {
