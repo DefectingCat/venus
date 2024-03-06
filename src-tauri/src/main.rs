@@ -51,7 +51,7 @@ pub static CONFIG: Lazy<Mutex<VConfig>> = Lazy::new(|| Mutex::new(VConfig::new()
 /// Global UI state
 pub static UI: Lazy<Mutex<UI>> = Lazy::new(|| Mutex::new(UI::default()));
 /// Subscription auto update timer
-pub static UpdateTimer: Lazy<Mutex<Timer>> = Lazy::new(|| Mutex::new(Timer::new(0, || {})));
+pub static UPDATE_TIMER: Lazy<Mutex<Timer>> = Lazy::new(|| Mutex::new(Timer::new(0, || {})));
 
 fn main() {
     #[cfg(debug_assertions)]

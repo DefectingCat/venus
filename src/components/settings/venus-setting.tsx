@@ -90,7 +90,7 @@ const VenusSetting = () => {
           <SettingLine title="Auto update">
             <Select
               className="w-24"
-              value={rua.settings.updateSubs || 'off'}
+              value={rua.settings.updateSubs || 'Off'}
               options={[
                 { value: 'Off', label: 'Off' },
                 { value: 'Startup', label: 'Startup' },

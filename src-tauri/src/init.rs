@@ -1,7 +1,9 @@
 use crate::{
+    commands::subs::update_all_subs_core,
+    config::SubsAutoUpdate,
     core::{core_version, exit_core},
     event::RUAEvents,
-    message::message_handler,
+    message::{message_handler, MSG_TX},
     store::ui::CoreStatus,
     utils::get_main_window,
     CONFIG, CORE, CORE_SHUTDOWN, UI,
@@ -30,6 +32,7 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn Error>> {
     // Start config and core
     async_runtime::spawn(async move {
         init_core_and_config(&resources_path, window).await?;
+        after_app_setup().await?;
         AOk(())
     });
 
@@ -109,6 +112,25 @@ async fn init_core_and_config(resources_path: &PathBuf, window: Window) -> Resul
     }
     ui.core_version = core_version()?;
     AOk(())
+}
+
+async fn after_app_setup() -> Result<()> {
+    let mut config = CONFIG.lock().await;
+    info!("Start init config");
+
+    match config.rua.settings.update_subs {
+        Some(SubsAutoUpdate::Startup) => {
+            update_all_subs_core(&mut config).await?;
+            MSG_TX
+                .lock()
+                .await
+                .send(crate::message::ConfigMsg::RestartCore)
+                .await?;
+        }
+        Some(SubsAutoUpdate::Off) | Some(SubsAutoUpdate::Time) => {}
+        None => {}
+    };
+    Ok(())
 }
 
 /// App runtime handler. used for `tauri::Builder::default().run()`

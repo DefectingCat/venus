@@ -1,5 +1,5 @@
 use crate::{
-    config::{Node, Subscription},
+    config::{Node, Subscription, VConfig},
     message::MSG_TX,
     utils::{
         consts::{NAME, VERSION},
@@ -152,17 +152,23 @@ pub async fn add_subscription(name: String, url: String) -> VResult<()> {
     Ok(())
 }
 
-/// Update all subscriptions in config file.
-#[tauri::command]
-pub async fn update_all_subs() -> VResult<()> {
+/// Update all subscriptions in config
+pub async fn update_all_subs_core(config: &mut VConfig) -> VResult<()> {
     info!("Starting update all subscriptions");
-    let mut config = CONFIG.lock().await;
     let subs = &mut config.rua.subscriptions;
     for sub in subs.iter_mut() {
         let new_nodes = request_subs(&sub.name, &sub.url).await?;
         sub.nodes = new_nodes;
     }
     config.write_rua()?;
+    Ok(())
+}
+
+/// Update all subscriptions in config file.
+#[tauri::command]
+pub async fn update_all_subs() -> VResult<()> {
+    let mut config = CONFIG.lock().await;
+    update_all_subs_core(&mut config).await?;
     MSG_TX
         .lock()
         .await
