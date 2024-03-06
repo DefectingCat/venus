@@ -1,5 +1,18 @@
 # ChangeLog
 
+## [0.1.3] - 2024-03-06
+
+### Added
+
+- Subscription auto update
+- Hide icon from dock on macOS
+- Refactor setting card
+
+### Fixed
+
+- Setting page in dark mode
+- Speed test dead lock
+
 ## [0.1.2] - 2023-12-28
 
 ### Added
