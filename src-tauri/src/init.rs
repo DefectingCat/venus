@@ -1,5 +1,5 @@
 use crate::{
-    commands::subs::update_all_subs_core,
+    commands::subs::{timer_update, update_all_subs_core},
     config::SubsAutoUpdate,
     core::{core_version, exit_core},
     event::RUAEvents,
@@ -31,8 +31,12 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn Error>> {
     let window = get_main_window(app)?;
     // Start config and core
     async_runtime::spawn(async move {
-        init_core_and_config(&resources_path, window).await?;
-        after_app_setup().await?;
+        let _ = init_core_and_config(&resources_path, window)
+            .await
+            .map_err(|e| error!("init core and config failed {e}"));
+        let _ = after_app_setup()
+            .await
+            .map_err(|e| error!("after app setup failed {e}"));
         AOk(())
     });
 
@@ -114,6 +118,7 @@ async fn init_core_and_config(resources_path: &PathBuf, window: Window) -> Resul
     AOk(())
 }
 
+/// After app initialized
 async fn after_app_setup() -> Result<()> {
     let mut config = CONFIG.lock().await;
     info!("Start init config");
@@ -127,7 +132,11 @@ async fn after_app_setup() -> Result<()> {
                 .send(crate::message::ConfigMsg::RestartCore)
                 .await?;
         }
-        Some(SubsAutoUpdate::Off) | Some(SubsAutoUpdate::Time) => {}
+        Some(SubsAutoUpdate::Time) => {
+            let duration = config.rua.settings.update_time;
+            timer_update(duration).await;
+        }
+        Some(SubsAutoUpdate::Off) => {}
         None => {}
     };
     Ok(())

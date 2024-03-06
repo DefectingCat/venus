@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{
     config::{Node, Subscription, VConfig},
     message::MSG_TX,
@@ -5,13 +7,14 @@ use crate::{
         consts::{NAME, VERSION},
         error::VResult,
     },
-    CONFIG,
+    CONFIG, UPDATE_TIMER,
 };
 use anyhow::anyhow;
 use base64::{engine::general_purpose, Engine};
-use log::{debug, info};
+use log::{debug, error, info};
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
+use tauri::async_runtime;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeType {
@@ -162,6 +165,25 @@ pub async fn update_all_subs_core(config: &mut VConfig) -> VResult<()> {
     }
     config.write_rua()?;
     Ok(())
+}
+
+pub async fn timer_update(duration: Option<u16>) {
+    let mut timer = UPDATE_TIMER.lock().await;
+    if let Some(duration) = duration {
+        let _ = timer.terminate();
+        timer.duration = Duration::from_secs(duration.into());
+        timer.job = || {
+            async_runtime::spawn(async move {
+                let mut config = CONFIG.lock().await;
+                let _ = update_all_subs_core(&mut config)
+                    .await
+                    .map_err(|e| error!("auto update subs failed {}", e));
+            });
+        };
+        let _ = timer
+            .start()
+            .map_err(|e| error!("timer start failed {}", e));
+    }
 }
 
 /// Update all subscriptions in config file.

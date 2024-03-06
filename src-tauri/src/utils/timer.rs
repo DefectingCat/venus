@@ -30,8 +30,8 @@ impl Timer {
         let duration = self.duration;
         let handler = async_runtime::spawn(async move {
             loop {
-                (job)();
                 sleep(duration).await;
+                (job)();
             }
         });
         self.handler = Some(handler);
