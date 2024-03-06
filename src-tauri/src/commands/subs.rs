@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::{
-    config::{Node, Subscription, VConfig},
+    config::{Node, SubsAutoUpdate, Subscription, VConfig},
     message::MSG_TX,
     utils::{
         consts::{NAME, VERSION},
@@ -167,11 +167,33 @@ pub async fn update_all_subs_core(config: &mut VConfig) -> VResult<()> {
     Ok(())
 }
 
+pub async fn check_subs_update(config: &mut VConfig) -> VResult<()> {
+    match config.rua.settings.update_subs {
+        Some(SubsAutoUpdate::Startup) => {
+            update_all_subs_core(config).await?;
+            MSG_TX
+                .lock()
+                .await
+                .send(crate::message::ConfigMsg::RestartCore)
+                .await?;
+        }
+        Some(SubsAutoUpdate::Time) => {
+            let duration = config.rua.settings.update_time;
+            timer_update(duration).await;
+        }
+        _ => {
+            let mut timer = UPDATE_TIMER.lock().await;
+            timer.terminate();
+        }
+    };
+    Ok(())
+}
+
 pub async fn timer_update(duration: Option<u16>) {
     let mut timer = UPDATE_TIMER.lock().await;
     if let Some(duration) = duration {
-        let _ = timer.terminate();
-        timer.duration = Duration::from_secs(duration.into());
+        timer.terminate();
+        timer.duration = Duration::from_secs((duration * 60).into());
         timer.job = || {
             async_runtime::spawn(async move {
                 let mut config = CONFIG.lock().await;

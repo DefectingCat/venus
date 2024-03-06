@@ -1,3 +1,4 @@
+use crate::commands::subs::check_subs_update;
 use crate::config::{CoreConfig, RConfig};
 use crate::message::{ConfigMsg, MSG_TX};
 use crate::utils::error::VResult;
@@ -55,10 +56,10 @@ pub async fn update_config(
         } else {
             LOGGING.store(false, Relaxed);
         }
-        dbg!(&r.settings.update_subs);
         config.rua = r;
         config.write_rua()?;
     }
+    check_subs_update(&mut config).await?;
     MSG_TX.lock().await.send(ConfigMsg::RestartCore).await?;
     Ok(())
 }

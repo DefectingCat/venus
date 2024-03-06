@@ -1,4 +1,4 @@
-use anyhow::{anyhow, bail};
+use anyhow::bail;
 use std::time::Duration;
 use tauri::async_runtime::{self, JoinHandle};
 use tokio::time::sleep;
@@ -38,9 +38,10 @@ impl Timer {
         Ok(())
     }
 
-    pub fn terminate(&mut self) -> anyhow::Result<()> {
+    pub fn terminate(&mut self) {
         let handler = self.handler.take();
-        handler.ok_or(anyhow!(""))?.abort();
-        Ok(())
+        handler.map(|h| {
+            h.abort();
+        });
     }
 }

@@ -1,9 +1,8 @@
 use crate::{
-    commands::subs::{timer_update, update_all_subs_core},
-    config::SubsAutoUpdate,
+    commands::subs::check_subs_update,
     core::{core_version, exit_core},
     event::RUAEvents,
-    message::{message_handler, MSG_TX},
+    message::message_handler,
     store::ui::CoreStatus,
     utils::get_main_window,
     CONFIG, CORE, CORE_SHUTDOWN, UI,
@@ -123,22 +122,7 @@ async fn after_app_setup() -> Result<()> {
     let mut config = CONFIG.lock().await;
     info!("Start init config");
 
-    match config.rua.settings.update_subs {
-        Some(SubsAutoUpdate::Startup) => {
-            update_all_subs_core(&mut config).await?;
-            MSG_TX
-                .lock()
-                .await
-                .send(crate::message::ConfigMsg::RestartCore)
-                .await?;
-        }
-        Some(SubsAutoUpdate::Time) => {
-            let duration = config.rua.settings.update_time;
-            timer_update(duration).await;
-        }
-        Some(SubsAutoUpdate::Off) => {}
-        None => {}
-    };
+    check_subs_update(&mut config).await?;
     Ok(())
 }
 
