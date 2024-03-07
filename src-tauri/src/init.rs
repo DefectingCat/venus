@@ -153,12 +153,14 @@ pub fn app_runtime(app: &AppHandle, event: RunEvent) {
             let app_handler = app.app_handle();
             let window_task = async move {
                 let config = CONFIG.lock().await;
+                dbg!(config.rua.save_windows);
                 if config.rua.save_windows {
-                    if let Err(err) = app_handler.save_window_state(StateFlags::all()) {
-                        error!("Save window status failed {}", err)
-                    };
+                    let _ = app_handler
+                        .save_window_state(StateFlags::SIZE)
+                        .map_err(|e| {
+                            error!("Save window status failed {}", e);
+                        });
                 }
-                AOk(())
             };
             async_runtime::spawn(window_task);
         }

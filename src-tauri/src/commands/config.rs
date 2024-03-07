@@ -13,23 +13,27 @@ pub enum ReturnConfig {
     Core(Box<CoreConfig>),
     Rua(Box<RConfig>),
 }
+#[derive(Debug, Deserialize)]
+pub enum WhichConfig {
+    Rua,
+    Core,
+}
 /// Return specify config field
 #[tauri::command]
-pub async fn get_config(config_type: &str) -> VResult<Option<ReturnConfig>> {
+pub async fn get_config(config_type: WhichConfig) -> VResult<Option<ReturnConfig>> {
     let config = CONFIG.lock().await;
-    match config_type.to_lowercase().as_str() {
-        "core" => {
+    match config_type {
+        WhichConfig::Core => {
             let core: Option<ReturnConfig> = config
                 .core
                 .clone()
                 .map(|core| ReturnConfig::Core(Box::new(core)));
             Ok(core)
         }
-        "rua" => {
+        WhichConfig::Rua => {
             let rua = config.rua.clone();
             Ok(Some(ReturnConfig::Rua(Box::new(rua))))
         }
-        _ => Ok(None),
     }
 }
 
@@ -64,11 +68,6 @@ pub async fn update_config(
     Ok(())
 }
 
-#[derive(Debug, Deserialize)]
-pub enum WhichConfig {
-    Rua,
-    Core,
-}
 #[tauri::command]
 pub async fn read_config_file(which: WhichConfig) -> VResult<String> {
     let config = CONFIG.lock().await;

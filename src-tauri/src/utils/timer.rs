@@ -40,7 +40,7 @@ impl Timer {
 
     pub fn terminate(&mut self) {
         let handler = self.handler.take();
-        handler.map(|h| {
+        let _ = handler.map(|h| {
             h.abort();
         });
     }
