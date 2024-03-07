@@ -36,7 +36,6 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn Error>> {
         let _ = after_app_setup()
             .await
             .map_err(|e| error!("after app setup failed {e}"));
-        AOk(())
     });
 
     #[cfg(target_os = "macos")]
@@ -56,7 +55,12 @@ pub fn setup_app(app: &mut App) -> Result<(), Box<dyn Error>> {
             AOk(())
         };
         info!("Frontend ready");
-        async_runtime::spawn(task);
+        async_runtime::spawn(async move {
+            let handler = async_runtime::spawn(task).await;
+            let _ = handler.map_err(|e| {
+                error!("emit config failed {e}");
+            });
+        });
     });
 
     let window = get_main_window(app)?;
@@ -153,7 +157,6 @@ pub fn app_runtime(app: &AppHandle, event: RunEvent) {
             let app_handler = app.app_handle();
             let window_task = async move {
                 let config = CONFIG.lock().await;
-                dbg!(config.rua.save_windows);
                 if config.rua.save_windows {
                     let _ = app_handler
                         .save_window_state(StateFlags::SIZE)
