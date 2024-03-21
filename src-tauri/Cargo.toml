@@ -36,15 +36,15 @@ tauri = { version = "1.6", features = [
   "system-tray",
   "macos-private-api",
 ] }
-anyhow = "1.0.80"
-reqwest = { version = "0.11.24", features = ["json", "socks"] }
+anyhow = "1.0.81"
+reqwest = { version = "0.11.27", features = ["json", "socks"] }
 tokio = { version = "1.36.0", features = ["full"] }
 log = "0.4"
 env_logger = "0.11.3"
-thiserror = "1.0.57"
+thiserror = "1.0.58"
 base64 = "0.22.0"
 serde_derive = "1.0.197"
-toml = "0.8.10"
+toml = "0.8.12"
 md5 = "0.7.0"
 home = "0.5.9"
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
