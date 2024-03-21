@@ -92,7 +92,7 @@ export const DrawerInput = ({
   return (
     <DrawerItem label={label} focused={focused}>
       <Input
-        bordered={false}
+        variant="borderless"
         value={value}
         onFocus={setFocused.setTrue}
         onBlur={setFocused.setFalse}
@@ -146,7 +146,7 @@ export const DrawerSelect = ({
     <DrawerItem label={label} focused={focused}>
       <Select
         className="block"
-        bordered={false}
+        variant="borderless"
         onFocus={(e) => {
           setFocused.setTrue();
           onFocus?.(e);
