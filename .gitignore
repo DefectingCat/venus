@@ -19,6 +19,7 @@ dist-ssr
 *.local
 .next
 public/vs
+public/min-maps
 
 # Editor directories and files
 .vscode/*
