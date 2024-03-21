@@ -1,5 +1,10 @@
 # ChangeLog
 
+## [0.1.4-pre] - 2024-03-21
+
+- Add remove console logs in production
+- Update dependencies
+
 ## [0.1.3] - 2024-03-06
 
 ### Added
