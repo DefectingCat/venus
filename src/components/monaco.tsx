@@ -76,7 +76,7 @@ const Monaco = (props: MonacoProps) => {
           }, 0);
           setEditor(editor);
         }}
-        height="20vh"
+        height="26vh"
         theme={mounted ? vsThemeMap[currentTheme ?? ''] : 'light'}
         options={{
           minimap: {

@@ -4,6 +4,7 @@ import { Input, InputProps, Select, SelectProps, theme } from 'antd';
 import clsx from 'clsx';
 import Monaco from 'components/monaco';
 import { ReactNode } from 'react';
+import { FiMaximize2 } from 'react-icons/fi';
 
 const { useToken } = theme;
 
@@ -12,11 +13,13 @@ const { useToken } = theme;
  */
 const DrawerItem = ({
   label,
+  hoverLabel,
   children,
   focused,
   className,
 }: {
   label: string;
+  hoverLabel?: string | ReactNode;
   children: ReactNode;
   focused?: boolean;
   className?: string;
@@ -42,13 +45,32 @@ const DrawerItem = ({
         className={clsx(
           'absolute left-2 top-[-8px]',
           'text-gray-600 dark:text-gray-400',
-          'text-xs',
+          'text-xs flex items-center',
+          'cursor-pointer',
         )}
-        style={{
-          background: token.token.colorBgElevated,
-        }}
       >
-        {label}
+        <div
+          className="mr-2 flex items-center"
+          style={{
+            background: token.token.colorBgElevated,
+          }}
+        >
+          {label}
+        </div>
+        {/* the seconed hover label */}
+        {hoverLabel && (
+          <div
+            className={clsx(
+              'invisible items-center transition-all',
+              focused && '!visible',
+            )}
+            style={{
+              background: token.token.colorBgElevated,
+            }}
+          >
+            {hoverLabel}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -103,7 +125,7 @@ export const DrawerMonaco = ({
   const [focused, setFocused] = useBoolean(false);
 
   return (
-    <DrawerItem label={label} focused={focused}>
+    <DrawerItem label={label} focused={focused} hoverLabel={<FiMaximize2 />}>
       <Monaco
         onFocus={setFocused.setTrue}
         onBlur={setFocused.setFalse}

@@ -103,6 +103,7 @@ const RoutingDrawer = ({
       }}
       keyboard={false}
       maskClosable={false}
+      width={400}
     >
       <DrawerMonaco
         label="IP"
