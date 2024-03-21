@@ -4,7 +4,10 @@ const nextConfig = {
   swcMinify: true,
   trailingSlash: true,
   output: 'export',
-  // distDir: 'dist',
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
+  },
   images: {
     unoptimized: true,
   },
