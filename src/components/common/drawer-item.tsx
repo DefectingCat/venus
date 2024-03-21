@@ -61,8 +61,8 @@ const DrawerItem = ({
         {hoverLabel && (
           <div
             className={clsx(
-              'invisible items-center transition-all',
-              focused && '!visible',
+              'opacity-0 items-center transition-all',
+              focused && '!opacity-100',
             )}
             style={{
               background: token.token.colorBgElevated,

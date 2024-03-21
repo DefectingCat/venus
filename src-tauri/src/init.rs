@@ -9,6 +9,7 @@ use crate::{
 };
 use anyhow::{anyhow, Ok as AOk, Result};
 use log::{error, info};
+use serde::Serialize;
 use std::{env, error::Error, path::PathBuf, sync::atomic::Ordering, thread};
 use tauri::{
     async_runtime, App, AppHandle, GlobalWindowEvent, Manager, RunEvent, Window, WindowEvent,
@@ -184,7 +185,7 @@ pub fn window_event_handler(event: GlobalWindowEvent) {
     };
 }
 
-#[derive(Clone, serde::Serialize)]
+#[derive(Clone, Serialize)]
 struct SingleInstancePayload {
     args: Vec<String>,
     cwd: String,
