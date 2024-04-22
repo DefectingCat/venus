@@ -271,7 +271,7 @@ const RoutingSettings = () => {
                 toggleUI((ui) => {
                   if (!customRules || !builtInRules) return;
                   ui.menus.clickRule =
-                    customRules.findIndex((r, i) => record.id === i + 1) +
+                    customRules.findIndex((_r, i) => record.id === i + 1) +
                     builtInRules.length;
                   ui.mousePos = {
                     x: e.clientX,
