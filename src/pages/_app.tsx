@@ -12,14 +12,11 @@ import 'styles/global.css';
 
 // This default export is required in a new `pages/_app.js` file.
 export default function MyApp({ Component, pageProps }: AppProps) {
-  const { updateRConfig, updateCoreConfig, updateLogging, toggleUI } = useStore(
-    (s) => ({
-      updateRConfig: s.updateRConfig,
-      updateCoreConfig: s.updateCoreConfig,
-      updateLogging: s.updateLogging,
-      toggleUI: s.toggleUI,
-    }),
-  );
+  const { updateRConfig, updateCoreConfig, toggleUI } = useStore((s) => ({
+    updateRConfig: s.updateRConfig,
+    updateCoreConfig: s.updateCoreConfig,
+    toggleUI: s.toggleUI,
+  }));
 
   // Update configs
   useEffect(() => {
@@ -42,21 +39,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       listeners.push(
         await listen<CoreConfig>('rua://update-core-config', (e) => {
           updateCoreConfig(e.payload);
-        }),
-      );
-      // logs
-      listeners.push(
-        await listen<string>('rua://emit-log', (e) => {
-          updateLogging((log) => {
-            if (log.logs.length > 1_000) {
-              log.logs.shift();
-            }
-            log.total += 1;
-            log.logs.push({
-              id: log.total,
-              content: e.payload,
-            });
-          });
         }),
       );
       // ui state

@@ -9,6 +9,7 @@ import useStore from 'store';
 import { Rule } from 'store/config-store';
 import { BUILTIN_RULE_LENGTH, DEFAULT_ROUTING_RULE } from 'utils/consts';
 import ApplyBtn from './apply-btn';
+import { AnyObject } from 'antd/es/_util/type';
 
 const ResizableTable = dynamic(
   () => import('components/common/resizeable-table'),
@@ -32,7 +33,7 @@ const RoutingSettings = () => {
     });
   };
 
-  const tableCols: ColumnsType<Rule> = useMemo(
+  const tableCols: ColumnsType<AnyObject> = useMemo(
     () => [
       {
         title: 'ID',

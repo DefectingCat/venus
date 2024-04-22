@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { App } from 'antd';
+import { AnyObject } from 'antd/es/_util/type';
 import type { ColumnsType } from 'antd/es/table';
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
@@ -25,7 +26,7 @@ const Nodes = () => {
   );
 
   // nodes table
-  const columns: ColumnsType<Node> = useMemo(
+  const columns: ColumnsType<AnyObject> = useMemo(
     () => [
       {
         title: 'ID',

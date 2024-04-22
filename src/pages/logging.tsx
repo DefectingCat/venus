@@ -1,3 +1,4 @@
+import { listen } from '@tauri-apps/api/event';
 import { Switch } from 'antd';
 import clsx from 'clsx';
 import Title from 'components/pages/page-title';
@@ -21,6 +22,30 @@ const Logging = () => {
     if (!autoScroll || !ref.current) return;
     ref.current.scrollTop = ref.current.scrollHeight;
   }, [autoScroll, total]);
+
+  const updateLogging = useStore((s) => s.updateLogging);
+  useEffect(() => {
+    // logs
+    (async () => {
+      try {
+        await listen<string>('rua://emit-log', (e) => {
+          updateLogging((log) => {
+            if (log.logs.length > 1_000) {
+              log.logs.shift();
+            }
+            log.total += 1;
+            log.logs.push({
+              id: log.total,
+              content: e.payload,
+            });
+          });
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <MainLayout>
