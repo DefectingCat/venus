@@ -86,6 +86,7 @@ export const DrawerInput = ({
 }: {
   label: string;
   value?: string;
+  onMaximize?: () => void;
 } & InputProps) => {
   const [focused, setFocused] = useBoolean(false);
 
@@ -110,6 +111,7 @@ export const DrawerInputArea = ({
   label: string;
   value?: string;
   onChange?: () => void;
+  onMaximize?: () => void;
 }) => {
   return (
     <DrawerItem label={label}>
@@ -120,12 +122,17 @@ export const DrawerInputArea = ({
 
 export const DrawerMonaco = ({
   label,
+  onMaximize,
   ...rest
-}: { label: string } & EditorProps) => {
+}: { label: string; onMaximize?: () => void } & EditorProps) => {
   const [focused, setFocused] = useBoolean(false);
 
   return (
-    <DrawerItem label={label} focused={focused} hoverLabel={<FiMaximize2 />}>
+    <DrawerItem
+      label={label}
+      focused={focused}
+      hoverLabel={<FiMaximize2 onClick={onMaximize} />}
+    >
       <Monaco
         onFocus={setFocused.setTrue}
         onBlur={setFocused.setFalse}
@@ -138,7 +145,7 @@ export const DrawerMonaco = ({
 export const DrawerSelect = ({
   label,
   ...rest
-}: { label: string } & SelectProps) => {
+}: { label: string; onMaximize?: () => void } & SelectProps) => {
   const [focused, setFocused] = useBoolean(false);
   const { onFocus, onBlur, ...props } = rest;
 
