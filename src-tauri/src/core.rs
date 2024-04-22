@@ -1,10 +1,10 @@
 use crate::{
     message::{ConfigMsg, MSG_TX},
     store::ui::CoreStatus,
-    CORE, CORE_SHUTDOWN,
+    CORE, CORE_SHUTDOWN, UI,
 };
 use anyhow::{Context, Ok as AOk, Result};
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use once_cell::sync::Lazy;
 use std::{
     path::{Path, PathBuf},
@@ -26,7 +26,10 @@ pub struct VCore {
 
 /// detect the v2ray core version
 pub fn core_version() -> Result<String> {
-    let core = Command::new_sidecar("v2ray")?.args(["version"]).output()?;
+    let core = Command::new_sidecar("v2ray")?
+        .args(["version"])
+        .output()
+        .with_context(|| "get core version failed")?;
     let stdout = core.stdout.split(' ').collect::<Vec<_>>();
     let stdout = stdout.get(1).unwrap_or(&"0.0");
     Ok(stdout.to_string())
@@ -49,6 +52,14 @@ fn start_core(path: &Path) -> Result<CommandChild> {
     let (mut rx, child) = Command::new_sidecar("v2ray")?
         .args(["run", "-c", &path.to_string_lossy()])
         .spawn()?;
+
+    async_runtime::spawn(async move {
+        debug!("start_core locking ui");
+        let mut ui = UI.lock().await;
+        let _ = core_version().map_err(|err| error!("{err}")).map(|v| {
+            ui.core_version = v;
+        });
+    });
 
     async_runtime::spawn(async move {
         while let Some(event) = rx.recv().await {

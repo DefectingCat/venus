@@ -1,11 +1,6 @@
 use crate::{
-    commands::subs::check_subs_update,
-    core::{core_version, exit_core},
-    event::RUAEvents,
-    message::message_handler,
-    store::ui::CoreStatus,
-    utils::get_main_window,
-    CONFIG, CORE, CORE_SHUTDOWN, UI,
+    commands::subs::check_subs_update, core::exit_core, event::RUAEvents, message::message_handler,
+    store::ui::CoreStatus, utils::get_main_window, CONFIG, CORE, CORE_SHUTDOWN, UI,
 };
 use anyhow::{anyhow, Ok as AOk, Result};
 use log::{error, info};
@@ -118,7 +113,6 @@ async fn init_core_and_config(resources_path: &PathBuf, window: Window) -> Resul
             ui.core_status = CoreStatus::Stopped;
         }
     }
-    ui.core_version = core_version()?;
     AOk(())
 }
 

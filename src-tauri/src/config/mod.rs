@@ -116,6 +116,7 @@ impl VConfig {
         let mut rua_file = OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(true)
             .open(&self.rua_path)?;
         let rua_string = toml::to_string(&self.rua)?;
         rua_file.set_len(0)?;
