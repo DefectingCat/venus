@@ -1,5 +1,5 @@
 # The URL the site will be built for
-base_url = "https://adidoks.netlify.com"
+base_url = "."
 title = "AdiDoks"
 description = "AdiDoks is a Zola theme helping you build modern documentation websites, which is a port of the Hugo theme Doks for Zola."
 
@@ -21,7 +21,7 @@ minify_html = false
 
 # The taxonomies to be rendered for the site and their configuration.
 taxonomies = [
-  {name = "authors"}, # Basic definition: no feed or pagination
+  { name = "authors" }, # Basic definition: no feed or pagination
 ]
 
 # Whether to build a search index to be used later on by a JavaScript library
@@ -60,12 +60,12 @@ language_code = "en-US"
 theme_color = "#fff"
 
 # More about site's title
-title_separator = "|"  # set as |, -, _, etc
+title_separator = "|"                         # set as |, -, _, etc
 title_addition = "Modern Documentation Theme"
 
 
 # Set date format in blog publish metadata
-timeformat = "%B %e, %Y" # e.g. June 14, 2021
+timeformat = "%B %e, %Y"      # e.g. June 14, 2021
 timezone = "America/New_York"
 
 # Edit page on reposity or not
@@ -77,7 +77,7 @@ repo_branch = "main"
 # options: true, false. Enable math support globally,
 # default: false. You can always enable math on a per page.
 math = false
-library = "katex"  # options: "katex", "mathjax". default is "katex".
+library = "katex" # options: "katex", "mathjax". default is "katex".
 
 ## Open Graph + Twitter Cards
 [extra.open]
@@ -97,7 +97,7 @@ logo = "logo-doks.png"
 twitter = "https://twitter.com/aaranxu"
 linked_in = ""
 github = "https://github.com/aaranxu"
-section = "blog" # see config.extra.main~url
+section = "blog"                        # see config.extra.main~url
 ## Sitelinks Search Box
 site_links_search_box = false
 
