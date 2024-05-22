@@ -58,7 +58,6 @@ export default function SideBar() {
       <div className={clsx('flex w-full justify-center')}>
         <Image
           className={clsx('object-contain w-28 h-28')}
-          priority
           alt="Venus"
           src={venusLogo}
         />

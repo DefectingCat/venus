@@ -98,7 +98,7 @@ impl<'de> Deserialize<'de> for NodeType {
 
 /// Send http request to download subscription info
 async fn request_subs(name: &str, url: &str) -> VResult<Vec<Node>> {
-    let client = reqwest::Client::new();
+    let client = reqwest::ClientBuilder::new().no_proxy().build()?;
     let result = client
         .get(url)
         .header(USER_AGENT, format!("{}/{}", NAME, VERSION))

@@ -54,10 +54,10 @@ pub static UI: Lazy<Mutex<UI>> = Lazy::new(|| Mutex::new(UI::default()));
 pub static UPDATE_TIMER: Lazy<Mutex<Timer>> = Lazy::new(|| Mutex::new(Timer::new(0, || {})));
 
 fn main() {
-    #[cfg(debug_assertions)]
+    /* #[cfg(debug_assertions)]
     use utils::debug_process;
     #[cfg(debug_assertions)]
-    debug_process();
+    debug_process(); */
 
     match init_logger() {
         Ok(()) => {}
