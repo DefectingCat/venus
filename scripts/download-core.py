@@ -1,6 +1,10 @@
+#!/usr/bin/env python
 import requests
 import platform
-import json
+import os
+from tqdm import tqdm
+
+TARGET_DIR = os.path.join(os.getcwd(), "v2ray-core/")
 
 system = platform.system()
 machine = platform.machine()
@@ -34,11 +38,21 @@ def find_current_system_core():
         if (system_map[system].lower()
                 in name.lower() and machine
                 in name and name.endswith('.zip')):
-            print(json.dumps(asset, indent=4))
-            return asset['browser_download_url']
+            """ print(json.dumps(asset, indent=4)) """
+            return (asset['browser_download_url'], name)
 
     return None
 
 
-url = find_current_system_core()
-print(url)
+def download_core(url, path):
+    response = requests.get(url, stream=True)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with tqdm.wrapattr(open(path, 'wb'), 'write', miniters=1, desc=url.split('/')[-1],
+                       total=int(response.headers.get('content-length', 0))) as fout:
+        for chunk in response.iter_content(chunk_size=4096):
+            fout.write(chunk)
+
+
+(url, name) = find_current_system_core()
+save_path = os.path.join(TARGET_DIR, name)
+download_core(url, save_path)

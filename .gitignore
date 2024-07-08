@@ -39,3 +39,5 @@ docs/public
 /target
 # python venv
 /venus
+/v2ray-core/
+/scripts/v2ray-core/
