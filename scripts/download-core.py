@@ -2,6 +2,7 @@
 import requests
 import platform
 import os
+import zipfile
 from tqdm import tqdm
 
 TARGET_DIR = os.path.join(os.getcwd(), "v2ray-core/")
@@ -53,6 +54,27 @@ def download_core(url, path):
             fout.write(chunk)
 
 
-(url, name) = find_current_system_core()
-save_path = os.path.join(TARGET_DIR, name)
-download_core(url, save_path)
+def unzip_core(file_path, extract_to_directory):
+    with zipfile.ZipFile(file_path, 'r') as zip_ref:
+        file_list = zip_ref.namelist()
+        for file in tqdm(file_list, desc="Extracting files", unit="files"):
+            zip_ref.extract(file, extract_to_directory)
+
+
+def remove_core_zip(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        print(f"Deleted {file_path}")
+    else:
+        print(f"The file {file_path} does not exist")
+
+
+if __name__ == "__main__":
+    (url, name) = find_current_system_core()
+    """ v2ray core zip file path """
+    save_path = os.path.join(TARGET_DIR, name)
+    download_core(url, save_path)
+
+    """ unzip core """
+    unzip_core(save_path, TARGET_DIR)
+    remove_core_zip(save_path)
