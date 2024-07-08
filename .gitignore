@@ -37,3 +37,5 @@ docs/public
 # Added by cargo
 
 /target
+# python venv
+/venus
