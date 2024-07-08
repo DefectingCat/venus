@@ -1,8 +1,18 @@
+use dotenvy::dotenv;
+use error::AppResult;
+use tracing::info;
+use utils::init_logger;
+
 mod config;
 mod consts;
 mod error;
 mod utils;
 
-fn main() {
-    println!("Hello, world!");
+#[tokio::main]
+async fn main() -> AppResult<()> {
+    dotenv().ok();
+    init_logger();
+
+    info!("Hello, world!");
+    Ok(())
 }
