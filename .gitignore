@@ -32,3 +32,8 @@ public/min-maps
 *.sw?
 
 docs/public
+
+
+# Added by cargo
+
+/target
