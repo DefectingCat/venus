@@ -12,3 +12,4 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 toml = "0.8.14"
 serde = { version = "1.0.203", features = ["derive", "serde_derive"] }
 serde_json = { version = "1.0.120" }
+home = "0.5.9"

@@ -1,13 +1,16 @@
 use anyhow::{anyhow, Result};
+use error::ConfigResult;
 use std::{
     fs::{File, OpenOptions},
     io::{Read, Write},
     path::{Path, PathBuf},
 };
+use tracing::error;
 use types::{CoreConfig, RConfig, VConfig};
 
-use crate::consts::VERSION;
+use crate::consts::{NAME, VERSION};
 
+pub mod error;
 pub mod types;
 
 /// Core config and global stats
@@ -32,7 +35,7 @@ impl VConfig {
     /// ## Arguments
     ///
     /// `resource_path`: the store path of `config.json` and `config.toml`
-    pub fn init(&mut self, resource_path: &Path) -> Result<()> {
+    pub fn init(&mut self, resource_path: &Path) -> ConfigResult<()> {
         let mut core_default = PathBuf::from(resource_path);
         core_default.push("config.json");
 
@@ -43,7 +46,7 @@ impl VConfig {
                 path
             })
             .unwrap_or_else(|| {
-                error!("Cannot detect user home folder, use /usr/local instead");
+                error!("cannot detect user home folder, use /usr/local instead");
                 PathBuf::from(format!("/usr/local/{}", NAME))
             });
         let mut core_path = PathBuf::from(&home);
@@ -51,8 +54,8 @@ impl VConfig {
         let mut rua_path = PathBuf::from(&home);
         rua_path.push("config.toml");
 
-        self.core_path = core_path.clone();
-        self.rua_path = rua_path.clone();
+        self.core_path = core_path;
+        self.rua_path = rua_path;
 
         /* detect_and_create(&core_path, core_default)?;
         if !rua_path.exists() {
@@ -68,25 +71,24 @@ impl VConfig {
     }
 
     /// Reload core and rua config from file
-    pub fn reload(&mut self) -> Result<()> {
+    pub fn reload(&mut self) -> ConfigResult<()> {
         self.reload_core()?;
         self.reload_rua()?;
         Ok(())
     }
 
-    pub fn reload_rua(&mut self) -> Result<()> {
+    pub fn reload_rua(&mut self) -> ConfigResult<()> {
         let mut config_file = File::open(&self.rua_path)?;
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
         let mut rua_config = toml::from_str::<RConfig>(&buffer)?;
-        // TODO upgrade from old version
         rua_config.version = VERSION.into();
         self.rua = rua_config;
         Ok(())
     }
 
     /// Reload core config file from VConfig
-    pub fn reload_core(&mut self) -> Result<()> {
+    pub fn reload_core(&mut self) -> ConfigResult<()> {
         let core_file = File::open(&self.core_path)?;
         let core_config: CoreConfig = serde_json::from_reader(core_file)?;
         self.core = Some(core_config);

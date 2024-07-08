@@ -66,31 +66,31 @@ pub struct VConfig {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Node {
-    pub v: String,
+    pub v: Cow<'static, str>,
     // Node name
-    pub ps: String,
+    pub ps: Cow<'static, str>,
     // Address
-    pub add: String,
-    pub port: String,
-    pub id: String,
+    pub add: Cow<'static, str>,
+    pub port: Cow<'static, str>,
+    pub id: Cow<'static, str>,
     // AlertID
-    pub aid: String,
+    pub aid: Cow<'static, str>,
     // Protocol type determine streamSettings network field
-    pub net: String,
+    pub net: Cow<'static, str>,
     // Protocol type
     #[serde(rename = "type")]
-    pub type_field: String,
-    pub host: String,
+    pub type_field: Cow<'static, str>,
+    pub host: Cow<'static, str>,
     // streamSettings
-    pub path: String,
+    pub path: Cow<'static, str>,
     // Determine streamSettings security field
-    pub tls: String,
+    pub tls: Cow<'static, str>,
     // Determine streamSettings headers sni
-    pub sni: String,
-    pub alpn: String,
+    pub sni: Cow<'static, str>,
+    pub alpn: Cow<'static, str>,
     // Add by manually
     // The subscription group
-    pub subs: Option<String>,
+    pub subs: Option<Cow<'static, str>>,
     // Current node speed, upload and download
     pub speed: Option<f64>,
     // Current node delay
@@ -98,9 +98,9 @@ pub struct Node {
     // Node connectivity
     pub connectivity: Option<bool>,
     // Node unique ID
-    pub node_id: Option<String>,
+    pub node_id: Option<Cow<'static, str>>,
     // Node raw link from subcription link
-    pub raw_link: Option<String>,
+    pub raw_link: Option<Cow<'static, str>>,
     // Node net type
     pub node_type: Option<NodeType>,
 }
@@ -172,7 +172,7 @@ pub struct CoreConfig {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Log {
-    pub loglevel: String,
+    pub loglevel: Cow<'static, str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub access: Option<PathBuf>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -184,9 +184,9 @@ pub struct Log {
 pub struct Inbound {
     pub port: u16,
     // Listen address
-    pub listen: String,
-    pub tag: String,
-    pub protocol: String,
+    pub listen: Cow<'static, str>,
+    pub tag: Cow<'static, str>,
+    pub protocol: Cow<'static, str>,
     pub settings: InboundSettings,
     // Traffic sniffing
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -197,11 +197,11 @@ pub struct Inbound {
 #[serde(rename_all = "camelCase")]
 pub struct InboundSettings {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub auth: Option<String>,
+    pub auth: Option<Cow<'static, str>>,
     pub udp: bool,
-    // pub ip: String,
+    // pub ip: Cow<'static, str>,
     // for dokodemo-door
-    // pub address: Option<String>,
+    // pub address: Option<Cow<'static, str>>,
     pub allow_transparent: bool,
 }
 
@@ -209,7 +209,7 @@ pub struct InboundSettings {
 #[serde(rename_all = "camelCase")]
 pub struct Sniffing {
     pub enabled: bool,
-    pub dest_override: Vec<String>,
+    pub dest_override: Vec<Cow<'static, str>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub route_only: Option<bool>,
 }
@@ -217,9 +217,9 @@ pub struct Sniffing {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Outbound {
-    pub protocol: String,
+    pub protocol: Cow<'static, str>,
     pub settings: OutboundSettings,
-    pub tag: String,
+    pub tag: Cow<'static, str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stream_settings: Option<StreamSettings>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -231,8 +231,8 @@ pub struct Outbound {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamSettings {
-    pub network: String,
-    pub security: String,
+    pub network: Cow<'static, str>,
+    pub security: Cow<'static, str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tls_settings: Option<TlsSettings>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -254,10 +254,10 @@ pub struct StreamSettings {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TlsSettings {
-    pub server_name: String,
+    pub server_name: Cow<'static, str>,
     pub allow_insecure: bool,
-    pub alpn: Vec<String>,
-    pub certificates: Vec<String>,
+    pub alpn: Vec<Cow<'static, str>>,
+    pub certificates: Vec<Cow<'static, str>>,
     pub disable_system_root: bool,
 }
 
@@ -274,9 +274,9 @@ pub struct TcpSettings {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Request {
-    pub version: String,
-    pub method: String,
-    pub path: Vec<String>,
+    pub version: Cow<'static, str>,
+    pub method: Cow<'static, str>,
+    pub path: Vec<Cow<'static, str>>,
     pub headers: Headers,
 }
 
@@ -284,23 +284,23 @@ pub struct Request {
 #[serde(rename_all = "camelCase")]
 pub struct Headers {
     #[serde(rename = "Host")]
-    pub host: Vec<String>,
+    pub host: Vec<Cow<'static, str>>,
     #[serde(rename = "User-Agent")]
-    pub user_agent: Vec<String>,
+    pub user_agent: Vec<Cow<'static, str>>,
     #[serde(rename = "Accept-Encoding")]
-    pub accept_encoding: Vec<String>,
+    pub accept_encoding: Vec<Cow<'static, str>>,
     #[serde(rename = "Connection")]
-    pub connection: Vec<String>,
+    pub connection: Vec<Cow<'static, str>>,
     #[serde(rename = "Pragma")]
-    pub pragma: String,
+    pub pragma: Cow<'static, str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub version: String,
-    pub status: String,
-    pub reason: String,
+    pub version: Cow<'static, str>,
+    pub status: Cow<'static, str>,
+    pub reason: Cow<'static, str>,
     pub headers: Headers2,
 }
 
@@ -308,13 +308,13 @@ pub struct Response {
 #[serde(rename_all = "camelCase")]
 pub struct Headers2 {
     #[serde(rename = "Content-Type")]
-    pub content_type: Vec<String>,
+    pub content_type: Vec<Cow<'static, str>>,
     #[serde(rename = "Transfer-Encoding")]
-    pub transfer_encoding: Vec<String>,
+    pub transfer_encoding: Vec<Cow<'static, str>>,
     #[serde(rename = "Connection")]
-    pub connection: Vec<String>,
+    pub connection: Vec<Cow<'static, str>>,
     #[serde(rename = "Pragma")]
-    pub pragma: String,
+    pub pragma: Cow<'static, str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -334,13 +334,13 @@ pub struct KcpSettings {
 #[serde(rename_all = "camelCase")]
 pub struct KcpHeader {
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: Cow<'static, str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsSettings {
-    pub path: String,
+    pub path: Cow<'static, str>,
     pub headers: WsHeaders,
 }
 
@@ -348,27 +348,27 @@ pub struct WsSettings {
 #[serde(rename_all = "camelCase")]
 pub struct WsHeaders {
     #[serde(rename = "Host")]
-    pub host: String,
+    pub host: Cow<'static, str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HttpSettings {
-    pub host: Vec<String>,
-    pub path: String,
+    pub host: Vec<Cow<'static, str>>,
+    pub path: Cow<'static, str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DsSettings {
-    path: String,
+    path: Cow<'static, str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuicSettings {
-    pub security: String,
-    pub key: String,
+    pub security: Cow<'static, str>,
+    pub key: Cow<'static, str>,
     pub header: KcpHeader,
 }
 
@@ -377,13 +377,13 @@ pub struct QuicSettings {
 pub struct Sockopt {
     pub mark: i64,
     pub tcp_fast_open: bool,
-    pub tproxy: String,
+    pub tproxy: Cow<'static, str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProxySetting {
-    pub tag: String,
+    pub tag: Cow<'static, str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -403,7 +403,7 @@ pub struct OutboundSettings {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Vmess {
-    pub address: String,
+    pub address: Cow<'static, str>,
     pub port: u16,
     pub users: Vec<CoreUser>,
 }
@@ -411,10 +411,10 @@ pub struct Vmess {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CoreUser {
-    pub id: String,
+    pub id: Cow<'static, str>,
     pub alter_id: u16,
-    pub email: String,
-    pub security: String,
+    pub email: Cow<'static, str>,
+    pub security: Cow<'static, str>,
 }
 
 // https://www.v2ray.com/chapter_02/03_routing.html
@@ -422,7 +422,7 @@ pub struct CoreUser {
 #[serde(rename_all = "camelCase")]
 pub struct Routing {
     // "AsIs" | "IPIfNonMatch" | "IPOnDemand"
-    pub domain_strategy: String,
+    pub domain_strategy: Cow<'static, str>,
     pub rules: Vec<Rule>,
     pub balancers: Vec<Balancers>,
 }
@@ -431,30 +431,30 @@ pub struct Routing {
 #[serde(rename_all = "camelCase")]
 pub struct Rule {
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: Cow<'static, str>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub ip: Option<Vec<String>>,
+    pub ip: Option<Vec<Cow<'static, str>>>,
     #[serde(default)]
-    pub domain: Option<Vec<String>>,
+    pub domain: Option<Vec<Cow<'static, str>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub port: Option<String>,
+    pub port: Option<Cow<'static, str>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub network: Option<String>,
+    pub network: Option<Cow<'static, str>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub source: Option<Vec<String>>,
+    pub source: Option<Vec<Cow<'static, str>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub user: Option<Vec<String>>,
-    pub inbound_tag: Option<Vec<String>>,
-    pub protocol: Option<Vec<String>>,
+    pub user: Option<Vec<Cow<'static, str>>>,
+    pub inbound_tag: Option<Vec<Cow<'static, str>>>,
+    pub protocol: Option<Vec<Cow<'static, str>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub attrs: Option<String>,
-    pub outbound_tag: String,
+    pub attrs: Option<Cow<'static, str>>,
+    pub outbound_tag: Cow<'static, str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub balancer_tag: Option<String>,
+    pub balancer_tag: Option<Cow<'static, str>>,
 }
 impl Rule {
-    pub fn new(outbound_tag: String) -> Self {
+    pub fn new(outbound_tag: Cow<'static, str>) -> Self {
         Self {
             type_field: "field".into(),
             ip: None,
@@ -475,36 +475,41 @@ impl Rule {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Balancers {
-    pub tag: String,
-    pub selector: Vec<String>,
+    pub tag: Cow<'static, str>,
+    pub selector: Vec<Cow<'static, str>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Dns {
     pub hosts: Hosts,
-    pub servers: (String, Servers, String, String),
+    pub servers: (
+        Cow<'static, str>,
+        Servers,
+        Cow<'static, str>,
+        Cow<'static, str>,
+    ),
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Hosts {
     #[serde(rename = "domain:v2fly.org")]
-    pub domain_v2fly_org: String,
+    pub domain_v2fly_org: Cow<'static, str>,
     #[serde(rename = "domain:github.io")]
-    pub domain_github_io: String,
+    pub domain_github_io: Cow<'static, str>,
     #[serde(rename = "domain:wikipedia.org")]
-    pub domain_wikipedia_org: String,
+    pub domain_wikipedia_org: Cow<'static, str>,
     #[serde(rename = "domain:shadowsocks.org")]
-    pub domain_shadowsocks_org: String,
+    pub domain_shadowsocks_org: Cow<'static, str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Servers {
-    pub address: String,
+    pub address: Cow<'static, str>,
     pub port: i64,
-    pub domains: Vec<String>,
+    pub domains: Vec<Cow<'static, str>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
